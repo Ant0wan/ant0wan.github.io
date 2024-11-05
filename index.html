@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js Smoke Background with Camera and Particle Movement</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        const particleCount = 10000;
+        const particles = new THREE.BufferGeometry();
+        const positions = new Float32Array(particleCount * 3);
+        const velocities = new Float32Array(particleCount * 3); // Velocities for each particle
+
+        // Initialize particle positions and velocities
+        for (let i = 0; i < particleCount; i++) {
+            positions[i * 3] = (Math.random() - 0.5) * 200; // x
+            positions[i * 3 + 1] = (Math.random() - 0.5) * 200; // y
+            positions[i * 3 + 2] = (Math.random() - 0.5) * 200; // z
+
+            // Initialize slow random velocities
+            velocities[i * 3] = (Math.random() - 0.5) * 0.1; // vx
+            velocities[i * 3 + 1] = (Math.random() - 0.5) * 0.1; // vy
+            velocities[i * 3 + 2] = (Math.random() - 0.5) * 0.1; // vz
+        }
+
+        particles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+        const particleMaterial = new THREE.PointsMaterial({
+            color: 0xaaaaaa,
+            size: 0.5,
+            transparent: true,
+            opacity: 0.5
+        });
+
+        const particleSystem = new THREE.Points(particles, particleMaterial);
+        scene.add(particleSystem);
+
+        camera.position.z = 50;
+
+        // Variables to store mouse position
+        const mouse = { x: 0, y: 0 };
+
+        document.addEventListener('mousemove', (event) => {
+            // Normalize mouse coordinates
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Smoothly update camera rotation based on mouse position
+            camera.rotation.x += (mouse.y * 0.1 - camera.rotation.x) * 0.05; // Rotate around X
+            camera.rotation.y += (mouse.x * 0.1 - camera.rotation.y) * 0.05; // Rotate around Y
+
+            // Update particle positions with slow movement
+            const positions = particleSystem.geometry.attributes.position.array;
+
+            for (let i = 0; i < positions.length; i += 3) {
+                // Update each particle's position based on its velocity
+                positions[i] += velocities[i];     // x
+                positions[i + 1] += velocities[i + 1]; // y
+                positions[i + 2] += velocities[i + 2]; // z
+
+                // Optionally, reinitialize particle position and velocity if it goes out of bounds
+                if (positions[i] > 100 || positions[i] < -100) {
+                    positions[i] = (Math.random() - 0.5) * 200; // Reset x
+                }
+                if (positions[i + 1] > 100 || positions[i + 1] < -100) {
+                    positions[i + 1] = (Math.random() - 0.5) * 200; // Reset y
+                }
+                if (positions[i + 2] > 100 || positions[i + 2] < -100) {
+                    positions[i + 2] = (Math.random() - 0.5) * 200; // Reset z
+                }
+            }
+
+            particleSystem.geometry.attributes.position.needsUpdate = true; // Update positions
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
+
