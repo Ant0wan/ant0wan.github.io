@@ -32,6 +32,7 @@
             text-align: left; /* Align text to the left */
             font-size: 5rem; /* Set the font size */
             font-weight: bold; /* Make the text bold */
+            color: lightgrey; /* Default text color */
             transition: color 1s ease-in-out; /* Smooth transition for color change */
         }
     </style>
@@ -43,14 +44,20 @@
 
     <script>
         // Array of colors to cycle through
-        const textColors = [
-            '#00f7ff',  // Fluorescent blue
-            '#ff007f',  // Pink
-            '#8e2de2',  // Purple
-            '#ff0080',  // Red
-            '#00ff85',  // Green
-            '#ff8c00'   // Orange
-        ];
+	const textColors = [
+	    '#00f7ff',  // Fluorescent Blue
+	    '#00ffcc',  // Fluorescent Cyan
+	    '#00ff00',  // Fluorescent Green
+	    '#00ff7f',  // Fluorescent Mint Green
+	    '#ff00ff',  // Fluorescent Magenta (Vibrant Pinkish Purple)
+	    '#ff00b3',  // Fluorescent Hot Pink
+	    '#ff0080',  // Fluorescent Red-Pink
+	    '#ff5f00',  // Fluorescent Coral Orange
+	    '#ff6f00',  // Fluorescent Orange
+	    '#ff00ff',  // Fluorescent Pink (Repeated)
+	    '#ffff00',  // Fluorescent Yellow
+	    '#8e2de2'   // Fluorescent Purple
+	];
 
         let currentIndex = 0;
         const container = document.getElementById('dynamicText');
