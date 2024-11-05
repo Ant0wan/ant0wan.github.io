@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antoine Barthelemy</title>
+    <!-- Link to the Satoshi font from the CDN -->
+    <link href="https://fonts.cdnfonts.com/css/satoshi" rel="stylesheet">
+    <style>
+        /* Reset some default styles */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+        }
+
+        /* Style for the body to have a black background */
+        body {
+            background-color: black; /* Black background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Satoshi', sans-serif;
+            height: 100vh; /* Full height */
+            color: white; /* Default text color */
+            margin: 0;
+        }
+
+        /* Container for the text */
+        .container {
+            text-align: left; /* Align text to the left */
+            font-size: 5rem; /* Set the font size */
+            font-weight: bold; /* Make the text bold */
+            transition: color 1s ease-in-out; /* Smooth transition for color change */
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="dynamicText">
+        Antoine Barthelemy
+    </div>
+
+    <script>
+        // Array of colors to cycle through
+        const textColors = [
+            '#00f7ff',  // Fluorescent blue
+            '#ff007f',  // Pink
+            '#8e2de2',  // Purple
+            '#ff0080',  // Red
+            '#00ff85',  // Green
+            '#ff8c00'   // Orange
+        ];
+
+        let currentIndex = 0;
+        const container = document.getElementById('dynamicText');
+
+        // Function to change the text color dynamically
+        function changeTextColor() {
+            currentIndex = (currentIndex + 1) % textColors.length;
+            container.style.color = textColors[currentIndex];
+        }
+
+        // Change the text color every 2 seconds
+        setInterval(changeTextColor, 2000);
+    </script>
+</body>
+</html>
+
