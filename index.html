@@ -15,10 +15,11 @@
             width: 100%;
         }
 
-        /* Style for the body to have a black background */
+        /* Style for the body to have a black background and stack children vertically */
         body {
             background-color: black; /* Black background */
             display: flex;
+            flex-direction: column; /* Stack the children vertically */
             justify-content: center;
             align-items: center;
             font-family: 'Satoshi', sans-serif;
@@ -27,19 +28,29 @@
             margin: 0;
         }
 
-        /* Container for the text */
+        /* Container for the first text */
         .container {
             text-align: left; /* Align text to the left */
             font-size: 5rem; /* Set the font size */
-            /*font-weight: bold; /* Make the text bold */
             color: lightgrey; /* Default text color */
             transition: color 4s ease-in-out; /* Smooth linear transition for color change */
+        }
+
+        /* Style for the second div */
+        .c2 {
+            color: white; /* Default text color */
+            font-size: 2rem; /* Set the font size */
+            text-align: left; /* Align text to the left */
+            margin-top: 10px; /* Adds some spacing between the two divs */
         }
     </style>
 </head>
 <body>
     <div class="container" id="dynamicText">
         Antoine Barthelemy
+    </div>
+    <div class="c2" id="jobTitle">
+        job title: Site Reliability Engineer
     </div>
 
     <script>
