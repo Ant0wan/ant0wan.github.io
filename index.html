@@ -1,91 +1,194 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Antoine Barthelemy</title>
-    <!-- Link to the Satoshi font from the CDN -->
-    <link href="https://fonts.cdnfonts.com/css/satoshi" rel="stylesheet">
-    <style>
-        /* Reset some default styles */
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            width: 100%;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ant0wan's GitHub Gists</title>
 
-        /* Style for the body to have a black background and stack children vertically */
-        body {
-            background-color: black; /* Black background */
-            display: flex;
-            flex-direction: column; /* Stack the children vertically */
-            justify-content: center;
-            align-items: center;
-            font-family: 'Satoshi', sans-serif;
-            height: 100vh; /* Full height */
-            color: white; /* Default text color */
-            margin: 0;
-        }
+  <!-- Satoshi Font -->
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
 
-        /* Container for the first text */
-        .container {
-            text-align: left; /* Align text to the left */
-            font-size: 5rem; /* Set the font size */
-            color: lightgrey; /* Default text color */
-            transition: color 4s ease-in-out; /* Smooth linear transition for color change */
-        }
+  <!-- PrismJS Theme -->
+  <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
 
-        /* Style for the second div */
-        .c2 {
-            color: white; /* Default text color */
-            font-size: 2rem; /* Set the font size */
-            text-align: left; /* Align text to the left */
-            margin-top: 10px; /* Adds some spacing between the two divs */
-        }
-    </style>
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Satoshi', sans-serif;
+      background-color: #121212;
+      color: #ffffff;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    h2 {
+      font-size: 20px;
+    }
+
+    a {
+      color: #1e90ff;
+      text-decoration: none;
+    }
+
+    .gist {
+      background: #1e1e1e;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 40px;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
+    }
+
+    .files {
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    pre {
+      background-color: #2a2a2a;
+      padding: 15px;
+      overflow-x: auto;
+      border-radius: 5px;
+    }
+
+    code {
+      font-size: 14px;
+    }
+
+    .loading {
+      text-align: center;
+      font-size: 18px;
+      margin-top: 50px;
+      color: #888;
+    }
+
+    #index {
+      margin-bottom: 40px;
+      padding: 20px;
+      background: #1a1a1a;
+      border-radius: 10px;
+    }
+
+    #index h2 {
+      margin-top: 0;
+      font-size: 18px;
+    }
+
+    #index-list {
+      list-style: none;
+      padding-left: 0;
+      line-height: 1.8;
+    }
+
+    #index-list a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
-    <div class="container" id="dynamicText">
-        Antoine Barthelemy
-    </div>
-    <div class="c2" id="jobTitle">
-        job title: Site Reliability Engineer
-    </div>
+  <h1>Cheatsheets</h1>
 
-    <script>
-        // Array of brighter and more vibrant fluorescent colors
-        const textColors = [
-            '#00f7ff',  // Fluorescent Blue
-            '#00ffcc',  // Fluorescent Cyan
-            '#00ff00',  // Fluorescent Green
-            '#00ff7f',  // Fluorescent Mint Green
-            '#ff00ff',  // Fluorescent Magenta
-            '#ff00b3',  // Fluorescent Hot Pink
-            '#ff0080',  // Fluorescent Red-Pink
-            '#ff5f00',  // Fluorescent Coral Orange
-            '#ff6f00',  // Fluorescent Orange
-            '#ffff00',  // Fluorescent Yellow
-            '#8e2de2',  // Fluorescent Purple
-            '#ff4500',  // Fluorescent Orange-Red
-            '#5c2fd0',  // Brighter Indigo
-            '#0000ff',  // Bright Blue
-            '#ff00a6',  // Fluorescent Fuchsia (brightened)
-            '#00f200'   // Fluorescent Lime Green (brightened)
-        ];
+  <div id="index">
+    <h2>Topics</h2>
+    <ul id="index-list">
+      <li>Loading index...</li>
+    </ul>
+  </div>
 
-        let currentIndex = 0;
-        const container = document.getElementById('dynamicText');
+  <div id="gist-container">
+    <div class="loading">Loading gists...</div>
+  </div>
 
-        // Function to change the text color dynamically
-        function changeTextColor() {
-            currentIndex = (currentIndex + 1) % textColors.length;
-            container.style.color = textColors[currentIndex];
+  <!-- PrismJS Core & Language Support -->
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-markup.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-bash.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-json.min.js"></script>
+
+  <script>
+    const username = "Ant0wan";
+
+    async function fetchGists() {
+      const container = document.getElementById('gist-container');
+      const indexList = document.getElementById('index-list');
+
+      try {
+        const res = await fetch(`https://api.github.com/users/${username}/gists`);
+        const gists = await res.json();
+        container.innerHTML = '';
+        indexList.innerHTML = '';
+
+        if (gists.length === 0) {
+          container.innerHTML = '<p>No gists found.</p>';
+          indexList.innerHTML = '<li>No public gists to index.</li>';
+          return;
         }
 
-        // Change the text color every 2 seconds
-        setInterval(changeTextColor, 2000);
-    </script>
+        for (let i = 0; i < gists.length; i++) {
+          const gist = gists[i];
+          const gistId = `gist-${i}`;
+          const title = gist.description || `Gist ${i + 1}`;
+          const fileList = Object.values(gist.files);
+          const files = Object.keys(gist.files).map(name => `<code>${name}</code>`).join(', ');
+          const firstFile = fileList[0];
+          const language = (firstFile.language || 'text').toLowerCase();
+
+          // Add to index
+          const li = document.createElement('li');
+          li.innerHTML = `<a href="#${gistId}">${title}</a>`;
+          indexList.appendChild(li);
+
+          // Gist block
+          const gistDiv = document.createElement('div');
+          gistDiv.className = 'gist';
+          gistDiv.id = gistId;
+
+          gistDiv.innerHTML = `
+            <h2><a href="${gist.html_url}" target="_blank">${title}</a></h2>
+            <div class="files">Files: ${files}</div>
+          `;
+
+          if (firstFile && firstFile.raw_url) {
+            try {
+              const fileRes = await fetch(firstFile.raw_url);
+              const code = await fileRes.text();
+              gistDiv.innerHTML += `
+                <pre><code class="language-${language}">${escapeHtml(code.slice(0, 2000))}</code></pre>
+              `;
+            } catch (e) {
+              gistDiv.innerHTML += `<p>Could not load file preview.</p>`;
+            }
+          }
+
+          container.appendChild(gistDiv);
+        }
+
+        Prism.highlightAll();
+      } catch (error) {
+        container.innerHTML = `<p>Error fetching gists.</p>`;
+        indexList.innerHTML = '<li>⚠️ Could not load index.</li>';
+        console.error(error);
+      }
+    }
+
+    function escapeHtml(text) {
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    fetchGists();
+  </script>
 </body>
 </html>
 
