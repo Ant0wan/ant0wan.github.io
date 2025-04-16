@@ -54,15 +54,23 @@
       margin-bottom: 10px;
     }
 
-    pre {
-      background-color: #0d0c0b;
+    pre,
+    .gist pre,
+    .markdown-content pre {
+      background-color: #0d0c0b !important;
       padding: 15px;
       overflow-x: auto;
       border-radius: 5px;
     }
 
-    code {
+    code,
+    .gist code,
+    .markdown-content code {
       font-size: 14px;
+      font-family: monospace;
+      background-color: #0d0c0b !important;
+      padding: 2px 4px;
+      border-radius: 3px;
     }
 
     .loading {
@@ -108,25 +116,10 @@
       max-height: 300px;
     }
 
-    /* Markdown content styles */
     .markdown-content {
-      background: #1e1e1e;
+      background: #0d0c0b;
       padding: 20px;
       border-radius: 5px;
-    }
-
-    .markdown-content pre {
-      background-color: #2a2a2a;
-      padding: 15px;
-      overflow-x: auto;
-      border-radius: 5px;
-    }
-
-    .markdown-content code {
-      font-family: monospace;
-      background-color: #2a2a2a;
-      padding: 2px 4px;
-      border-radius: 3px;
     }
 
     .markdown-content h1, 
@@ -148,7 +141,7 @@
     }
 
     .markdown-content a {
-      color: #1e90ff;
+      color: #E2725B;
     }
   </style>
 </head>
@@ -217,20 +210,18 @@
 
           gistDiv.innerHTML = `
             <h2><a href="${gist.html_url}" target="_blank">${title}</a></h2>
-            <div class="files">Files: ${files}</div>
+            <div class="files">File: ${files}</div>
           `;
 
           if (firstFile && firstFile.raw_url) {
             try {
               if (isSvg) {
-                // For SVG files, display the image directly
                 gistDiv.innerHTML += `
                   <div class="svg-container">
                     <img src="${firstFile.raw_url}" alt="${firstFile.filename}">
                   </div>
                 `;
               } else if (isMd) {
-                // For Markdown files, render as HTML
                 const fileRes = await fetch(firstFile.raw_url);
                 const markdown = await fileRes.text();
                 gistDiv.innerHTML += `
@@ -239,7 +230,6 @@
                   </div>
                 `;
               } else {
-                // For other files, show the code
                 const fileRes = await fetch(firstFile.raw_url);
                 const code = await fileRes.text();
                 gistDiv.innerHTML += `
@@ -273,3 +263,4 @@
   </script>
 </body>
 </html>
+
