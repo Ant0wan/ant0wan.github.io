@@ -11,6 +11,9 @@
   <!-- PrismJS Theme -->
   <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
 
+  <!-- Marked.js for Markdown rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
   <style>
     html {
       scroll-behavior: smooth;
@@ -104,6 +107,49 @@
       height: auto;
       max-height: 300px;
     }
+
+    /* Markdown content styles */
+    .markdown-content {
+      background: #1e1e1e;
+      padding: 20px;
+      border-radius: 5px;
+    }
+
+    .markdown-content pre {
+      background-color: #2a2a2a;
+      padding: 15px;
+      overflow-x: auto;
+      border-radius: 5px;
+    }
+
+    .markdown-content code {
+      font-family: monospace;
+      background-color: #2a2a2a;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+
+    .markdown-content h1, 
+    .markdown-content h2, 
+    .markdown-content h3 {
+      margin-top: 1.5em;
+      margin-bottom: 0.5em;
+    }
+
+    .markdown-content p {
+      margin: 1em 0;
+      line-height: 1.6;
+    }
+
+    .markdown-content ul, 
+    .markdown-content ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+
+    .markdown-content a {
+      color: #1e90ff;
+    }
   </style>
 </head>
 <body>
@@ -127,6 +173,7 @@
   <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-markup.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-bash.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-json.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-markdown.min.js"></script>
 
   <script>
     const username = "Ant0wan";
@@ -156,6 +203,7 @@
           const firstFile = fileList[0];
           const language = (firstFile.language || 'text').toLowerCase();
           const isSvg = firstFile.filename.toLowerCase().endsWith('.svg');
+          const isMd = firstFile.filename.toLowerCase().endsWith('.md');
 
           // Add to index
           const li = document.createElement('li');
@@ -179,6 +227,15 @@
                 gistDiv.innerHTML += `
                   <div class="svg-container">
                     <img src="${firstFile.raw_url}" alt="${firstFile.filename}">
+                  </div>
+                `;
+              } else if (isMd) {
+                // For Markdown files, render as HTML
+                const fileRes = await fetch(firstFile.raw_url);
+                const markdown = await fileRes.text();
+                gistDiv.innerHTML += `
+                  <div class="markdown-content">
+                    ${marked.parse(markdown)}
                   </div>
                 `;
               } else {
