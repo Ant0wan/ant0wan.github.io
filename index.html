@@ -90,6 +90,20 @@
     #index-list a:hover {
       text-decoration: underline;
     }
+
+    .svg-container {
+      background: white;
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    .svg-container img {
+      max-width: 100%;
+      height: auto;
+      max-height: 300px;
+    }
   </style>
 </head>
 <body>
@@ -141,6 +155,7 @@
           const files = Object.keys(gist.files).map(name => `<code>${name}</code>`).join(', ');
           const firstFile = fileList[0];
           const language = (firstFile.language || 'text').toLowerCase();
+          const isSvg = firstFile.filename.toLowerCase().endsWith('.svg');
 
           // Add to index
           const li = document.createElement('li');
@@ -159,11 +174,21 @@
 
           if (firstFile && firstFile.raw_url) {
             try {
-              const fileRes = await fetch(firstFile.raw_url);
-              const code = await fileRes.text();
-              gistDiv.innerHTML += `
-                <pre><code class="language-${language}">${escapeHtml(code.slice(0, 2000))}</code></pre>
-              `;
+              if (isSvg) {
+                // For SVG files, display the image directly
+                gistDiv.innerHTML += `
+                  <div class="svg-container">
+                    <img src="${firstFile.raw_url}" alt="${firstFile.filename}">
+                  </div>
+                `;
+              } else {
+                // For other files, show the code
+                const fileRes = await fetch(firstFile.raw_url);
+                const code = await fileRes.text();
+                gistDiv.innerHTML += `
+                  <pre><code class="language-${language}">${escapeHtml(code.slice(0, 2000))}</code></pre>
+                `;
+              }
             } catch (e) {
               gistDiv.innerHTML += `<p>Could not load file preview.</p>`;
             }
@@ -191,4 +216,3 @@
   </script>
 </body>
 </html>
-
