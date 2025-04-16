@@ -227,7 +227,7 @@
                 const fileRes = await fetch(firstFile.raw_url);
                 const code = await fileRes.text();
                 gistDiv.innerHTML += `
-                  <pre><code class="language-${language}">${escapeHtml(code.slice(0, 2000))}</code></pre>
+                  <pre><code class="language-${language}">${escapeHtml(code)}</code></pre>
                 `;
               }
             } catch (e) {
