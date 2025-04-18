@@ -134,8 +134,8 @@
       padding: 15px !important;
     }
 
-    .markdown-content h1, 
-    .markdown-content h2, 
+    .markdown-content h1,
+    .markdown-content h2,
     .markdown-content h3 {
       margin-top: 1.5em;
       margin-bottom: 0.5em;
@@ -146,7 +146,7 @@
       line-height: 1.6;
     }
 
-    .markdown-content ul, 
+    .markdown-content ul,
     .markdown-content ol {
       margin: 1em 0;
       padding-left: 2em;
@@ -154,6 +154,23 @@
 
     .markdown-content a {
       color: #E2725B;
+    }
+
+    .error {
+      background: #1a1a1a;
+      padding: 20px;
+      border-left: 4px solid #E2725B;
+    }
+
+    .error ul {
+      margin: 10px 0;
+      padding-left: 20px;
+    }
+
+    .progress {
+      text-align: center;
+      margin: 20px 0;
+      color: #888;
     }
   </style>
 </head>
@@ -182,23 +199,96 @@
 
   <script>
     const username = "Ant0wan";
+    const perPage = 100; // Max allowed by GitHub API
+
+    async function fetchWithTimeout(resource, options = {}) {
+      const { timeout = 8000 } = options;
+
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), timeout);
+
+      const response = await fetch(resource, {
+        ...options,
+        signal: controller.signal
+      });
+      clearTimeout(id);
+
+      return response;
+    }
+
+    async function fetchAllGists() {
+      let allGists = [];
+      let page = 1;
+      let hasMore = true;
+      let error = null;
+
+      while (hasMore) {
+        try {
+          const response = await fetchWithTimeout(
+            `https://api.github.com/users/${username}/gists?per_page=${perPage}&page=${page}`,
+            {
+              headers: {
+                'Accept': 'application/vnd.github.v3+json'
+              }
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const gists = await response.json();
+          allGists = [...allGists, ...gists];
+
+          // Update loading progress
+          const progress = document.getElementById('loading-progress');
+          if (progress) {
+            progress.textContent = `Loaded ${allGists.length} gists...`;
+          }
+
+          // Check pagination
+          const linkHeader = response.headers.get('Link');
+          hasMore = linkHeader && linkHeader.includes('rel="next"');
+          page++;
+
+        } catch (err) {
+          console.error(`Error fetching gists page ${page}:`, err);
+          error = err;
+          hasMore = false;
+        }
+      }
+
+      if (error && allGists.length === 0) {
+        throw error;
+      }
+
+      return allGists;
+    }
 
     async function fetchGists() {
       const container = document.getElementById('gist-container');
       const indexList = document.getElementById('index-list');
 
       try {
-        const res = await fetch(`https://api.github.com/users/${username}/gists`);
-        const gists = await res.json();
-        container.innerHTML = '';
-        indexList.innerHTML = '';
+        container.innerHTML = `
+          <div class="loading">
+            <p>Loading gists (this may take a moment)...</p>
+            <p id="loading-progress" class="progress">Starting...</p>
+          </div>
+        `;
+
+        const gists = await fetchAllGists();
 
         if (gists.length === 0) {
-          container.innerHTML = '<p>No gists found.</p>';
-          indexList.innerHTML = '<li>No public gists to index.</li>';
+          container.innerHTML = '<p>No gists found for this user.</p>';
+          indexList.innerHTML = '<li>No public gists available</li>';
           return;
         }
 
+        container.innerHTML = '';
+        indexList.innerHTML = '';
+
+        // Process and display gists
         for (let i = 0; i < gists.length; i++) {
           const gist = gists[i];
           const gistId = `gist-${i}`;
@@ -234,7 +324,7 @@
                   </div>
                 `;
               } else if (isMd) {
-                const fileRes = await fetch(firstFile.raw_url);
+                const fileRes = await fetchWithTimeout(firstFile.raw_url);
                 const markdown = await fileRes.text();
                 gistDiv.innerHTML += `
                   <div class="markdown-content">
@@ -242,13 +332,14 @@
                   </div>
                 `;
               } else {
-                const fileRes = await fetch(firstFile.raw_url);
+                const fileRes = await fetchWithTimeout(firstFile.raw_url);
                 const code = await fileRes.text();
                 gistDiv.innerHTML += `
                   <pre><code class="language-${language}">${escapeHtml(code)}</code></pre>
                 `;
               }
             } catch (e) {
+              console.error(`Error loading file ${firstFile.filename}:`, e);
               gistDiv.innerHTML += `<p>Could not load file preview.</p>`;
             }
           }
@@ -257,10 +348,21 @@
         }
 
         Prism.highlightAll();
+
       } catch (error) {
-        container.innerHTML = `<p>Error fetching gists.</p>`;
-        indexList.innerHTML = '<li>⚠️ Could not load index.</li>';
-        console.error(error);
+        console.error('Failed to load gists:', error);
+        container.innerHTML = `
+          <div class="error">
+            <p>Failed to load gists. Possible reasons:</p>
+            <ul>
+              <li>GitHub API rate limit exceeded (try again later)</li>
+              <li>Network connectivity issues</li>
+              <li>User "${username}" doesn't exist or has no public gists</li>
+            </ul>
+            <p>Try refreshing the page or check the console for details.</p>
+          </div>
+        `;
+        indexList.innerHTML = '<li>Error loading index</li>';
       }
     }
 
