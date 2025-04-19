@@ -47,12 +47,30 @@
       padding: 20px;
       margin-bottom: 40px;
       box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
+      border-radius: 4px;
     }
 
     .files {
-      font-size: 14px;
+      font-size: 13px;
       margin-bottom: 15px;
       color: #888;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .file-item {
+      display: flex;
+      align-items: center;
+      background: rgba(215, 210, 203, 0.08);
+      padding: 4px 8px;
+      border-radius: 3px;
+      font-family: monospace;
+    }
+
+    .file-date {
+      color: #d7d2cb;
     }
 
     pre,
@@ -90,6 +108,7 @@
       margin-bottom: 40px;
       padding: 20px;
       background: #0d0c0b;
+      border-radius: 4px;
     }
 
     #index h2 {
@@ -113,6 +132,7 @@
       padding: 10px;
       margin-top: 10px;
       text-align: center;
+      border-radius: 4px;
     }
 
     .svg-container img {
@@ -160,6 +180,7 @@
       background: #1a1a1a;
       padding: 20px;
       border-left: 4px solid #E2725B;
+      border-radius: 4px;
     }
 
     .error ul {
@@ -214,6 +235,15 @@
       clearTimeout(id);
 
       return response;
+    }
+
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
     }
 
     async function fetchAllGists() {
@@ -294,11 +324,11 @@
           const gistId = `gist-${i}`;
           const title = gist.description || `Gist ${i + 1}`;
           const fileList = Object.values(gist.files);
-          const files = Object.keys(gist.files).map(name => `<code>${name}</code>`).join(', ');
           const firstFile = fileList[0];
           const language = (firstFile.language || 'text').toLowerCase();
           const isSvg = firstFile.filename.toLowerCase().endsWith('.svg');
           const isMd = firstFile.filename.toLowerCase().endsWith('.md');
+          const createdAt = formatDate(gist.created_at);
 
           // Add to index
           const li = document.createElement('li');
@@ -310,10 +340,26 @@
           gistDiv.className = 'gist';
           gistDiv.id = gistId;
 
+          // Create files container
+          const filesContainer = document.createElement('div');
+          filesContainer.className = 'files';
+          
+          // Add creation date for each file
+          Object.keys(gist.files).forEach(() => {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            fileItem.innerHTML = `
+              <span class="file-date">${createdAt}</span>
+            `;
+            filesContainer.appendChild(fileItem);
+          });
+
           gistDiv.innerHTML = `
             <h2><a href="${gist.html_url}" target="_blank">${title}</a></h2>
-            <div class="files">File: ${files}</div>
           `;
+          
+          // Append the files container
+          gistDiv.appendChild(filesContainer);
 
           if (firstFile && firstFile.raw_url) {
             try {
