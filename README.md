@@ -22,3 +22,6 @@ Kubernetes Security
 
 Apache Kafka, Multi-Clusters Architecture, etc
 
+### Timeline and Resume
+
+Timeline of what I did, replace Linkedin
