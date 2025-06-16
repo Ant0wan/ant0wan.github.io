@@ -18,9 +18,11 @@ Nvidia, CUDA, Containers, etc
 
 Kubernetes Security
 
-#### Architecture
+#### Miscellanous
 
 Run your own AI Models and make it available (Ollama and others, on a platform), Apache Kafka, Multi-Clusters Architecture, Express more general ideas in IT (essai) distributed CI on personal laptop for cost efficiency and no more provider lockin as example, imagine IT or solutions of tomorrow, etc
+
+Using Cloud like AWS (certifications to learn system design)
 
 #### Line Of Business
 
