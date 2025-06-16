@@ -20,7 +20,7 @@ Kubernetes Security
 
 #### Architecture
 
-Apache Kafka, Multi-Clusters Architecture, Express more general ideas in IT (essai) distributed CI on personal laptop for cost efficiency and no more provider lockin as example, imagine IT or solutions of tomorrow, etc
+Run your own AI Models and make it available (Ollama and others), Apache Kafka, Multi-Clusters Architecture, Express more general ideas in IT (essai) distributed CI on personal laptop for cost efficiency and no more provider lockin as example, imagine IT or solutions of tomorrow, etc
 
 #### Line Of Business
 
