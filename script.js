@@ -5,34 +5,35 @@ document.addEventListener('DOMContentLoaded', function() {
     
     navToggle.addEventListener('click', function() {
         navList.classList.toggle('active');
-        
-        // Change hamburger to X when active
         this.classList.toggle('active');
     });
     
-    // Smooth scrolling for anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function(e) {
-            e.preventDefault();
+    // Highlight active TOC item while scrolling
+    const sections = document.querySelectorAll('h2[id]');
+    const tocLinks = document.querySelectorAll('.toc-link');
+    
+    function updateActiveTOC() {
+        let current = '';
+        
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop;
+            const sectionHeight = section.clientHeight;
             
-            const targetId = this.getAttribute('href');
-            if (targetId === '#') return;
-            
-            const targetElement = document.querySelector(targetId);
-            if (targetElement) {
-                window.scrollTo({
-                    top: targetElement.offsetTop - 70, // Adjust for fixed header
-                    behavior: 'smooth'
-                });
-                
-                // Close mobile menu if open
-                if (navList.classList.contains('active')) {
-                    navList.classList.remove('active');
-                    navToggle.classList.remove('active');
-                }
+            if (window.scrollY >= sectionTop - 200) {
+                current = section.getAttribute('id');
             }
         });
-    });
+        
+        tocLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === `#${current}`) {
+                link.classList.add('active');
+            }
+        });
+    }
+    
+    window.addEventListener('scroll', updateActiveTOC);
+    updateActiveTOC(); // Run once on load
     
     // Add a class to header when scrolled
     const header = document.querySelector('.header');
