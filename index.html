@@ -304,7 +304,8 @@
       if (ext === 'md') return 'language-markdown';
       if (ext === 'html' || ext === 'htm') return 'language-html';
       if (ext === 'service') return 'language-ini'; // Systemd service files
-      if (ext === 'ini' || ext === 'cfg') return 'language-ini';
+      if (ext === 'ini' || ext === 'cfg' || ext === 'ext') return 'language-ini';
+
 
       // Fallback to GitHub's language if it matches a Prism language
       if (Prism.languages[lang]) return `language-${lang}`;
