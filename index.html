@@ -217,6 +217,7 @@
   <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-bash.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-json.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-markdown.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-yaml.min.js"></script>
 
   <script>
     const username = "Ant0wan";
@@ -292,7 +293,7 @@
     async function processGist(gist, index) {
       const container = document.getElementById('gist-container');
       const indexList = document.getElementById('index-list');
-      
+
       const gistId = `gist-${index}`;
       const title = gist.description || `Gist ${index + 1}`;
       const fileList = Object.values(gist.files);
@@ -315,7 +316,7 @@
       // Create files container
       const filesContainer = document.createElement('div');
       filesContainer.className = 'files';
-      
+
       // Add creation date for each file
       Object.keys(gist.files).forEach(() => {
         const fileItem = document.createElement('div');
@@ -329,7 +330,7 @@
       gistDiv.innerHTML = `
         <h2><a href="${gist.html_url}" target="_blank">${title}</a></h2>
       `;
-      
+
       // Append the files container
       gistDiv.appendChild(filesContainer);
 
