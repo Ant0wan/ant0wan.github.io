@@ -270,12 +270,6 @@
           const gists = await response.json();
           allGists = [...allGists, ...gists];
 
-          // Update loading progress
-          const progress = document.getElementById('loading-progress');
-          if (progress) {
-            progress.textContent = `Loaded ${allGists.length} gists...`;
-          }
-
           // Check pagination
           const linkHeader = response.headers.get('Link');
           hasMore = linkHeader && linkHeader.includes('rel="next"');
@@ -293,6 +287,83 @@
       }
 
       return allGists;
+    }
+
+    async function processGist(gist, index) {
+      const container = document.getElementById('gist-container');
+      const indexList = document.getElementById('index-list');
+      
+      const gistId = `gist-${index}`;
+      const title = gist.description || `Gist ${index + 1}`;
+      const fileList = Object.values(gist.files);
+      const firstFile = fileList[0];
+      const language = (firstFile.language || 'text').toLowerCase();
+      const isSvg = firstFile.filename.toLowerCase().endsWith('.svg');
+      const isMd = firstFile.filename.toLowerCase().endsWith('.md');
+      const createdAt = formatDate(gist.created_at);
+
+      // Add to index
+      const li = document.createElement('li');
+      li.innerHTML = `<a href="#${gistId}">${title}</a>`;
+      indexList.appendChild(li);
+
+      // Gist block
+      const gistDiv = document.createElement('div');
+      gistDiv.className = 'gist';
+      gistDiv.id = gistId;
+
+      // Create files container
+      const filesContainer = document.createElement('div');
+      filesContainer.className = 'files';
+      
+      // Add creation date for each file
+      Object.keys(gist.files).forEach(() => {
+        const fileItem = document.createElement('div');
+        fileItem.className = 'file-item';
+        fileItem.innerHTML = `
+          <span class="file-date">${createdAt}</span>
+        `;
+        filesContainer.appendChild(fileItem);
+      });
+
+      gistDiv.innerHTML = `
+        <h2><a href="${gist.html_url}" target="_blank">${title}</a></h2>
+      `;
+      
+      // Append the files container
+      gistDiv.appendChild(filesContainer);
+
+      if (firstFile && firstFile.raw_url) {
+        try {
+          if (isSvg) {
+            gistDiv.innerHTML += `
+              <div class="svg-container">
+                <img src="${firstFile.raw_url}" alt="${firstFile.filename}">
+              </div>
+            `;
+          } else if (isMd) {
+            const fileRes = await fetchWithTimeout(firstFile.raw_url);
+            const markdown = await fileRes.text();
+            gistDiv.innerHTML += `
+              <div class="markdown-content">
+                ${marked.parse(markdown)}
+              </div>
+            `;
+          } else {
+            const fileRes = await fetchWithTimeout(firstFile.raw_url);
+            const code = await fileRes.text();
+            gistDiv.innerHTML += `
+              <pre><code class="language-${language}">${escapeHtml(code)}</code></pre>
+            `;
+          }
+        } catch (e) {
+          console.error(`Error loading file ${firstFile.filename}:`, e);
+          gistDiv.innerHTML += `<p>Could not load file preview.</p>`;
+        }
+      }
+
+      container.appendChild(gistDiv);
+      Prism.highlightAll();
     }
 
     async function fetchGists() {
@@ -315,85 +386,24 @@
           return;
         }
 
+        // Clear loading message
         container.innerHTML = '';
         indexList.innerHTML = '';
 
-        // Process and display gists
+        // Process each gist one by one and display immediately
         for (let i = 0; i < gists.length; i++) {
-          const gist = gists[i];
-          const gistId = `gist-${i}`;
-          const title = gist.description || `Gist ${i + 1}`;
-          const fileList = Object.values(gist.files);
-          const firstFile = fileList[0];
-          const language = (firstFile.language || 'text').toLowerCase();
-          const isSvg = firstFile.filename.toLowerCase().endsWith('.svg');
-          const isMd = firstFile.filename.toLowerCase().endsWith('.md');
-          const createdAt = formatDate(gist.created_at);
-
-          // Add to index
-          const li = document.createElement('li');
-          li.innerHTML = `<a href="#${gistId}">${title}</a>`;
-          indexList.appendChild(li);
-
-          // Gist block
-          const gistDiv = document.createElement('div');
-          gistDiv.className = 'gist';
-          gistDiv.id = gistId;
-
-          // Create files container
-          const filesContainer = document.createElement('div');
-          filesContainer.className = 'files';
-          
-          // Add creation date for each file
-          Object.keys(gist.files).forEach(() => {
-            const fileItem = document.createElement('div');
-            fileItem.className = 'file-item';
-            fileItem.innerHTML = `
-              <span class="file-date">${createdAt}</span>
-            `;
-            filesContainer.appendChild(fileItem);
-          });
-
-          gistDiv.innerHTML = `
-            <h2><a href="${gist.html_url}" target="_blank">${title}</a></h2>
-          `;
-          
-          // Append the files container
-          gistDiv.appendChild(filesContainer);
-
-          if (firstFile && firstFile.raw_url) {
-            try {
-              if (isSvg) {
-                gistDiv.innerHTML += `
-                  <div class="svg-container">
-                    <img src="${firstFile.raw_url}" alt="${firstFile.filename}">
-                  </div>
-                `;
-              } else if (isMd) {
-                const fileRes = await fetchWithTimeout(firstFile.raw_url);
-                const markdown = await fileRes.text();
-                gistDiv.innerHTML += `
-                  <div class="markdown-content">
-                    ${marked.parse(markdown)}
-                  </div>
-                `;
-              } else {
-                const fileRes = await fetchWithTimeout(firstFile.raw_url);
-                const code = await fileRes.text();
-                gistDiv.innerHTML += `
-                  <pre><code class="language-${language}">${escapeHtml(code)}</code></pre>
-                `;
-              }
-            } catch (e) {
-              console.error(`Error loading file ${firstFile.filename}:`, e);
-              gistDiv.innerHTML += `<p>Could not load file preview.</p>`;
-            }
+          const progress = document.getElementById('loading-progress');
+          if (progress) {
+            progress.textContent = `Loading gist ${i + 1} of ${gists.length}...`;
           }
-
-          container.appendChild(gistDiv);
+          await processGist(gists[i], i);
         }
 
-        Prism.highlightAll();
+        // Remove progress indicator if it exists
+        const progress = document.getElementById('loading-progress');
+        if (progress) {
+          progress.remove();
+        }
 
       } catch (error) {
         console.error('Failed to load gists:', error);
