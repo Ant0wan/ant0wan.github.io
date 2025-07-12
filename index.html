@@ -218,6 +218,7 @@
   <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-json.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-markdown.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-yaml.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-ini.min.js"></script>
 
   <script>
     const username = "Ant0wan";
@@ -290,6 +291,28 @@
       return allGists;
     }
 
+    function getLanguageClass(filename, language) {
+      const ext = filename.split('.').pop().toLowerCase();
+      const lang = (language || 'text').toLowerCase();
+
+      // Special cases for file extensions
+      if (ext === 'yml' || ext === 'yaml') return 'language-yaml';
+      if (ext === 'js') return 'language-javascript';
+      if (ext === 'py') return 'language-python';
+      if (ext === 'sh') return 'language-bash';
+      if (ext === 'json') return 'language-json';
+      if (ext === 'md') return 'language-markdown';
+      if (ext === 'html' || ext === 'htm') return 'language-html';
+      if (ext === 'service') return 'language-ini'; // Systemd service files
+      if (ext === 'ini' || ext === 'cfg') return 'language-ini';
+
+      // Fallback to GitHub's language if it matches a Prism language
+      if (Prism.languages[lang]) return `language-${lang}`;
+
+      // Default to text if no match
+      return 'language-text';
+    }
+
     async function processGist(gist, index) {
       const container = document.getElementById('gist-container');
       const indexList = document.getElementById('index-list');
@@ -298,10 +321,10 @@
       const title = gist.description || `Gist ${index + 1}`;
       const fileList = Object.values(gist.files);
       const firstFile = fileList[0];
-      const language = (firstFile.language || 'text').toLowerCase();
       const isSvg = firstFile.filename.toLowerCase().endsWith('.svg');
       const isMd = firstFile.filename.toLowerCase().endsWith('.md');
       const createdAt = formatDate(gist.created_at);
+      const languageClass = getLanguageClass(firstFile.filename, firstFile.language);
 
       // Add to index
       const li = document.createElement('li');
@@ -354,7 +377,7 @@
             const fileRes = await fetchWithTimeout(firstFile.raw_url);
             const code = await fileRes.text();
             gistDiv.innerHTML += `
-              <pre><code class="language-${language}">${escapeHtml(code)}</code></pre>
+              <pre><code class="${languageClass}">${escapeHtml(code)}</code></pre>
             `;
           }
         } catch (e) {
@@ -364,7 +387,12 @@
       }
 
       container.appendChild(gistDiv);
-      Prism.highlightAll();
+
+      // Highlight the code block for this gist only
+      const codeElement = gistDiv.querySelector('code');
+      if (codeElement) {
+        Prism.highlightElement(codeElement);
+      }
     }
 
     async function fetchGists() {
