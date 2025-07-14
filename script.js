@@ -105,7 +105,10 @@ async function processGist(gist, index) {
 
   // Add to index
   const li = document.createElement('li');
-  li.innerHTML = `<a href="#${gistId}">${title}</a>`;
+  const link = document.createElement('a');
+  link.href = `#${gistId}`;
+  link.textContent = title;
+  li.appendChild(link);
   indexList.appendChild(li);
 
   // Gist block

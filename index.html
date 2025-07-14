@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ant0wan's Cheatsheets</title>
 
   <!-- Satoshi Font -->
@@ -17,17 +17,23 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h1>Cheatsheets</h1>
+  <div class="layout-container">
+    <header>
+      <h1>Cheatsheets</h1>
+    </header>
 
-  <div id="index">
-    <h2>Topics</h2>
-    <ul id="index-list">
-      <li>Loading index...</li>
-    </ul>
-  </div>
+    <div class="main-content">
+      <nav id="sidebar">
+        <h2>Topics</h2>
+        <ul id="index-list">
+          <li>Loading index...</li>
+        </ul>
+      </nav>
 
-  <div id="gist-container">
-    <div class="loading">Loading gists...</div>
+      <main id="gist-container">
+        <div class="loading">Loading gists...</div>
+      </main>
+    </div>
   </div>
 
   <!-- PrismJS Core & Language Support -->
