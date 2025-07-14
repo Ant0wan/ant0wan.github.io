@@ -30,6 +30,7 @@ header {
 header h1 {
   margin: 0;
   font-size: 24px;
+  color: #d7d2cb;
 }
 
 .main-content {
@@ -53,6 +54,7 @@ header h1 {
   margin-top: 0;
   padding-bottom: 10px;
   border-bottom: 1px solid #222;
+  color: #d7d2cb;
 }
 
 #index-list {
@@ -93,6 +95,22 @@ main {
   margin-bottom: 30px;
   border-radius: 4px;
   border: 1px solid #222;
+}
+
+.gist h2 {
+  font-size: 20px;
+  margin: 0 0 10px 0;
+  color: #d7d2cb;
+}
+
+.gist h2 a {
+  color: #d7d2cb;
+  text-decoration: none;
+}
+
+.gist h2 a:hover {
+  color: #E2725B;
+  text-decoration: underline;
 }
 
 .files {
@@ -181,6 +199,7 @@ pre code {
 .markdown-content h3 {
   margin-top: 1.5em;
   margin-bottom: 0.5em;
+  color: #d7d2cb;
 }
 
 .markdown-content p {
