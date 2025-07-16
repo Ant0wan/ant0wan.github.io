@@ -21,7 +21,7 @@ body {
 }
 
 header {
-  background: #0d0c0b;
+  background: #000000;
   padding: 20px;
   text-align: center;
   border-bottom: 1px solid #222;
@@ -40,7 +40,7 @@ header h1 {
 
 #sidebar {
   width: 250px;
-  background: #0d0c0b;
+  background: #000000;
   padding: 20px;
   border-right: 1px solid #222;
   overflow-y: auto;
@@ -49,6 +49,7 @@ header h1 {
   height: 100vh;
 }
 
+/* Rest of your CSS remains the same */
 #sidebar h2 {
   font-size: 18px;
   margin-top: 0;
@@ -64,20 +65,21 @@ header h1 {
 }
 
 #index-list li {
-  margin-bottom: 8px;
+  margin-bottom: 2px;
 }
 
 #index-list a {
   display: block;
-  padding: 6px 10px;
-  border-radius: 4px;
+  padding: 4px 8px;
+  border-radius: 6px;
   transition: background-color 0.2s;
   color: #E2725B;
   text-decoration: none;
 }
 
 #index-list a:hover {
-  background-color: rgba(226, 114, 91, 0.1);
+  background-color: rgba(226, 114, 91, 0.7);
+  color: #000000;
   text-decoration: none;
 }
 
