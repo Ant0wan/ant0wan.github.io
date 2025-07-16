@@ -24,7 +24,6 @@ header {
   background: #000000;
   padding: 20px;
   text-align: center;
-  border-bottom: 1px solid #222;
 }
 
 header h1 {
@@ -42,7 +41,6 @@ header h1 {
   width: 300px;
   background: #000000;
   padding: 20px;
-  border-right: 1px solid #222;
   overflow-y: auto;
   position: sticky;
   top: 0;
