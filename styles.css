@@ -39,7 +39,7 @@ header h1 {
 }
 
 #sidebar {
-  width: 250px;
+  width: 300px;
   background: #000000;
   padding: 20px;
   border-right: 1px solid #222;
@@ -49,7 +49,6 @@ header h1 {
   height: 100vh;
 }
 
-/* Rest of your CSS remains the same */
 #sidebar h2 {
   font-size: 18px;
   margin-top: 0;
@@ -86,7 +85,7 @@ header h1 {
 main {
   flex: 1;
   padding: 30px;
-  max-width: 900px;
+  max-width: 1300px;
   margin: 0 auto;
   width: calc(100% - 250px);
 }
