@@ -435,10 +435,26 @@ h2 {
 .job-description {
   margin-left: 1rem;
   line-height: 1.6;
+  list-style: none;
+  padding-left: 0;
+}
+
+.job-description ul {
+  list-style: none;
+  padding-left: 0;
 }
 
 .job-description li {
   margin-bottom: 0.5rem;
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+.job-description li:before {
+  content: "▹";
+  position: absolute;
+  left: 0;
+  color: #883D2D;
 }
 
 .technologies {
@@ -454,15 +470,7 @@ h2 {
 
 .cert-list li {
   margin-bottom: 0.75rem;
-  padding-left: 1.5rem;
   position: relative;
-}
-
-.cert-list li:before {
-  content: "▹";
-  position: absolute;
-  left: 0;
-  color: #E2725B;
 }
 
 .cert-list a {
