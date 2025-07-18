@@ -356,3 +356,152 @@ pre code {
   text-decoration: underline;
 }
 
+/* About Page Specific Styles */
+.about-content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.profile-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.profile-header h1 {
+  font-size: 2.5rem;
+  color: #E2725B;
+  margin-bottom: 0.5rem;
+}
+
+.tagline {
+  font-size: 1.25rem;
+  color: #d7d2cb;
+  margin-bottom: 1rem;
+}
+
+.contact-info {
+  font-size: 1rem;
+  color: #888;
+  margin-bottom: 1rem;
+}
+
+.contact-info a {
+  color: #E2725B;
+  text-decoration: none;
+}
+
+.contact-info a:hover {
+  text-decoration: underline;
+}
+
+section {
+  margin-bottom: 3rem;
+}
+
+h2 {
+  color: #E2725B;
+  font-size: 1.75rem;
+  border-bottom: 1px solid #222;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.job {
+  margin-bottom: 2.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #222;
+}
+
+.job:last-child {
+  border-bottom: none;
+}
+
+.job h3 {
+  font-size: 1.4rem;
+  color: #d7d2cb;
+  margin-bottom: 0.5rem;
+}
+
+.job-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  color: #888;
+  font-size: 0.9rem;
+}
+
+.job-description {
+  margin-left: 1rem;
+  line-height: 1.6;
+}
+
+.job-description li {
+  margin-bottom: 0.5rem;
+}
+
+.technologies {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: #888;
+}
+
+.cert-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.cert-list li {
+  margin-bottom: 0.75rem;
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+.cert-list li:before {
+  content: "▹";
+  position: absolute;
+  left: 0;
+  color: #E2725B;
+}
+
+.cert-list a {
+  color: #E2725B;
+  text-decoration: none;
+}
+
+.cert-list a:hover {
+  text-decoration: underline;
+}
+
+.edu-item {
+  margin-bottom: 1.5rem;
+}
+
+.edu-item h3 {
+  font-size: 1.2rem;
+  color: #d7d2cb;
+  margin-bottom: 0.25rem;
+}
+
+.edu-meta {
+  display: flex;
+  justify-content: space-between;
+  color: #888;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .profile-header h1 {
+    font-size: 2rem;
+  }
+
+  .job-meta {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .edu-meta {
+    flex-direction: column;
+  }
+}
