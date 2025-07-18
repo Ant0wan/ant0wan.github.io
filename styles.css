@@ -469,17 +469,28 @@ h2 {
 }
 
 .cert-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 0.75rem;
   position: relative;
 }
 
 .cert-list a {
-  color: #E2725B;
+  color: #CC958A;
   text-decoration: none;
+  flex-grow: 1;
 }
 
 .cert-list a:hover {
   text-decoration: underline;
+}
+
+.cert-date {
+  color: #888;
+  font-size: 0.9rem;
+  margin-left: 1rem;
+  white-space: nowrap;
 }
 
 .edu-item {
@@ -511,5 +522,15 @@ h2 {
 
   .edu-meta {
     flex-direction: column;
+  }
+
+  .cert-list li {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .cert-date {
+    margin-left: 0;
+    margin-top: 0.25rem;
   }
 }
