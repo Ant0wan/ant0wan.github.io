@@ -75,7 +75,7 @@ header h1 {
 }
 
 #index-list a:hover {
-  background-color: rgba(226, 114, 91, 0.7);
+  background-color: #E2725B;
   color: #000000;
   text-decoration: none;
 }
@@ -252,3 +252,107 @@ pre code {
     padding: 20px;
   }
 }
+
+.main-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+}
+
+.nav-links {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-links li {
+  margin-left: 20px;
+}
+
+.nav-links a {
+  color: #d7d2cb;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+  color: #000000;
+  background-color: #E2725B;
+}
+
+.about-content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.profile-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.profile-header h2 {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+  color: #E2725B;
+}
+
+.tagline {
+  font-size: 1.2rem;
+  color: #888;
+  font-style: italic;
+}
+
+.bio-content {
+  line-height: 1.6;
+}
+
+.bio-content h3 {
+  color: #E2725B;
+  margin-top: 30px;
+  border-bottom: 1px solid #222;
+  padding-bottom: 5px;
+}
+
+.skills-list {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.skills-list li {
+  margin-bottom: 10px;
+  padding-left: 20px;
+  position: relative;
+}
+
+.skills-list li:before {
+  content: "▹";
+  position: absolute;
+  left: 0;
+  color: #E2725B;
+}
+
+.contact-links {
+  list-style: none;
+  padding-left: 0;
+}
+
+.contact-links li {
+  margin-bottom: 10px;
+}
+
+.contact-links a {
+  color: #E2725B;
+  text-decoration: none;
+}
+
+.contact-links a:hover {
+  text-decoration: underline;
+}
+
