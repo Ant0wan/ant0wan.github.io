@@ -510,9 +510,98 @@ h2 {
   font-size: 0.9rem;
 }
 
+/* Science Page Styles */
+.science-content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.projects-section h1 {
+  font-size: 2.5rem;
+  color: #E2725B;
+  margin-bottom: 1.5rem;
+}
+
+.intro {
+  color: #d7d2cb;
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+}
+
+.project-blocks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.project-block {
+  background: #0d0c0b;
+  border: 1px solid #222;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.project-block-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #222;
+}
+
+.project-block-header h2 {
+  color: #d7d2cb;
+  font-size: 1.3rem;
+  margin: 0 0 0.5rem 0;
+}
+
+.project-field {
+  display: inline-block;
+  background: rgba(226, 114, 91, 0.1);
+  color: #E2725B;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+.project-block-content {
+  padding: 1.5rem;
+}
+
+.project-block-content p {
+  color: #d7d2cb;
+  line-height: 1.6;
+  margin: 0 0 1.5rem 0;
+}
+
+.project-block-footer {
+  padding: 0 1.5rem 1.5rem 1.5rem;
+}
+
+.project-link {
+  color: #E2725B;
+  text-decoration: none;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+}
+
+.project-link:hover {
+  text-decoration: underline;
+}
+
+.project-link::after {
+  content: "→";
+  margin-left: 0.5rem;
+  transition: transform 0.2s;
+}
+
+.project-link:hover::after {
+  transform: translateX(3px);
+}
+
 @media (max-width: 768px) {
-  .profile-header h1 {
-    font-size: 2rem;
+  .project-blocks {
+    grid-template-columns: 1fr;
   }
 
   .job-meta {
@@ -523,15 +612,4 @@ h2 {
   .edu-meta {
     flex-direction: column;
   }
-
-  .cert-list li {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .cert-date {
-    margin-left: 0;
-    margin-top: 0.25rem;
-  }
 }
-
