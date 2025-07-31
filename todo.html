@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diving Checklist</title>
+  <style>
+    body {
+      font-family: 'Satoshi', sans-serif;
+      background-color: #000000;
+      color: #d7d2cb;
+      margin: 0;
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: #E2725B;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .checklist {
+      background: #0d0c0b;
+      border: 1px solid #222;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+
+    .checklist-title {
+      color: #d7d2cb;
+      font-size: 1.4rem;
+      margin-top: 0;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #222;
+    }
+
+    .checklist-items {
+      list-style: none;
+      padding: 0;
+      margin: 20px 0 0 0;
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 15px;
+      margin-bottom: 8px;
+      background: rgba(13, 12, 11, 0.5);
+      border: 1px solid rgba(34, 34, 34, 0.5);
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+
+    .checklist-item:hover {
+      border-color: rgba(226, 114, 91, 0.3);
+    }
+
+    .checklist-item input[type="checkbox"] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #E2725B;
+      border-radius: 5px;
+      margin-right: 15px;
+      cursor: pointer;
+      position: relative;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+
+    .checklist-item input[type="checkbox"]:checked {
+      background-color: #E2725B;
+    }
+
+    .checklist-item input[type="checkbox"]:checked::after {
+      content: "✓";
+      position: absolute;
+      color: #000;
+      font-size: 14px;
+      font-weight: bold;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .checklist-item label {
+      color: #d7d2cb;
+      cursor: pointer;
+      flex-grow: 1;
+    }
+
+    .checklist-item input[type="checkbox"]:checked + label {
+      text-decoration: line-through;
+      color: #888;
+      opacity: 0.8;
+    }
+
+    @media (max-width: 600px) {
+      .checklist {
+        padding: 15px;
+      }
+
+      .checklist-item {
+        padding: 10px 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Diving Equipment Checklist</h1>
+
+    <div class="checklist">
+      <h2 class="checklist-title">Open Water</h2>
+      <ul class="checklist-items">
+        <li class="checklist-item">
+          <input type="checkbox" id="item1">
+          <label for="item1">Visual check BCD</label>
+        </li>
+        <li class="checklist-item">
+          <input type="checkbox" id="item2">
+          <label for="item2">Visual check block tap</label>
+        </li>
+        <li class="checklist-item">
+          <input type="checkbox" id="item3">
+          <label for="item3">Strap block to plate (Anneau Milieu Interieur Exterieur - AMIE)</label>
+        </li>
+        <li class="checklist-item">
+          <input type="checkbox" id="item4">
+          <label for="item4">Sangle de securite glissement du block autour du robinet</label>
+        </li>
+        <li class="checklist-item">
+          <input type="checkbox" id="item5">
+          <label for="item5">1st stage DIN / Etrier on</label>
+        </li>
+        <li class="checklist-item">
+          <input type="checkbox" id="item6">
+          <label for="item6">Visual check BCD and plug BCD</label>
+        </li>
+      </ul>
+    </div>
+
+    <div class="checklist">
+      <h2 class="checklist-title">Pre-Dive Safety Check</h2>
+      <ul class="checklist-items">
+        <li class="checklist-item">
+          <input type="checkbox" id="item7">
+          <label for="item7">BWRAF Check (BCD, Weights, Releases, Air, Final OK)</label>
+        </li>
+        <li class="checklist-item">
+          <input type="checkbox" id="item8">
+          <label for="item8">Regulator breathing test</label>
+        </li>
+        <li class="checklist-item">
+          <input type="checkbox" id="item9">
+          <label for="item9">Alternate air source check</label>
+        </li>
+        <li class="checklist-item">
+          <input type="checkbox" id="item10">
+          <label for="item10">Inflator/deflator test</label>
+        </li>
+        <li class="checklist-item">
+          <input type="checkbox" id="item11">
+          <label for="item11">Dive computer setup</label>
+        </li>
+        <li class="checklist-item">
+          <input type="checkbox" id="item12">
+          <label for="item12">Final buddy equipment check</label>
+        </li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>
