@@ -111,7 +111,7 @@
     }
 
     .checklist-item input[type="checkbox"]:checked + label::after {
-      content: "Check !";
+      content: "Check!";
       color: #17be1d; /* Keep green color */
       opacity: 1; /* Ensure no opacity change */
     }
@@ -132,100 +132,83 @@
     <h1>Diving Equipment Checklist</h1>
 
     <div class="checklist">
-      <h2 class="checklist-title">Open Circuit Equipment Prep</h2>
+      <h2 class="checklist-title">Open Circuit Equipment Preparation</h2>
       <ul class="checklist-items">
         <li class="checklist-item">
           <input type="checkbox" id="item1">
-          <label for="item1">Verify it is your block</label>
+          <label for="item1">Verify cylinder ownership</label>
         </li>
         <li class="checklist-item">
           <input type="checkbox" id="item2">
-          <label for="item2">Net and floor protection on the block</label>
-        </li>
-        <li class="checklist-item">
-          <input type="checkbox" id="item3">
-	  <label for="item3">Clean tap</label>
-        </li>
-        <li class="checklist-item">
-          <input type="checkbox" id="item3">
-	  <label for="item3">Check Carbon Monoxyde/Polluction with sensor</label>
+          <label for="item2">Install cylinder net and floor protection</label>
         </li>
         <li class="checklist-item">
           <input type="checkbox" id="item4">
-          <label for="item4">Visual check BCD</label>
+          <label for="item4">Check for carbon monoxide/pollution with sensor</label>
         </li>
         <li class="checklist-item">
           <input type="checkbox" id="item5">
-          <label for="item5">BCD strap/belt loose</label>
+          <label for="item5">Visual inspection of BCD</label>
         </li>
         <li class="checklist-item">
           <input type="checkbox" id="item6">
-          <label for="item6">Visual check block tap</label>
+          <label for="item6">Ensure BCD straps/belt are loose</label>
         </li>
         <li class="checklist-item">
           <input type="checkbox" id="item7">
-          <label for="item7">Strap block to plate (Anneau Milieu Interieur Exterieur - AMIE)</label>
+          <label for="item7">Visual inspection of cylinder valve</label>
         </li>
         <li class="checklist-item">
           <input type="checkbox" id="item8">
-          <label for="item8">Sangle de securite glissement du block autour du robinet</label>
+          <label for="item8">Secure cylinder to backplate</label>
         </li>
         <li class="checklist-item">
           <input type="checkbox" id="item9">
-          <label for="item9">1st stage DIN / Etrier on</label>
+          <label for="item9">Install cylinder safety strap to prevent tank loss</label>
         </li>
         <li class="checklist-item">
           <input type="checkbox" id="item10">
-	  <label for="item10">Manometre pressure check >180bars</label>
+          <label for="item10">Visual inspection of 1st/2nd stages gauge and flexibles</label>
+        </li>
+        <li class="checklist-item">
+          <input type="checkbox" id="item0">
+          <label for="item0">Attach 1st stage regulator (DIN/Yoke)</label>
         </li>
         <li class="checklist-item">
           <input type="checkbox" id="item11">
-          <label for="item11">Visual check BCD and plug BCD</label>
+          <label for="item11">Check pressure gauge (>180 bar)</label>
         </li>
         <li class="checklist-item">
           <input type="checkbox" id="item12">
-          <label for="item12">BCD search for air leaks</label>
+          <label for="item12">Connect BCD inflator hose</label>
         </li>
         <li class="checklist-item">
           <input type="checkbox" id="item13">
-          <label for="item13">Shoulder deflator test</label>
+          <label for="item13">Check BCD for air leaks</label>
         </li>
         <li class="checklist-item">
           <input type="checkbox" id="item14">
-          <label for="item14">Back hip deflator test</label>
+          <label for="item14">Test shoulder dump valve</label>
         </li>
         <li class="checklist-item">
           <input type="checkbox" id="item15">
-          <label for="item15">Regulator breathing test with manometre in visual</label>
+          <label for="item15">Test rear/hip dump valve</label>
+        </li>
+        <li class="checklist-item">
+          <input type="checkbox" id="item21">
+          <label for="item21">Test front command dump valve</label>
         </li>
         <li class="checklist-item">
           <input type="checkbox" id="item16">
-          <label for="item16">Secour Regulator breathing test with manometre in visual</label>
+          <label for="item16">Primary regulator breathing test (with pressure gauge in view)</label>
+        </li>
+        <li class="checklist-item">
+          <input type="checkbox" id="item17">
+          <label for="item17">Alternate air source breathing test (with pressure gauge in view)</label>
         </li>
       </ul>
     </div>
 
-    <div class="checklist">
-      <h2 class="checklist-title">Pre-Dive Safety Check</h2>
-      <ul class="checklist-items">
-        <li class="checklist-item">
-          <input type="checkbox" id="item7">
-          <label for="item7">BWRAF Check (BCD, Weights, Releases, Air, Final OK)</label>
-        </li>
-        <li class="checklist-item">
-          <input type="checkbox" id="item9">
-          <label for="item9">Alternate air source check</label>
-        </li>
-        <li class="checklist-item">
-          <input type="checkbox" id="item11">
-          <label for="item11">Dive computer setup</label>
-        </li>
-        <li class="checklist-item">
-          <input type="checkbox" id="item12">
-          <label for="item12">Final buddy equipment check</label>
-        </li>
-      </ul>
-    </div>
   </div>
 </body>
 </html>
