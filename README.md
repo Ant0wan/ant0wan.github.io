@@ -1,3 +1,17 @@
+
+Bookmarks:
+https://www.openstreetmap.org/
+https://dive-tables.com/
+
+
+
+https://www.amazon.fr/Wolfenthal-p%C3%A9riodique-%C3%A9l%C3%A9ments-fran%C3%A7ais-Nouveaux/dp/B0818WXPY6
+http://remy.duperray.free.fr/downloads-25/index.html
+https://www.galaxus.ch/fr/s5/product/activity-board-chimie-organique-set-modele-moleculaire-kit-scientifique-37078762?offertype=retail&offerid=406802&utm_campaign=organicshopping&utm_source=google&utm_medium=organic
+https://labomalin.com/product/erlenmeyer-col-etroit-pyrex/
+
+
+
 # Personal Website
 
 ## Architecture
