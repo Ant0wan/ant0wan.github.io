@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Oxygen Partial Pressure vs Depth & Gas Mixture</title>
+<title>Isopleths of Oxygen Partial Pressure (pO₂) in Nitrox Breathing Gas</title>
 <style>
   body, html {
     margin: 0;
@@ -11,7 +11,7 @@
     height: 100%;
     overflow: hidden;
     background: #1a1a2e;
-    font-family: system-ui, sans-serif;
+    font-family: system-ui, -apple-system, sans-serif;
     color: #e0e0e0;
   }
   #container {
@@ -25,21 +25,36 @@
   .header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-end;
     margin-bottom: 10px;
     flex-wrap: wrap;
     gap: 10px;
   }
+  .title-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
   .title {
-    font-size: clamp(16px, 2vw, 24px);
+    font-size: clamp(16px, 1.8vw, 22px);
     font-weight: 600;
     color: #e94560;
+    letter-spacing: 0.5px;
+  }
+  .subtitle {
+    font-size: clamp(12px, 1vw, 14px);
+    color: #a0a0b0;
+    font-style: italic;
   }
   .legend {
     display: flex;
     gap: 15px;
     font-size: clamp(12px, 1vw, 14px);
     flex-wrap: wrap;
+    background: rgba(15, 52, 96, 0.5);
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.1);
   }
   .legend-item {
     display: flex;
@@ -49,7 +64,7 @@
   .swatch {
     width: 14px;
     height: 14px;
-    border-radius: 4px;
+    border-radius: 3px;
   }
   canvas {
     display: block;
@@ -58,19 +73,22 @@
     border-radius: 8px;
     background: #16213e;
     box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-    min-height: 0; /* Crucial for flexbox to allow canvas to shrink */
+    min-height: 0;
   }
 </style>
 </head>
 <body>
 <div id="container">
   <div class="header">
-    <div class="title">ppO₂ vs Gas Mixture & Depth</div>
+    <div class="title-group">
+      <div class="title">Isopleths of Oxygen Partial Pressure (pO₂)</div>
+      <div class="subtitle">in Nitrox Breathing Gas as a Function of Depth and Oxygen Fraction</div>
+    </div>
     <div class="legend">
       <div class="legend-item"><div class="swatch" style="background:#6c757d"></div> Hypoxic (&lt; 1.0 bar)</div>
-      <div class="legend-item"><div class="swatch" style="background:#00b4d8"></div> Safe (1.0 - 1.4 bar)</div>
-      <div class="legend-item"><div class="swatch" style="background:#f9c74f"></div> Caution (1.4 - 1.6 bar)</div>
-      <div class="legend-item"><div class="swatch" style="background:#e94560"></div> Dangerous (&gt; 1.6 bar)</div>
+      <div class="legend-item"><div class="swatch" style="background:#00b4d8"></div> Normoxic (1.0 - 1.4 bar)</div>
+      <div class="legend-item"><div class="swatch" style="background:#f9c74f"></div> Hyperoxic (1.4 - 1.6 bar)</div>
+      <div class="legend-item"><div class="swatch" style="background:#e94560"></div> Toxic (&gt; 1.6 bar)</div>
     </div>
   </div>
   <canvas id="chart"></canvas>
@@ -80,32 +98,28 @@
 (function() {
   const canvas = document.getElementById('chart');
   const ctx = canvas.getContext('2d');
-  
-  // State
+
   let W = 0, H = 0;
   let M = { top: 30, right: 40, bottom: 60, left: 80 };
   let plotW = 0, plotH = 0;
 
-  // Data Ranges
   const fracMin = 0, fracMax = 1.0;
   const depthMin = 0, depthMax = 60;
 
-  // Helper functions
   function xScale(f) { return M.left + (f - fracMin) / (fracMax - fracMin) * plotW; }
   function yScale(d) { return M.top + (d - depthMin) / (depthMax - depthMin) * plotH; }
   function invX(px) { return fracMin + (px - M.left) / plotW * (fracMax - fracMin); }
   function invY(py) { return depthMin + (py - M.top) / plotH * (depthMax - depthMin); }
-  function ppO2(fraction, depth) { return fraction * (1 + depth / 10); }
+
+  // Partial pressure calculation: pO2 = FO2 * (1 + depth/10)
+  function pO2(fraction, depth) { return fraction * (1 + depth / 10); }
 
   let mouse = { x: -1, y: -1, inPlot: false };
 
-  // Resize Handler
   function resize() {
     const rect = canvas.parentElement.getBoundingClientRect();
-    
-    // We subtract the header height to keep it responsive
-    const headerHeight = document.querySelector('.header').offsetHeight + 30; 
-    
+    const headerHeight = document.querySelector('.header').offsetHeight + 20;
+
     W = rect.width - 40;
     H = rect.height - headerHeight;
 
@@ -114,10 +128,9 @@
     canvas.height = H * dpr;
     canvas.style.width = W + 'px';
     canvas.style.height = H + 'px';
-    
+
     ctx.scale(dpr, dpr);
 
-    // Adjust margins based on screen size
     M.left = W < 600 ? 60 : 80;
     M.bottom = H < 400 ? 40 : 60;
     M.top = 30;
@@ -132,12 +145,11 @@
   function draw() {
     ctx.clearRect(0, 0, W, H);
 
-    // Plot Background
     ctx.fillStyle = '#0f3460';
     ctx.fillRect(M.left, M.top, plotW, plotH);
 
-    // --- Draw ppO2 Heatmap ---
-    const steps = 100; // Reduced for performance, still looks smooth
+    // --- Heatmap ---
+    const steps = 100;
     for (let i = 0; i < steps; i++) {
       const d0 = depthMin + (depthMax - depthMin) * i / steps;
       const d1 = depthMin + (depthMax - depthMin) * (i + 1) / steps;
@@ -150,8 +162,8 @@
         const x0 = xScale(f0);
         const x1 = xScale(f1);
 
-        const o2 = ppO2((f0 + f1) / 2, (d0 + d1) / 2);
-        
+        const o2 = pO2((f0 + f1) / 2, (d0 + d1) / 2);
+
         let color;
         if (o2 < 1.0) {
           color = `rgba(108, 117, 125, ${0.05 + (o2 / 1.0) * 0.2})`;
@@ -168,11 +180,10 @@
       }
     }
 
-    // --- Draw Grid and Axes ---
+    // --- Grid and Axes ---
     const fontSize = W < 600 ? '11px' : '13px';
     ctx.font = `${fontSize} system-ui, sans-serif`;
 
-    // Vertical Grid (Oxygen Fraction)
     for (let f = 0; f <= 1.0; f += 0.1) {
       const x = xScale(f);
       ctx.strokeStyle = 'rgba(255,255,255,0.08)';
@@ -180,14 +191,13 @@
       ctx.moveTo(x, M.top);
       ctx.lineTo(x, M.top + plotH);
       ctx.stroke();
-      
+
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
       ctx.fillStyle = '#a0a0b0';
       ctx.fillText((f * 100).toFixed(0) + '%', x, M.top + plotH + 10);
     }
 
-    // Horizontal Grid (Depth)
     for (let d = depthMin; d <= depthMax; d += 10) {
       const y = yScale(d);
       ctx.strokeStyle = 'rgba(255,255,255,0.08)';
@@ -195,14 +205,13 @@
       ctx.moveTo(M.left, y);
       ctx.lineTo(M.left + plotW, y);
       ctx.stroke();
-      
+
       ctx.textAlign = 'right';
       ctx.textBaseline = 'middle';
       ctx.fillStyle = '#a0a0b0';
       ctx.fillText(d + ' m', M.left - 10, y);
     }
 
-    // Axis Titles
     ctx.save();
     ctx.translate(25, M.top + plotH / 2);
     ctx.rotate(-Math.PI / 2);
@@ -210,21 +219,20 @@
     ctx.textBaseline = 'middle';
     ctx.fillStyle = '#e0e0e0';
     ctx.font = `${W < 600 ? '12px' : '14px'} system-ui, sans-serif`;
-    ctx.fillText('Depth (meters)', 0, 0);
+    ctx.fillText('Depth (m)', 0, 0);
     ctx.restore();
 
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
     ctx.fillStyle = '#e0e0e0';
-    ctx.fillText('Oxygen Fraction (%)', M.left + plotW / 2, M.top + plotH + 35);
+    ctx.fillText('Oxygen Fraction (FO₂)', M.left + plotW / 2, M.top + plotH + 35);
 
-    // --- Draw Hover Elements ---
+    // --- Hover ---
     if (mouse.inPlot) {
       const fraction = invX(mouse.x);
       const depth = invY(mouse.y);
-      const o2 = ppO2(fraction, depth);
+      const o2 = pO2(fraction, depth);
 
-      // Guide Lines
       ctx.strokeStyle = 'rgba(255,255,255,0.5)';
       ctx.lineWidth = 1.5;
       ctx.setLineDash([4, 4]);
@@ -236,7 +244,6 @@
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // Hover Point
       ctx.beginPath();
       ctx.arc(mouse.x, mouse.y, 6, 0, Math.PI * 2);
       ctx.fillStyle = o2 >= 1.0 && o2 <= 1.4 ? '#00b4d8' : (o2 < 1.0 ? '#6c757d' : (o2 <= 1.6 ? '#f9c74f' : '#e94560'));
@@ -245,12 +252,11 @@
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // Tooltip
       const lines = [
-        `O₂ Fraction: ${(fraction * 100).toFixed(1)}%`,
+        `FO₂: ${(fraction * 100).toFixed(1)}%`,
         `Depth: ${depth.toFixed(1)} m`,
-        `ppO₂: ${o2.toFixed(2)} bar`,
-        o2 < 1.0 ? '⚠️ Hypoxic' : (o2 <= 1.4 ? '✅ Safe' : (o2 <= 1.6 ? '⚠️ Caution' : '❌ Dangerous'))
+        `pO₂: ${o2.toFixed(2)} bar`,
+        o2 < 1.0 ? 'Hypoxic' : (o2 <= 1.4 ? 'Normoxic' : (o2 <= 1.6 ? 'Hyperoxic' : 'Toxic'))
       ];
       ctx.font = `${fontSize} system-ui, sans-serif`;
       const padding = 12;
@@ -265,7 +271,6 @@
       if (by < M.top) by = M.top;
       if (by + boxH > M.top + plotH) by = M.top + plotH - boxH;
 
-      // Box
       ctx.shadowColor = 'rgba(0,0,0,0.6)';
       ctx.shadowBlur = 10;
       ctx.fillStyle = 'rgba(15, 52, 96, 0.95)';
@@ -278,7 +283,6 @@
       roundRect(bx, by, boxW, boxH, 8);
       ctx.stroke();
 
-      // Text
       ctx.textAlign = 'left';
       ctx.textBaseline = 'top';
       lines.forEach((l, i) => {
@@ -301,16 +305,9 @@
     ctx.closePath();
   }
 
-  // Mouse Events
   function getPos(e) {
     const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / (rect.width * (window.devicePixelRatio || 1));
-    const scaleY = canvas.height / (rect.height * (window.devicePixelRatio || 1));
-    
-    // Convert client coords to canvas CSS coords, not raw pixel coords
-    const x = (e.clientX - rect.left);
-    const y = (e.clientY - rect.top);
-    return { x, y };
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
   }
 
   canvas.addEventListener('mousemove', e => {
@@ -327,7 +324,6 @@
     draw();
   });
 
-  // Initialize and handle resizing
   window.addEventListener('resize', resize);
   resize();
 })();
