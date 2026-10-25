@@ -152,6 +152,14 @@
     margin-right: 5px;
   }
 
+  /* Style pour l'exposant de l'exponentielle */
+  .exp {
+    font-size: 0.75em;
+    vertical-align: super;
+    line-height: 1;
+    margin-left: 1px;
+  }
+
   .formula-item .tooltip {
     visibility: hidden;
     opacity: 0;
@@ -236,7 +244,6 @@
       <div class="right-panel">
         <div class="formula-item">
           <strong>Partial Pressure:</strong>
-          <!-- Remplacement de 1013.25 par P₀ -->
           <span>pO<sub>2</sub> = F<sub>O<sub>2</sub></sub> × (P<sub>h</sub> / P<sub>0</sub> + D / 10.06)</span>
 
           <div class="tooltip">
@@ -248,7 +255,10 @@
 
         <div class="formula-item">
           <strong>Barometric:</strong>
-          <span>P<sub>h</sub> = P<sub>0</sub> · exp[−(M·g·h) / (R·T)]</span>
+          <!-- Utilisation de <sup> pour l'exponentielle -->
+          <span>
+            P<sub>h</sub> = P<sub>0</sub> · e<sup class="exp">− (M·g·h) / (R·T)</sup>
+          </span>
 
           <div class="tooltip">
             <div class="const-item"><span>M (Air molar mass):</span> <span class="const-val">0.0289644 kg/mol</span></div>
@@ -290,7 +300,6 @@
   const G = 9.81;
   const R = 8.314;
 
-  // Mémorise la pression de référence au niveau de la mer (P0)
   let seaLevelReferenceHpa = STANDARD_HPA;
 
   function getPressureFromReference(altitude, tempC) {
@@ -309,8 +318,6 @@
   function invY(py) { return depthMin + (py - M.top) / plotH * (depthMax - depthMin); }
 
   function pO2(fraction, depth, pressureHpa) {
-    // pO2 = FO2 * (Ph / P0 + D / MSW_PER_ATM)
-    // Note: Ph / P0 est le rapport de pression, qui donne l'équivalent en atmosphères à la surface
     const atm = pressureHpa / seaLevelReferenceHpa;
     return fraction * (atm + depth / MSW_PER_ATM);
   }
