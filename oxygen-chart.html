@@ -3,19 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>Isopleths of Oxygen Partial Pressure (pO₂)</title>
-<!-- Load MathJax for beautiful mathematical typesetting -->
-<script>
-  window.MathJax = {
-    tex: {
-      inlineMath: [['$', '$'], ['\\(', '\\)']]
-    },
-    svg: {
-      fontCache: 'global'
-    }
-  };
-</script>
-<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-
 <style>
   body, html {
     margin: 0;
@@ -33,69 +20,55 @@
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
-    padding: 20px;
+    padding: 20px 30px;
   }
   .header {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    margin-bottom: 10px;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  .title-group {
-    display: flex;
     flex-direction: column;
-    gap: 6px;
+    margin-bottom: 15px;
+    gap: 12px;
+    flex-shrink: 0;
   }
   .title {
-    font-size: clamp(16px, 1.8vw, 22px);
+    font-size: clamp(16px, 2vw, 22px);
     font-weight: 600;
     color: #e94560;
     letter-spacing: 0.5px;
+    line-height: 1.4;
   }
-  .subtitle {
-    font-size: clamp(14px, 1.2vw, 16px);
-    color: #a0a0b0;
+  .title i, .title sub {
+    font-style: italic;
+    font-weight: 400;
+  }
+  .legend-row {
     display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .math-box {
-    background: rgba(144, 224, 239, 0.1);
-    border: 1px solid rgba(144, 224, 239, 0.3);
-    padding: 4px 12px;
-    border-radius: 6px;
-    color: #90e0ef;
-  }
-  .legend {
-    display: flex;
-    gap: 15px;
+    gap: 20px;
     font-size: clamp(12px, 1vw, 14px);
     flex-wrap: wrap;
-    background: rgba(15, 52, 96, 0.5);
-    padding: 8px 12px;
-    border-radius: 6px;
-    border: 1px solid rgba(255,255,255,0.1);
+    align-items: center;
   }
   .legend-item {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
   }
   .swatch {
-    width: 14px;
-    height: 14px;
-    border-radius: 3px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+  .formula {
+    margin-left: auto;
+    font-style: italic;
+    color: #90e0ef;
+    font-family: 'Times New Roman', Times, serif;
+    font-size: clamp(14px, 1.2vw, 16px);
+    letter-spacing: 0.5px;
   }
   canvas {
     display: block;
     flex: 1;
     cursor: crosshair;
-    border-radius: 8px;
-    background: #16213e;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
     min-height: 0;
   }
 </style>
@@ -103,24 +76,17 @@
 <body>
 <div id="container">
   <div class="header">
-    <div class="title-group">
-      <!-- Updated Scientific Title -->
-      <div class="title">Oxygen Partial Pressure Isopleths in Nitrox Mixtures</div>
-      <div class="subtitle">
-        <span>relative to Depth and Oxygen Fraction. Formula:</span>
-        <div class="math-box">
-          <!-- MathJax Formula -->
-          \[
-            pO_2 = F_{O_2} \times \left(1 + \frac{D}{10}\right)
-          \]
-        </div>
-      </div>
+    <div class="title">
+      Isopleths of Oxygen Partial Pressure (<i>pO</i><sub>2</sub>) as a function of Depth and Oxygen Fraction (<i>F</i><sub>O<sub>2</sub></sub>)
     </div>
-    <div class="legend">
+    <div class="legend-row">
       <div class="legend-item"><div class="swatch" style="background:#6c757d"></div> Hypoxic (&lt; 1.0 bar)</div>
       <div class="legend-item"><div class="swatch" style="background:#00b4d8"></div> Normoxic (1.0 - 1.4 bar)</div>
       <div class="legend-item"><div class="swatch" style="background:#f9c74f"></div> Hyperoxic (1.4 - 1.6 bar)</div>
       <div class="legend-item"><div class="swatch" style="background:#e94560"></div> Toxic (&gt; 1.6 bar)</div>
+      <div class="formula">
+        pO<sub>2</sub> = F<sub>O<sub>2</sub></sub> × (1 + D/10)
+      </div>
     </div>
   </div>
   <canvas id="chart"></canvas>
@@ -132,7 +98,7 @@
   const ctx = canvas.getContext('2d');
   
   let W = 0, H = 0;
-  let M = { top: 30, right: 40, bottom: 60, left: 80 };
+  let M = { top: 10, right: 20, bottom: 40, left: 60 };
   let plotW = 0, plotH = 0;
 
   const fracMin = 0, fracMax = 1.0;
@@ -150,11 +116,12 @@
 
   function resize() {
     const rect = canvas.parentElement.getBoundingClientRect();
-    // Increased header height allowance due to MathJax rendering
-    const headerHeight = document.querySelector('.header').offsetHeight + 30; 
+    const headerHeight = document.querySelector('.header').offsetHeight; 
     
-    W = rect.width - 40;
-    H = rect.height - headerHeight;
+    W = rect.width - 60; 
+    H = rect.height - headerHeight - 40;
+
+    if (W <= 0 || H <= 0) return;
 
     const dpr = window.devicePixelRatio || 1;
     canvas.width = W * dpr;
@@ -164,10 +131,10 @@
     
     ctx.scale(dpr, dpr);
 
-    M.left = W < 600 ? 60 : 80;
-    M.bottom = H < 400 ? 40 : 60;
-    M.top = 30;
-    M.right = 40;
+    M.left = W < 600 ? 50 : 60;
+    M.bottom = H < 400 ? 40 : 50;
+    M.top = 10;
+    M.right = 20;
 
     plotW = W - M.left - M.right;
     plotH = H - M.top - M.bottom;
@@ -177,9 +144,6 @@
 
   function draw() {
     ctx.clearRect(0, 0, W, H);
-
-    ctx.fillStyle = '#0f3460';
-    ctx.fillRect(M.left, M.top, plotW, plotH);
 
     // --- Heatmap ---
     const steps = 100;
@@ -217,9 +181,10 @@
     const fontSize = W < 600 ? '11px' : '13px';
     ctx.font = `${fontSize} system-ui, sans-serif`;
 
+    // X-Axis Grid (Oxygen Fraction)
     for (let f = 0; f <= 1.0; f += 0.1) {
       const x = xScale(f);
-      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.strokeStyle = 'rgba(255,255,255,0.1)';
       ctx.beginPath();
       ctx.moveTo(x, M.top);
       ctx.lineTo(x, M.top + plotH);
@@ -231,9 +196,10 @@
       ctx.fillText((f * 100).toFixed(0) + '%', x, M.top + plotH + 10);
     }
 
+    // Y-Axis Grid (Depth)
     for (let d = depthMin; d <= depthMax; d += 10) {
       const y = yScale(d);
-      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.strokeStyle = 'rgba(255,255,255,0.1)';
       ctx.beginPath();
       ctx.moveTo(M.left, y);
       ctx.lineTo(M.left + plotW, y);
@@ -245,8 +211,9 @@
       ctx.fillText(d + ' m', M.left - 10, y);
     }
 
+    // Y-Axis Title
     ctx.save();
-    ctx.translate(25, M.top + plotH / 2);
+    ctx.translate(20, M.top + plotH / 2);
     ctx.rotate(-Math.PI / 2);
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -255,10 +222,12 @@
     ctx.fillText('Depth (m)', 0, 0);
     ctx.restore();
 
+    // X-Axis Title
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
     ctx.fillStyle = '#e0e0e0';
-    ctx.fillText('Oxygen Fraction (FO₂)', M.left + plotW / 2, M.top + plotH + 35);
+    ctx.font = `${W < 600 ? '12px' : '14px'} system-ui, sans-serif`;
+    ctx.fillText('Oxygen Fraction (FO₂)', M.left + plotW / 2, M.top + plotH + 30);
 
     // --- Hover ---
     if (mouse.inPlot) {
@@ -266,7 +235,8 @@
       const depth = invY(mouse.y);
       const o2 = pO2(fraction, depth);
 
-      ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+      // Guide Lines
+      ctx.strokeStyle = 'rgba(255,255,255,0.6)';
       ctx.lineWidth = 1.5;
       ctx.setLineDash([4, 4]);
       ctx.beginPath();
@@ -277,6 +247,7 @@
       ctx.stroke();
       ctx.setLineDash([]);
 
+      // Hover Point
       ctx.beginPath();
       ctx.arc(mouse.x, mouse.y, 6, 0, Math.PI * 2);
       ctx.fillStyle = o2 >= 1.0 && o2 <= 1.4 ? '#00b4d8' : (o2 < 1.0 ? '#6c757d' : (o2 <= 1.6 ? '#f9c74f' : '#e94560'));
@@ -285,7 +256,7 @@
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // Tooltip lines with clean mathematical substitution
+      // Tooltip Content
       const lines = [
         `FO₂: ${(fraction * 100).toFixed(1)}%`,
         `Depth: ${depth.toFixed(1)} m`,
@@ -293,20 +264,23 @@
         o2 < 1.0 ? 'Hypoxic' : (o2 <= 1.4 ? 'Normoxic' : (o2 <= 1.6 ? 'Hyperoxic' : 'Toxic')),
         `pO₂ = ${fraction.toFixed(2)} × (1 + ${(depth / 10).toFixed(2)})`
       ];
+      
       ctx.font = `${fontSize} system-ui, sans-serif`;
       const padding = 12;
-      const lineH = 22; // slightly taller to accommodate math aesthetics
+      const lineH = 22; 
       const textW = Math.max(...lines.map(l => ctx.measureText(l).width));
       const boxW = textW + padding * 2;
       const boxH = lines.length * lineH + padding * 2;
 
+      // Tooltip Positioning
       let bx = mouse.x + 15;
       let by = mouse.y - boxH / 2;
       if (bx + boxW > W) bx = mouse.x - boxW - 15;
       if (by < M.top) by = M.top;
       if (by + boxH > M.top + plotH) by = M.top + plotH - boxH;
 
-      ctx.shadowColor = 'rgba(0,0,0,0.6)';
+      // Draw Box
+      ctx.shadowColor = 'rgba(0,0,0,0.8)';
       ctx.shadowBlur = 10;
       ctx.fillStyle = 'rgba(15, 52, 96, 0.95)';
       roundRect(bx, by, boxW, boxH, 8);
@@ -318,6 +292,7 @@
       roundRect(bx, by, boxW, boxH, 8);
       ctx.stroke();
 
+      // Draw Text
       ctx.textAlign = 'left';
       ctx.textBaseline = 'top';
       lines.forEach((l, i) => {
@@ -325,7 +300,7 @@
         if (i === 3) textColor = o2 < 1.0 ? '#6c757d' : (o2 <= 1.4 ? '#00b4d8' : (o2 <= 1.6 ? '#f9c74f' : '#e94560'));
         else if (i === 2) textColor = '#fff';
         else if (i === 4) {
-          textColor = '#90e0ef'; // Highlight the mathematical equation
+          textColor = '#90e0ef'; 
           ctx.font = `bold ${fontSize} system-ui, sans-serif`;
         } else {
           ctx.font = `${fontSize} system-ui, sans-serif`;
