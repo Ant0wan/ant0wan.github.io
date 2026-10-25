@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Oxygen Partial Pressure vs Depth & Gas Mixture</title>
+<style>
+  body {
+    margin: 0;
+    padding: 20px;
+    background: #1a1a2e;
+    font-family: system-ui, sans-serif;
+    color: #e0e0e0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+  #container {
+    position: relative;
+    background: #16213e;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    padding: 20px;
+  }
+  canvas {
+    display: block;
+    cursor: crosshair;
+    border-radius: 4px;
+  }
+  .title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #e94560;
+  }
+  .legend {
+    display: flex;
+    gap: 20px;
+    margin-top: 15px;
+    font-size: 14px;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .swatch {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+  }
+</style>
+</head>
+<body>
+<div id="container">
+  <div class="title">Oxygen Partial Pressure (ppO₂) vs Gas Mixture & Depth</div>
+  <canvas id="chart" width="800" height="500"></canvas>
+  <div class="legend">
+    <div class="legend-item"><div class="swatch" style="background:#6c757d"></div> Hypoxic (&lt; 1.0 bar)</div>
+    <div class="legend-item"><div class="swatch" style="background:#00b4d8"></div> Safe (1.0 - 1.4 bar)</div>
+    <div class="legend-item"><div class="swatch" style="background:#f9c74f"></div> Caution (1.4 - 1.6 bar)</div>
+    <div class="legend-item"><div class="swatch" style="background:#e94560"></div> Dangerous (&gt; 1.6 bar)</div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const canvas = document.getElementById('chart');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width;
+  const H = canvas.height;
+
+  // Margins
+  const M = { top: 30, right: 40, bottom: 60, left: 80 };
+  const plotW = W - M.left - M.right;
+  const plotH = H - M.top - M.bottom;
+
+  // Data Ranges
+  const fracMin = 0, fracMax = 1.0; // 0% to 100% Oxygen
+  const depthMin = 0, depthMax = 60; // 0 to 60 meters
+
+  // Conversion helpers
+  const xScale = f => M.left + (f - fracMin) / (fracMax - fracMin) * plotW;
+  const yScale = d => M.top + (d - depthMin) / (depthMax - depthMin) * plotH;
+  
+  const invX = px => fracMin + (px - M.left) / plotW * (fracMax - fracMin);
+  const invY = py => depthMin + (py - M.top) / plotH * (depthMax - depthMin);
+
+  // Partial pressure calculation: fraction * (1 + depth/10)
+  function ppO2(fraction, depth) {
+    return fraction * (1 + depth / 10);
+  }
+
+  let mouse = { x: -1, y: -1, inPlot: false };
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Plot Background
+    ctx.fillStyle = '#0f3460';
+    ctx.fillRect(M.left, M.top, plotW, plotH);
+
+    // --- Draw ppO2 Heatmap/Grid using horizontal slices ---
+    // We process row by row to create a gradient effect
+    const steps = 200;
+    for (let i = 0; i < steps; i++) {
+      const d0 = depthMin + (depthMax - depthMin) * i / steps;
+      const d1 = depthMin + (depthMax - depthMin) * (i + 1) / steps;
+      const y0 = yScale(d0);
+      const y1 = yScale(d1);
+
+      for (let j = 0; j < steps; j++) {
+        const f0 = fracMin + (fracMax - fracMin) * j / steps;
+        const f1 = fracMin + (fracMax - fracMin) * (j + 1) / steps;
+        const x0 = xScale(f0);
+        const x1 = xScale(f1);
+
+        const o2 = ppO2((f0 + f1) / 2, (d0 + d1) / 2);
+        
+        // Color based on ppO2 safety zones
+        let color;
+        if (o2 < 1.0) {
+          color = `rgba(108, 117, 125, ${0.05 + (o2 / 1.0) * 0.2})`; // Fades into grey
+        } else if (o2 <= 1.4) {
+          color = `rgba(0, 180, 216, ${0.15 + (1 - Math.abs(o2 - 1.2) / 0.2) * 0.2})`; // Solid Safe
+        } else if (o2 <= 1.6) {
+          color = `rgba(249, 199, 79, ${0.15 + (1 - Math.abs(o2 - 1.5) / 0.1) * 0.2})`; // Caution
+        } else {
+          color = `rgba(233, 69, 96, ${Math.min(0.5, 0.1 + (o2 - 1.6) * 0.2)})`; // Dangerous
+        }
+
+        ctx.fillStyle = color;
+        ctx.fillRect(x0, y0, x1 - x0 + 1, y1 - y0 + 1);
+      }
+    }
+
+    // --- Draw Grid and Axes ---
+    ctx.font = '13px system-ui, sans-serif';
+
+    // Vertical Grid (Oxygen Fraction)
+    for (let f = 0; f <= 1.0; f += 0.1) {
+      const x = xScale(f);
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.beginPath();
+      ctx.moveTo(x, M.top);
+      ctx.lineTo(x, M.top + plotH);
+      ctx.stroke();
+      
+      // X Labels
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillStyle = '#a0a0b0';
+      ctx.fillText((f * 100).toFixed(0) + '%', x, M.top + plotH + 10);
+    }
+
+    // Horizontal Grid (Depth)
+    for (let d = depthMin; d <= depthMax; d += 10) {
+      const y = yScale(d);
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.beginPath();
+      ctx.moveTo(M.left, y);
+      ctx.lineTo(M.left + plotW, y);
+      ctx.stroke();
+      
+      // Y Labels
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#a0a0b0';
+      ctx.fillText(d + ' m', M.left - 10, y);
+    }
+
+    // Axis Titles
+    ctx.save();
+    ctx.translate(25, M.top + plotH / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#e0e0e0';
+    ctx.font = '14px system-ui, sans-serif';
+    ctx.fillText('Depth (meters)', 0, 0);
+    ctx.restore();
+
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = '#e0e0e0';
+    ctx.font = '14px system-ui, sans-serif';
+    ctx.fillText('Oxygen Fraction (%)', M.left + plotW / 2, M.top + plotH + 35);
+
+    // --- Draw Hover Elements ---
+    if (mouse.inPlot) {
+      const fraction = invX(mouse.x);
+      const depth = invY(mouse.y);
+      const o2 = ppO2(fraction, depth);
+
+      // Horizontal Guide Line (Tracking Depth)
+      ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(M.left, mouse.y);
+      ctx.lineTo(M.left + plotW, mouse.y);
+      ctx.stroke();
+      
+      // Vertical Guide Line (Tracking Fraction)
+      ctx.beginPath();
+      ctx.moveTo(mouse.x, M.top);
+      ctx.lineTo(mouse.x, M.top + plotH);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Hover Point (Intersection)
+      ctx.beginPath();
+      ctx.arc(mouse.x, mouse.y, 6, 0, Math.PI * 2);
+      ctx.fillStyle = o2 >= 1.0 && o2 <= 1.4 ? '#00b4d8' : (o2 < 1.0 ? '#6c757d' : (o2 <= 1.6 ? '#f9c74f' : '#e94560'));
+      ctx.fill();
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Tooltip Calculation
+      const lines = [
+        `O₂ Fraction: ${(fraction * 100).toFixed(1)}%`,
+        `Depth: ${depth.toFixed(1)} m`,
+        `ppO₂: ${o2.toFixed(2)} bar`,
+        o2 < 1.0 ? '⚠️ Hypoxic' : (o2 <= 1.4 ? '✅ Safe' : (o2 <= 1.6 ? '⚠️ Caution' : '❌ Dangerous'))
+      ];
+      ctx.font = '13px system-ui, sans-serif';
+      const padding = 12;
+      const lineH = 20;
+      const textW = Math.max(...lines.map(l => ctx.measureText(l).width));
+      const boxW = textW + padding * 2;
+      const boxH = lines.length * lineH + padding * 2;
+
+      // Tooltip Positioning
+      let bx = mouse.x + 15;
+      let by = mouse.y - boxH / 2;
+      if (bx + boxW > W) bx = mouse.x - boxW - 15;
+      if (by < M.top) by = M.top;
+      if (by + boxH > M.top + plotH) by = M.top + plotH - boxH;
+
+      // Draw Tooltip Box
+      ctx.shadowColor = 'rgba(0,0,0,0.6)';
+      ctx.shadowBlur = 10;
+      ctx.fillStyle = 'rgba(15, 52, 96, 0.95)';
+      roundRect(bx, by, boxW, boxH, 8);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      ctx.strokeStyle = 'rgba(233, 69, 96, 0.8)';
+      ctx.lineWidth = 1.5;
+      roundRect(bx, by, boxW, boxH, 8);
+      ctx.stroke();
+
+      // Draw Text inside Tooltip
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      lines.forEach((l, i) => {
+        let textColor = '#e0e0e0';
+        if (i === 3) {
+          textColor = o2 < 1.0 ? '#6c757d' : (o2 <= 1.4 ? '#00b4d8' : (o2 <= 1.6 ? '#f9c74f' : '#e94560'));
+        } else if (i === 2) {
+          textColor = '#fff';
+        }
+        ctx.fillStyle = textColor;
+        ctx.fillText(l, bx + padding, by + padding + i * lineH);
+      });
+    }
+  }
+
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  // Mouse Events
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    return {
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY,
+    };
+  }
+
+  canvas.addEventListener('mousemove', e => {
+    const p = getPos(e);
+    mouse.x = p.x;
+    mouse.y = p.y;
+    mouse.inPlot = p.x >= M.left && p.x <= M.left + plotW &&
+                   p.y >= M.top && p.y <= M.top + plotH;
+    draw();
+  });
+
+  canvas.addEventListener('mouseleave', () => {
+    mouse.inPlot = false;
+    draw();
+  });
+
+  draw();
+})();
+</script>
+</body>
+</html>
