@@ -75,7 +75,7 @@
     color: #fff;
     padding: 4px 8px;
     border-radius: 4px;
-    width: 90px; /* Ajusté pour le label plus long */
+    width: 90px;
     font-family: inherit;
     font-size: clamp(12px, 1vw, 14px);
     text-align: right;
@@ -225,7 +225,6 @@
           <label for="temp-val">Temp. (°C)</label>
           <input type="number" id="temp-val" value="15" step="1" min="-40" max="50">
         </div>
-        <!-- Modification du label ici -->
         <div class="input-group">
           <label for="start-hpa">P<sub>h</sub> Active Surface (hPa)</label>
           <input type="number" id="start-hpa" value="1013.25" step="0.1" min="500" max="1100">
@@ -234,9 +233,10 @@
 
       <div class="center-panel">
         <div class="legend-row">
-          <div class="legend-item"><div class="swatch" style="background:#6c757d"></div> Hypoxic (&lt; 1.0 bar)</div>
-          <div class="legend-item"><div class="swatch" style="background:#00b4d8"></div> Normoxic (1.0 - 1.4 bar)</div>
-          <div class="legend-item"><div class="swatch" style="background:#f9c74f"></div> Hyperoxic (1.4 - 1.6 bar)</div>
+          <div class="legend-item"><div class="swatch" style="background:#6c757d"></div> Hypoxic (0 – 0.18 bar)</div>
+          <div class="legend-item"><div class="swatch" style="background:#90ee90"></div> Normoxic (0.18 – 0.21 bar)</div>
+          <div class="legend-item"><div class="swatch" style="background:#00b4d8"></div> Hyperoxic (0.21 – 1.4 bar)</div>
+          <div class="legend-item"><div class="swatch" style="background:#f9c74f"></div> Critical (1.4 – 1.6 bar)</div>
           <div class="legend-item"><div class="swatch" style="background:#e94560"></div> Toxic (&gt; 1.6 bar)</div>
         </div>
       </div>
@@ -301,6 +301,20 @@
 
   let seaLevelReferenceHpa = STANDARD_HPA;
 
+  // --- ZONE BOUNDARIES (bar) ---
+  const HYPOXIC_MAX   = 0.18;
+  const NORMOXIC_MAX  = 0.21;
+  const HYPEROXIC_MAX = 1.40;
+  const CRITICAL_MAX  = 1.60;
+  // Toxic: > 1.60
+
+  // --- ZONE COLORS ---
+  const COLOR_HYPOXIC   = '#6c757d';   // grey
+  const COLOR_NORMOXIC  = '#90ee90';   // light green
+  const COLOR_HYPEROXIC = '#00b4d8';   // cyan
+  const COLOR_CRITICAL  = '#f9c74f';   // gold
+  const COLOR_TOXIC     = '#e94560';   // red
+
   function getPressureFromReference(altitude, tempC) {
     const tempK = tempC + 273.15;
     return seaLevelReferenceHpa * Math.exp(-(M_AIR * G * altitude) / (R * tempK));
@@ -319,6 +333,15 @@
   function pO2(fraction, depth, pressureHpa) {
     const atm = pressureHpa / seaLevelReferenceHpa;
     return fraction * (atm + depth / MSW_PER_ATM);
+  }
+
+  // ---- Zone classification ----
+  function getZone(o2) {
+    if (o2 < HYPOXIC_MAX)   return { label: 'Hypoxic',   color: COLOR_HYPOXIC };
+    if (o2 < NORMOXIC_MAX)  return { label: 'Normoxic',  color: COLOR_NORMOXIC };
+    if (o2 < HYPEROXIC_MAX) return { label: 'Hyperoxic', color: COLOR_HYPEROXIC };
+    if (o2 <= CRITICAL_MAX) return { label: 'Critical',  color: COLOR_CRITICAL };
+    return { label: 'Toxic', color: COLOR_TOXIC };
   }
 
   let mouse = { x: -1, y: -1, inPlot: false };
@@ -404,15 +427,31 @@
 
         const o2 = pO2((f0 + f1) / 2, (d0 + d1) / 2, currentHpa);
 
+        // --- Color mapping with requested zones ---
         let color;
-        if (o2 < 1.0) {
-          color = `rgba(108, 117, 125, ${0.05 + (o2 / 1.0) * 0.2})`;
-        } else if (o2 <= 1.4) {
-          color = `rgba(0, 180, 216, ${0.15 + (1 - Math.abs(o2 - 1.2) / 0.2) * 0.2})`;
-        } else if (o2 <= 1.6) {
-          color = `rgba(249, 199, 79, ${0.15 + (1 - Math.abs(o2 - 1.5) / 0.1) * 0.2})`;
+        if (o2 < HYPOXIC_MAX) {
+          // Hypoxic: grey
+          color = `rgba(108, 117, 125, ${0.05 + (o2 / HYPOXIC_MAX) * 0.20})`;
+        } else if (o2 < NORMOXIC_MAX) {
+          // Normoxic: light green
+          const t = (o2 - HYPOXIC_MAX) / (NORMOXIC_MAX - HYPOXIC_MAX);
+          const alpha = 0.20 + (1 - Math.abs(t - 0.5) * 2) * 0.25;
+          color = `rgba(144, 238, 144, ${alpha})`;
+        } else if (o2 < HYPEROXIC_MAX) {
+          // Hyperoxic: cyan
+          const mid = (HYPEROXIC_MAX + NORMOXIC_MAX) / 2;
+          const half = (HYPEROXIC_MAX - NORMOXIC_MAX) / 2;
+          const alpha = 0.15 + (1 - Math.abs(o2 - mid) / half) * 0.20;
+          color = `rgba(0, 180, 216, ${alpha})`;
+        } else if (o2 <= CRITICAL_MAX) {
+          // Critical: gold
+          const mid = (CRITICAL_MAX + HYPEROXIC_MAX) / 2;
+          const half = (CRITICAL_MAX - HYPEROXIC_MAX) / 2;
+          const alpha = 0.18 + (1 - Math.abs(o2 - mid) / half) * 0.22;
+          color = `rgba(249, 199, 79, ${alpha})`;
         } else {
-          color = `rgba(233, 69, 96, ${Math.min(0.5, 0.1 + (o2 - 1.6) * 0.2)})`;
+          // Toxic: red
+          color = `rgba(233, 69, 96, ${Math.min(0.65, 0.15 + (o2 - CRITICAL_MAX) * 0.25)})`;
         }
 
         ctx.fillStyle = color;
@@ -471,6 +510,7 @@
       const fraction = invX(mouse.x);
       const depth = invY(mouse.y);
       const o2 = pO2(fraction, depth, currentHpa);
+      const zone = getZone(o2);
 
       ctx.strokeStyle = 'rgba(255,255,255,0.6)';
       ctx.lineWidth = 1.5;
@@ -485,7 +525,7 @@
 
       ctx.beginPath();
       ctx.arc(mouse.x, mouse.y, 6, 0, Math.PI * 2);
-      ctx.fillStyle = o2 >= 1.0 && o2 <= 1.4 ? '#00b4d8' : (o2 < 1.0 ? '#6c757d' : (o2 <= 1.6 ? '#f9c74f' : '#e94560'));
+      ctx.fillStyle = zone.color;
       ctx.fill();
       ctx.strokeStyle = '#fff';
       ctx.lineWidth = 2;
@@ -495,7 +535,7 @@
         `FO₂: ${(fraction * 100).toFixed(1)}%`,
         `Depth: ${depth.toFixed(1)} m`,
         `pO₂: ${o2.toFixed(2)} bar`,
-        o2 < 1.0 ? 'Hypoxic' : (o2 <= 1.4 ? 'Normoxic' : (o2 <= 1.6 ? 'Hyperoxic' : 'Toxic')),
+        zone.label,
         `pO₂ = ${fraction.toFixed(2)} × (${(currentHpa / seaLevelReferenceHpa).toFixed(3)} + ${(depth / MSW_PER_ATM).toFixed(2)})`
       ];
 
@@ -528,9 +568,11 @@
       ctx.textBaseline = 'top';
       lines.forEach((l, i) => {
         let textColor = '#e0e0e0';
-        if (i === 3) textColor = o2 < 1.0 ? '#6c757d' : (o2 <= 1.4 ? '#00b4d8' : (o2 <= 1.6 ? '#f9c74f' : '#e94560'));
-        else if (i === 2) textColor = '#fff';
-        else if (i === 4) {
+        if (i === 3) {
+          textColor = zone.color;
+        } else if (i === 2) {
+          textColor = '#fff';
+        } else if (i === 4) {
           textColor = '#90e0ef';
           ctx.font = `bold ${fontSize} system-ui, sans-serif`;
         } else {
