@@ -22,84 +22,182 @@
     box-sizing: border-box;
     padding: 20px 30px;
   }
+
   .header {
     display: flex;
     flex-direction: column;
-    margin-bottom: 15px;
-    gap: 12px;
+    gap: 15px;
+    margin-bottom: 10px;
     flex-shrink: 0;
   }
+
   .title {
     font-size: clamp(16px, 2vw, 22px);
     font-weight: 600;
     color: #e94560;
     letter-spacing: 0.5px;
     line-height: 1.4;
+    text-align: center;
   }
   .title i, .title sub {
     font-style: italic;
     font-weight: 400;
   }
-  .controls-row {
+
+  .info-row {
     display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
     gap: 20px;
-    font-size: clamp(12px, 1vw, 14px);
     flex-wrap: wrap;
+  }
+
+  .left-panel {
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+  }
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .input-group label {
+    color: #90e0ef;
+    font-weight: 600;
+    font-size: clamp(11px, 0.9vw, 13px);
+  }
+  .input-group input {
+    background: #16213e;
+    border: 1px solid rgba(144, 224, 239, 0.4);
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    width: 85px;
+    font-family: inherit;
+    font-size: clamp(12px, 1vw, 14px);
+    text-align: right;
+    transition: all 0.2s;
+  }
+  .input-group input:focus {
+    outline: none;
+    border-color: #90e0ef;
+    box-shadow: 0 0 5px rgba(144, 224, 239, 0.3);
+  }
+  .input-group input.manual-override {
+    border-color: #f9c74f;
+    background: rgba(249, 199, 79, 0.15);
+    color: #f9c74f;
+    font-weight: bold;
+  }
+
+  .center-panel {
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    background: rgba(255, 255, 255, 0.05);
-    padding: 10px 15px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    gap: 10px;
+    flex: 1;
+    padding-top: 15px;
+  }
+  .legend-row {
+    display: flex;
+    gap: 15px;
+    font-size: clamp(11px, 1vw, 13px);
+    flex-wrap: wrap;
+    justify-content: center;
+    color: #a0a0b0;
   }
   .legend-item {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
   }
   .swatch {
     width: 12px;
     height: 12px;
     border-radius: 50%;
   }
-  .atm-input {
+
+  .right-panel {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+    min-width: 320px;
+    position: relative;
+    padding-top: 5px;
+  }
+
+  .formula-item {
+    display: flex;
+    align-items: baseline;
     gap: 8px;
-    margin-left: 15px;
-    padding-left: 15px;
-    border-left: 1px solid rgba(255,255,255,0.2);
-  }
-  .atm-input label {
-    color: #90e0ef;
-    font-weight: 600;
-  }
-  .atm-input input {
-    background: #16213e;
-    border: 1px solid #90e0ef;
-    color: #fff;
-    padding: 4px 8px;
-    border-radius: 4px;
-    width: 80px;
-    font-family: inherit;
-    font-size: inherit;
-  }
-  .atm-input input:focus {
-    outline: none;
-    box-shadow: 0 0 5px rgba(144, 224, 239, 0.5);
-  }
-  .formula {
-    margin-left: auto;
-    font-style: italic;
     color: #90e0ef;
     font-family: 'Times New Roman', Times, serif;
-    font-size: clamp(14px, 1.2vw, 16px);
-    letter-spacing: 0.5px;
+    font-size: clamp(13px, 1.1vw, 16px);
+    font-style: italic;
+    white-space: nowrap;
+    position: relative;
+    cursor: help;
+    border-bottom: 1px dashed rgba(144, 224, 239, 0.3);
   }
+  .formula-item strong {
+    font-family: system-ui, -apple-system, sans-serif;
+    font-style: normal;
+    color: #e0e0e0;
+    font-size: clamp(11px, 0.9vw, 13px);
+    font-weight: 600;
+    margin-right: 5px;
+  }
+
+  .formula-item .tooltip {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    background: #16213e;
+    border: 1px solid rgba(144, 224, 239, 0.3);
+    padding: 10px 15px;
+    border-radius: 6px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-style: normal;
+    font-size: 12px;
+    color: #a0a0b0;
+    white-space: nowrap;
+    z-index: 100;
+    transition: opacity 0.2s, visibility 0.2s;
+    pointer-events: none;
+  }
+
+  .formula-item:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+  }
+
+  .const-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+  }
+  .const-val {
+    color: #f9c74f;
+    font-weight: 600;
+  }
+
   canvas {
     display: block;
     flex: 1;
     cursor: crosshair;
     min-height: 0;
+    background: transparent;
   }
 </style>
 </head>
@@ -110,23 +208,59 @@
       Isopleths of Oxygen Partial Pressure (<i>pO</i><sub>2</sub>) as a function of Depth and Oxygen Fraction (<i>F</i><sub>O<sub>2</sub></sub>)
     </div>
 
-    <div class="controls-row">
-      <div class="legend-item"><div class="swatch" style="background:#6c757d"></div> Hypoxic (&lt; 1.0)</div>
-      <div class="legend-item"><div class="swatch" style="background:#00b4d8"></div> Normoxic (1.0 - 1.4)</div>
-      <div class="legend-item"><div class="swatch" style="background:#f9c74f"></div> Hyperoxic (1.4 - 1.6)</div>
-      <div class="legend-item"><div class="swatch" style="background:#e94560"></div> Toxic (&gt; 1.6)</div>
-
-      <!-- Atmospheric Pressure Input in hPa -->
-      <div class="atm-input">
-        <label for="atm-val">Surface Pressure (hPa):</label>
-        <input type="number" id="atm-val" value="1013.25" step="1" min="500" max="1100">
+    <div class="info-row">
+      <div class="left-panel">
+        <div class="input-group">
+          <label for="alt-val">Altitude (m)</label>
+          <input type="number" id="alt-val" value="0" step="100" min="0" max="9000">
+        </div>
+        <div class="input-group">
+          <label for="temp-val">Temp. (°C)</label>
+          <input type="number" id="temp-val" value="15" step="1" min="-40" max="50">
+        </div>
+        <div class="input-group">
+          <label for="start-hpa">P. Départ (hPa)</label>
+          <input type="number" id="start-hpa" value="1013.25" step="0.1" min="500" max="1100">
+        </div>
       </div>
 
-      <div class="formula">
-        pO<sub>2</sub> = F<sub>O<sub>2</sub></sub> × (P<sub>atm</sub>/1013.25 + D/10.06)
+      <div class="center-panel">
+        <div class="legend-row">
+          <div class="legend-item"><div class="swatch" style="background:#6c757d"></div> Hypoxic (&lt; 1.0 bar)</div>
+          <div class="legend-item"><div class="swatch" style="background:#00b4d8"></div> Normoxic (1.0 - 1.4 bar)</div>
+          <div class="legend-item"><div class="swatch" style="background:#f9c74f"></div> Hyperoxic (1.4 - 1.6 bar)</div>
+          <div class="legend-item"><div class="swatch" style="background:#e94560"></div> Toxic (&gt; 1.6 bar)</div>
+        </div>
+      </div>
+
+      <div class="right-panel">
+        <div class="formula-item">
+          <strong>Partial Pressure:</strong>
+          <!-- Remplacement de 1013.25 par P₀ -->
+          <span>pO<sub>2</sub> = F<sub>O<sub>2</sub></sub> × (P<sub>h</sub> / P<sub>0</sub> + D / 10.06)</span>
+
+          <div class="tooltip">
+            <div class="const-item"><span>P<sub>0</sub> (Sea Level Ref):</span> <span id="p0-display" class="const-val">1013.25 hPa</span></div>
+            <div class="const-item"><span>P<sub>h</sub> (Active Surface):</span> <span id="pressure-display" class="const-val">1013.25 hPa</span></div>
+            <div class="const-item"><span>MSW/ATM:</span> <span class="const-val">10.06 m/atm</span></div>
+          </div>
+        </div>
+
+        <div class="formula-item">
+          <strong>Barometric:</strong>
+          <span>P<sub>h</sub> = P<sub>0</sub> · exp[−(M·g·h) / (R·T)]</span>
+
+          <div class="tooltip">
+            <div class="const-item"><span>M (Air molar mass):</span> <span class="const-val">0.0289644 kg/mol</span></div>
+            <div class="const-item"><span>g (Gravity):</span> <span class="const-val">9.81 m/s²</span></div>
+            <div class="const-item"><span>R (Gas constant):</span> <span class="const-val">8.314 J/(mol·K)</span></div>
+            <div class="const-item"><span>T (Absolute Temp):</span> <span id="temp-display" class="const-val">288.15 K</span></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
+
   <canvas id="chart"></canvas>
 </div>
 
@@ -134,7 +268,14 @@
 (function() {
   const canvas = document.getElementById('chart');
   const ctx = canvas.getContext('2d');
-  const atmInput = document.getElementById('atm-val');
+
+  const altInput = document.getElementById('alt-val');
+  const tempInput = document.getElementById('temp-val');
+  const startHpaInput = document.getElementById('start-hpa');
+
+  const p0Display = document.getElementById('p0-display');
+  const pressureDisplay = document.getElementById('pressure-display');
+  const tempDisplay = document.getElementById('temp-display');
 
   let W = 0, H = 0;
   let M = { top: 10, right: 20, bottom: 40, left: 60 };
@@ -143,18 +284,34 @@
   const fracMin = 0, fracMax = 1.0;
   const depthMin = 0, depthMax = 60;
 
-  // Constants
   const MSW_PER_ATM = 10.06;
   const STANDARD_HPA = 1013.25;
+  const M_AIR = 0.0289644;
+  const G = 9.81;
+  const R = 8.314;
+
+  // Mémorise la pression de référence au niveau de la mer (P0)
+  let seaLevelReferenceHpa = STANDARD_HPA;
+
+  function getPressureFromReference(altitude, tempC) {
+    const tempK = tempC + 273.15;
+    return seaLevelReferenceHpa * Math.exp(-(M_AIR * G * altitude) / (R * tempK));
+  }
+
+  function getReferenceFromMeasured(measuredHpa, altitude, tempC) {
+    const tempK = tempC + 273.15;
+    return measuredHpa / Math.exp(-(M_AIR * G * altitude) / (R * tempK));
+  }
 
   function xScale(f) { return M.left + (f - fracMin) / (fracMax - fracMin) * plotW; }
   function yScale(d) { return M.top + (d - depthMin) / (depthMax - depthMin) * plotH; }
   function invX(px) { return fracMin + (px - M.left) / plotW * (fracMax - fracMin); }
   function invY(py) { return depthMin + (py - M.top) / plotH * (depthMax - depthMin); }
 
-  // Partial pressure calculation using hPa input
   function pO2(fraction, depth, pressureHpa) {
-    const atm = pressureHpa / STANDARD_HPA;
+    // pO2 = FO2 * (Ph / P0 + D / MSW_PER_ATM)
+    // Note: Ph / P0 est le rapport de pression, qui donne l'équivalent en atmosphères à la surface
+    const atm = pressureHpa / seaLevelReferenceHpa;
     return fraction * (atm + depth / MSW_PER_ATM);
   }
 
@@ -188,14 +345,44 @@
     draw();
   }
 
+  function syncPressureFromReference() {
+    let alt = parseFloat(altInput.value);
+    let temp = parseFloat(tempInput.value);
+    if (isNaN(alt) || alt < 0) alt = 0;
+    if (isNaN(temp)) temp = 15;
+
+    let calculatedHpa = getPressureFromReference(alt, temp);
+    startHpaInput.value = calculatedHpa.toFixed(2);
+    startHpaInput.classList.remove('manual-override');
+
+    updateDisplays();
+    draw();
+  }
+
+  function updateDisplays() {
+    let temp = parseFloat(tempInput.value);
+    if (isNaN(temp)) temp = 15;
+    let tempK = temp + 273.15;
+
+    let currentHpa = parseFloat(startHpaInput.value);
+    if (isNaN(currentHpa)) currentHpa = STANDARD_HPA;
+
+    p0Display.textContent = seaLevelReferenceHpa.toFixed(2) + ' hPa';
+    pressureDisplay.textContent = currentHpa.toFixed(2) + ' hPa';
+    tempDisplay.textContent = tempK.toFixed(2) + ' K';
+  }
+
   function draw() {
+    if (W <= 0 || H <= 0) return;
+
     ctx.clearRect(0, 0, W, H);
 
-    // Get current pressure in hPa
-    let currentHpa = parseFloat(atmInput.value);
+    let temp = parseFloat(tempInput.value);
+    if (isNaN(temp)) temp = 15;
+
+    let currentHpa = parseFloat(startHpaInput.value);
     if (isNaN(currentHpa) || currentHpa <= 0) currentHpa = STANDARD_HPA;
 
-    // --- Heatmap ---
     const steps = 100;
     for (let i = 0; i < steps; i++) {
       const d0 = depthMin + (depthMax - depthMin) * i / steps;
@@ -227,11 +414,9 @@
       }
     }
 
-    // --- Grid and Axes ---
     const fontSize = W < 600 ? '11px' : '13px';
     ctx.font = `${fontSize} system-ui, sans-serif`;
 
-    // X-Axis Grid (Oxygen Fraction)
     for (let f = 0; f <= 1.0; f += 0.1) {
       const x = xScale(f);
       ctx.strokeStyle = 'rgba(255,255,255,0.1)';
@@ -246,7 +431,6 @@
       ctx.fillText((f * 100).toFixed(0) + '%', x, M.top + plotH + 10);
     }
 
-    // Y-Axis Grid (Depth)
     for (let d = depthMin; d <= depthMax; d += 10) {
       const y = yScale(d);
       ctx.strokeStyle = 'rgba(255,255,255,0.1)';
@@ -261,7 +445,6 @@
       ctx.fillText(d + ' m', M.left - 10, y);
     }
 
-    // Y-Axis Title
     ctx.save();
     ctx.translate(20, M.top + plotH / 2);
     ctx.rotate(-Math.PI / 2);
@@ -272,20 +455,17 @@
     ctx.fillText('Depth (m)', 0, 0);
     ctx.restore();
 
-    // X-Axis Title
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
     ctx.fillStyle = '#e0e0e0';
     ctx.font = `${W < 600 ? '12px' : '14px'} system-ui, sans-serif`;
     ctx.fillText('Oxygen Fraction (FO₂)', M.left + plotW / 2, M.top + plotH + 30);
 
-    // --- Hover ---
     if (mouse.inPlot) {
       const fraction = invX(mouse.x);
       const depth = invY(mouse.y);
       const o2 = pO2(fraction, depth, currentHpa);
 
-      // Guide Lines
       ctx.strokeStyle = 'rgba(255,255,255,0.6)';
       ctx.lineWidth = 1.5;
       ctx.setLineDash([4, 4]);
@@ -297,7 +477,6 @@
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // Hover Point
       ctx.beginPath();
       ctx.arc(mouse.x, mouse.y, 6, 0, Math.PI * 2);
       ctx.fillStyle = o2 >= 1.0 && o2 <= 1.4 ? '#00b4d8' : (o2 < 1.0 ? '#6c757d' : (o2 <= 1.6 ? '#f9c74f' : '#e94560'));
@@ -306,13 +485,12 @@
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // Tooltip Content
       const lines = [
         `FO₂: ${(fraction * 100).toFixed(1)}%`,
         `Depth: ${depth.toFixed(1)} m`,
         `pO₂: ${o2.toFixed(2)} bar`,
         o2 < 1.0 ? 'Hypoxic' : (o2 <= 1.4 ? 'Normoxic' : (o2 <= 1.6 ? 'Hyperoxic' : 'Toxic')),
-        `pO₂ = ${fraction.toFixed(2)} × (${(currentHpa / STANDARD_HPA).toFixed(2)} + ${(depth / MSW_PER_ATM).toFixed(2)})`
+        `pO₂ = ${fraction.toFixed(2)} × (${(currentHpa / seaLevelReferenceHpa).toFixed(3)} + ${(depth / MSW_PER_ATM).toFixed(2)})`
       ];
 
       ctx.font = `${fontSize} system-ui, sans-serif`;
@@ -322,14 +500,12 @@
       const boxW = textW + padding * 2;
       const boxH = lines.length * lineH + padding * 2;
 
-      // Tooltip Positioning
       let bx = mouse.x + 15;
       let by = mouse.y - boxH / 2;
       if (bx + boxW > W) bx = mouse.x - boxW - 15;
       if (by < M.top) by = M.top;
       if (by + boxH > M.top + plotH) by = M.top + plotH - boxH;
 
-      // Draw Box
       ctx.shadowColor = 'rgba(0,0,0,0.8)';
       ctx.shadowBlur = 10;
       ctx.fillStyle = 'rgba(15, 52, 96, 0.95)';
@@ -342,7 +518,6 @@
       roundRect(bx, by, boxW, boxH, 8);
       ctx.stroke();
 
-      // Draw Text
       ctx.textAlign = 'left';
       ctx.textBaseline = 'top';
       lines.forEach((l, i) => {
@@ -376,7 +551,6 @@
     return { x: e.clientX - rect.left, y: e.clientY - rect.top };
   }
 
-  // Event Listeners
   canvas.addEventListener('mousemove', e => {
     const p = getPos(e);
     mouse.x = p.x;
@@ -391,11 +565,24 @@
     draw();
   });
 
-  atmInput.addEventListener('input', draw);
-  atmInput.addEventListener('change', draw);
+  altInput.addEventListener('input', syncPressureFromReference);
+  tempInput.addEventListener('input', syncPressureFromReference);
+
+  startHpaInput.addEventListener('input', () => {
+    let alt = parseFloat(altInput.value);
+    let temp = parseFloat(tempInput.value);
+    let manualHpa = parseFloat(startHpaInput.value);
+
+    if (!isNaN(alt) && !isNaN(temp) && !isNaN(manualHpa) && manualHpa > 0) {
+      seaLevelReferenceHpa = getReferenceFromMeasured(manualHpa, alt, temp);
+      startHpaInput.classList.add('manual-override');
+      updateDisplays();
+      draw();
+    }
+  });
 
   window.addEventListener('resize', resize);
-  resize();
+  setTimeout(resize, 50);
 })();
 </script>
 </body>
