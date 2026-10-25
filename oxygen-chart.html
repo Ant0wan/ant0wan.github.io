@@ -40,12 +40,16 @@
     font-style: italic;
     font-weight: 400;
   }
-  .legend-row {
+  .controls-row {
     display: flex;
     gap: 20px;
     font-size: clamp(12px, 1vw, 14px);
     flex-wrap: wrap;
     align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
   .legend-item {
     display: flex;
@@ -56,6 +60,32 @@
     width: 12px;
     height: 12px;
     border-radius: 50%;
+  }
+  .atm-input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 15px;
+    padding-left: 15px;
+    border-left: 1px solid rgba(255,255,255,0.2);
+  }
+  .atm-input label {
+    color: #90e0ef;
+    font-weight: 600;
+  }
+  .atm-input input {
+    background: #16213e;
+    border: 1px solid #90e0ef;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    width: 80px;
+    font-family: inherit;
+    font-size: inherit;
+  }
+  .atm-input input:focus {
+    outline: none;
+    box-shadow: 0 0 5px rgba(144, 224, 239, 0.5);
   }
   .formula {
     margin-left: auto;
@@ -79,13 +109,21 @@
     <div class="title">
       Isopleths of Oxygen Partial Pressure (<i>pO</i><sub>2</sub>) as a function of Depth and Oxygen Fraction (<i>F</i><sub>O<sub>2</sub></sub>)
     </div>
-    <div class="legend-row">
-      <div class="legend-item"><div class="swatch" style="background:#6c757d"></div> Hypoxic (&lt; 1.0 bar)</div>
-      <div class="legend-item"><div class="swatch" style="background:#00b4d8"></div> Normoxic (1.0 - 1.4 bar)</div>
-      <div class="legend-item"><div class="swatch" style="background:#f9c74f"></div> Hyperoxic (1.4 - 1.6 bar)</div>
-      <div class="legend-item"><div class="swatch" style="background:#e94560"></div> Toxic (&gt; 1.6 bar)</div>
+
+    <div class="controls-row">
+      <div class="legend-item"><div class="swatch" style="background:#6c757d"></div> Hypoxic (&lt; 1.0)</div>
+      <div class="legend-item"><div class="swatch" style="background:#00b4d8"></div> Normoxic (1.0 - 1.4)</div>
+      <div class="legend-item"><div class="swatch" style="background:#f9c74f"></div> Hyperoxic (1.4 - 1.6)</div>
+      <div class="legend-item"><div class="swatch" style="background:#e94560"></div> Toxic (&gt; 1.6)</div>
+
+      <!-- Atmospheric Pressure Input in hPa -->
+      <div class="atm-input">
+        <label for="atm-val">Surface Pressure (hPa):</label>
+        <input type="number" id="atm-val" value="1013.25" step="1" min="500" max="1100">
+      </div>
+
       <div class="formula">
-        pO<sub>2</sub> = F<sub>O<sub>2</sub></sub> × (1 + D/10)
+        pO<sub>2</sub> = F<sub>O<sub>2</sub></sub> × (P<sub>atm</sub>/1013.25 + D/10.06)
       </div>
     </div>
   </div>
@@ -96,7 +134,8 @@
 (function() {
   const canvas = document.getElementById('chart');
   const ctx = canvas.getContext('2d');
-  
+  const atmInput = document.getElementById('atm-val');
+
   let W = 0, H = 0;
   let M = { top: 10, right: 20, bottom: 40, left: 60 };
   let plotW = 0, plotH = 0;
@@ -104,21 +143,28 @@
   const fracMin = 0, fracMax = 1.0;
   const depthMin = 0, depthMax = 60;
 
+  // Constants
+  const MSW_PER_ATM = 10.06;
+  const STANDARD_HPA = 1013.25;
+
   function xScale(f) { return M.left + (f - fracMin) / (fracMax - fracMin) * plotW; }
   function yScale(d) { return M.top + (d - depthMin) / (depthMax - depthMin) * plotH; }
   function invX(px) { return fracMin + (px - M.left) / plotW * (fracMax - fracMin); }
   function invY(py) { return depthMin + (py - M.top) / plotH * (depthMax - depthMin); }
-  
-  // Partial pressure calculation: pO2 = FO2 * (1 + depth/10)
-  function pO2(fraction, depth) { return fraction * (1 + depth / 10); }
+
+  // Partial pressure calculation using hPa input
+  function pO2(fraction, depth, pressureHpa) {
+    const atm = pressureHpa / STANDARD_HPA;
+    return fraction * (atm + depth / MSW_PER_ATM);
+  }
 
   let mouse = { x: -1, y: -1, inPlot: false };
 
   function resize() {
     const rect = canvas.parentElement.getBoundingClientRect();
-    const headerHeight = document.querySelector('.header').offsetHeight; 
-    
-    W = rect.width - 60; 
+    const headerHeight = document.querySelector('.header').offsetHeight;
+
+    W = rect.width - 60;
     H = rect.height - headerHeight - 40;
 
     if (W <= 0 || H <= 0) return;
@@ -128,7 +174,7 @@
     canvas.height = H * dpr;
     canvas.style.width = W + 'px';
     canvas.style.height = H + 'px';
-    
+
     ctx.scale(dpr, dpr);
 
     M.left = W < 600 ? 50 : 60;
@@ -145,6 +191,10 @@
   function draw() {
     ctx.clearRect(0, 0, W, H);
 
+    // Get current pressure in hPa
+    let currentHpa = parseFloat(atmInput.value);
+    if (isNaN(currentHpa) || currentHpa <= 0) currentHpa = STANDARD_HPA;
+
     // --- Heatmap ---
     const steps = 100;
     for (let i = 0; i < steps; i++) {
@@ -159,8 +209,8 @@
         const x0 = xScale(f0);
         const x1 = xScale(f1);
 
-        const o2 = pO2((f0 + f1) / 2, (d0 + d1) / 2);
-        
+        const o2 = pO2((f0 + f1) / 2, (d0 + d1) / 2, currentHpa);
+
         let color;
         if (o2 < 1.0) {
           color = `rgba(108, 117, 125, ${0.05 + (o2 / 1.0) * 0.2})`;
@@ -189,7 +239,7 @@
       ctx.moveTo(x, M.top);
       ctx.lineTo(x, M.top + plotH);
       ctx.stroke();
-      
+
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
       ctx.fillStyle = '#a0a0b0';
@@ -204,7 +254,7 @@
       ctx.moveTo(M.left, y);
       ctx.lineTo(M.left + plotW, y);
       ctx.stroke();
-      
+
       ctx.textAlign = 'right';
       ctx.textBaseline = 'middle';
       ctx.fillStyle = '#a0a0b0';
@@ -233,7 +283,7 @@
     if (mouse.inPlot) {
       const fraction = invX(mouse.x);
       const depth = invY(mouse.y);
-      const o2 = pO2(fraction, depth);
+      const o2 = pO2(fraction, depth, currentHpa);
 
       // Guide Lines
       ctx.strokeStyle = 'rgba(255,255,255,0.6)';
@@ -262,12 +312,12 @@
         `Depth: ${depth.toFixed(1)} m`,
         `pO₂: ${o2.toFixed(2)} bar`,
         o2 < 1.0 ? 'Hypoxic' : (o2 <= 1.4 ? 'Normoxic' : (o2 <= 1.6 ? 'Hyperoxic' : 'Toxic')),
-        `pO₂ = ${fraction.toFixed(2)} × (1 + ${(depth / 10).toFixed(2)})`
+        `pO₂ = ${fraction.toFixed(2)} × (${(currentHpa / STANDARD_HPA).toFixed(2)} + ${(depth / MSW_PER_ATM).toFixed(2)})`
       ];
-      
+
       ctx.font = `${fontSize} system-ui, sans-serif`;
       const padding = 12;
-      const lineH = 22; 
+      const lineH = 22;
       const textW = Math.max(...lines.map(l => ctx.measureText(l).width));
       const boxW = textW + padding * 2;
       const boxH = lines.length * lineH + padding * 2;
@@ -300,7 +350,7 @@
         if (i === 3) textColor = o2 < 1.0 ? '#6c757d' : (o2 <= 1.4 ? '#00b4d8' : (o2 <= 1.6 ? '#f9c74f' : '#e94560'));
         else if (i === 2) textColor = '#fff';
         else if (i === 4) {
-          textColor = '#90e0ef'; 
+          textColor = '#90e0ef';
           ctx.font = `bold ${fontSize} system-ui, sans-serif`;
         } else {
           ctx.font = `${fontSize} system-ui, sans-serif`;
@@ -326,6 +376,7 @@
     return { x: e.clientX - rect.left, y: e.clientY - rect.top };
   }
 
+  // Event Listeners
   canvas.addEventListener('mousemove', e => {
     const p = getPos(e);
     mouse.x = p.x;
@@ -339,6 +390,9 @@
     mouse.inPlot = false;
     draw();
   });
+
+  atmInput.addEventListener('input', draw);
+  atmInput.addEventListener('change', draw);
 
   window.addEventListener('resize', resize);
   resize();
