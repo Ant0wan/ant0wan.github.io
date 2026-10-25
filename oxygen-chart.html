@@ -125,8 +125,8 @@
   }
   .legend-row {
     display: flex;
-    gap: 6px;
-    font-size: 11px;
+    gap: 20px;
+    font-size: 12px;
     flex-wrap: wrap;
     justify-content: center;
     color: var(--text-muted);
@@ -134,18 +134,20 @@
   .legend-item {
     display: flex;
     align-items: center;
-    gap: 7px;
-    padding: 5px 10px;
-    background: transparent;
-    border: 1px solid var(--border);
-    border-radius: 999px;
+    gap: 8px;
     font-weight: 500;
+    white-space: nowrap;
   }
   .swatch {
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    box-shadow: 0 0 8px rgba(0,0,0,0.2);
+    flex-shrink: 0;
+  }
+  .legend-item .limits {
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+    font-weight: 400;
   }
 
   .right-panel {
@@ -269,11 +271,26 @@
 
       <div class="center-panel">
         <div class="legend-row">
-          <div class="legend-item"><div class="swatch" style="background:#64748b"></div> Hypoxic</div>
-          <div class="legend-item"><div class="swatch" style="background:#4ade80"></div> Normoxic</div>
-          <div class="legend-item"><div class="swatch" style="background:#22d3ee"></div> Hyperoxic</div>
-          <div class="legend-item"><div class="swatch" style="background:#fbbf24"></div> Critical</div>
-          <div class="legend-item"><div class="swatch" style="background:#9f1239"></div> Toxic</div>
+          <div class="legend-item">
+            <div class="swatch" style="background:#64748b"></div>
+            Hypoxic <span class="limits">&lt; 0.18 bar</span>
+          </div>
+          <div class="legend-item">
+            <div class="swatch" style="background:#4ade80"></div>
+            Normoxic <span class="limits">0.18 ≤ pO₂ &lt; 0.21 bar</span>
+          </div>
+          <div class="legend-item">
+            <div class="swatch" style="background:#22d3ee"></div>
+            Hyperoxic <span class="limits">0.21 ≤ pO₂ &lt; 1.40 bar</span>
+          </div>
+          <div class="legend-item">
+            <div class="swatch" style="background:#fbbf24"></div>
+            Critical <span class="limits">1.40 ≤ pO₂ ≤ 1.60 bar</span>
+          </div>
+          <div class="legend-item">
+            <div class="swatch" style="background:#9f1239"></div>
+            Toxic <span class="limits">&gt; 1.60 bar</span>
+          </div>
         </div>
       </div>
 
@@ -325,7 +342,7 @@
   let plotW = 0, plotH = 0;
 
   const fracMin = 0, fracMax = 1.0;
-  const depthMin = 0, depthMax = 60;
+  const depthMin = 0, depthMax = 90;   // depth now extends to 90 m
 
   const MSW_PER_ATM = 10.06;
   const STANDARD_HPA = 1013.25;
@@ -442,7 +459,6 @@
   }
 
   // ---- Fast isopleth field via a single ImageData pass ----
-  // NOTE: transparency is applied ONLY here, inside the field pixels.
   function drawField(currentHpa) {
     const dpr = window.devicePixelRatio || 1;
     const fieldW = Math.max(1, Math.floor(plotW * dpr));
@@ -517,7 +533,6 @@
 
         a *= OPACITY;
 
-        // Blend onto pure black background
         data[idx]     = r * a;
         data[idx + 1] = g * a;
         data[idx + 2] = b * a;
@@ -544,7 +559,7 @@
 
     drawField(currentHpa);
 
-    // --- Grid lines (full opacity) ---
+    // --- Grid lines ---
     ctx.lineWidth = 1;
     for (let f = 0; f <= 1.0; f += 0.1) {
       const x = xScale(f);
@@ -557,11 +572,12 @@
 
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
-      ctx.fillStyle = '#b0b8c4';
+      ctx.fillStyle = '#ffffff';           // axis % labels now white
       ctx.font = '11px Inter, system-ui, sans-serif';
       ctx.fillText((f * 100).toFixed(0) + '%', x, M.top + plotH + 12);
     }
 
+    // Depth ticks every 10 m up to 90 m
     for (let d = depthMin; d <= depthMax; d += 10) {
       const y = yScale(d);
       ctx.strokeStyle = d === 0 ? 'rgba(148, 163, 184, 0.35)' : 'rgba(148, 163, 184, 0.15)';
@@ -572,12 +588,12 @@
 
       ctx.textAlign = 'right';
       ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#b0b8c4';
+      ctx.fillStyle = '#ffffff';           // depth labels now white
       ctx.font = '11px Inter, system-ui, sans-serif';
       ctx.fillText(d + ' m', M.left - 12, y);
     }
 
-    // Axis labels (full opacity)
+    // Axis labels
     ctx.save();
     ctx.translate(18, M.top + plotH / 2);
     ctx.rotate(-Math.PI / 2);
@@ -594,7 +610,7 @@
     ctx.font = '600 12px Inter, system-ui, sans-serif';
     ctx.fillText('Oxygen Fraction (FO₂)', M.left + plotW / 2, M.top + plotH + 30);
 
-    // Outer border (full opacity)
+    // Outer border
     ctx.strokeStyle = 'rgba(148, 163, 184, 0.35)';
     ctx.strokeRect(M.left, M.top, plotW, plotH);
 
@@ -606,7 +622,6 @@
       const zone = getZone(o2);
       const zoneColor = zone.hex;
 
-      // Crosshair (fully opaque)
       ctx.strokeStyle = 'rgba(241, 245, 249, 0.75)';
       ctx.lineWidth = 1;
       ctx.setLineDash([3, 3]);
@@ -618,7 +633,6 @@
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // Highlight point (fully opaque)
       ctx.beginPath();
       ctx.arc(mouse.x, mouse.y, 5, 0, Math.PI * 2);
       ctx.fillStyle = zoneColor;
@@ -652,7 +666,6 @@
       if (by + boxH > M.top + plotH) by = M.top + plotH - boxH;
       if (bx < M.left) bx = M.left + 4;
 
-      // Tooltip panel (fully opaque)
       ctx.shadowColor = 'rgba(0,0,0,0.7)';
       ctx.shadowBlur = 16;
       ctx.shadowOffsetY = 4;
