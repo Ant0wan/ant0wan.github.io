@@ -4,93 +4,114 @@
 <meta charset="UTF-8">
 <title>Isopleths of Oxygen Partial Pressure (pO₂)</title>
 <style>
+  :root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface-2: #334155;
+    --border: rgba(148, 163, 184, 0.15);
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --accent: #38bdf8;
+    --accent-warm: #fbbf24;
+  }
+
+  * { box-sizing: border-box; }
+
   body, html {
     margin: 0;
     padding: 0;
     width: 100%;
     height: 100%;
     overflow: hidden;
-    background: #1a1a2e;
-    font-family: system-ui, -apple-system, sans-serif;
-    color: #e0e0e0;
+    background: var(--bg);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
   }
+
   #container {
     width: 100%;
     height: 100%;
     display: flex;
     flex-direction: column;
-    box-sizing: border-box;
-    padding: 20px 30px;
+    padding: 24px 32px;
   }
 
   .header {
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    margin-bottom: 10px;
+    gap: 18px;
+    margin-bottom: 12px;
     flex-shrink: 0;
   }
 
   .title {
-    font-size: clamp(16px, 2vw, 22px);
+    font-size: clamp(17px, 1.8vw, 21px);
     font-weight: 600;
-    color: #e94560;
-    letter-spacing: 0.5px;
+    color: #f1f5f9;
+    letter-spacing: -0.01em;
     line-height: 1.4;
     text-align: center;
   }
   .title i, .title sub {
     font-style: italic;
     font-weight: 400;
+    color: var(--accent);
   }
 
   .info-row {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 20px;
+    gap: 24px;
     flex-wrap: wrap;
   }
 
   .left-panel {
     display: flex;
     flex-direction: row;
-    gap: 15px;
+    gap: 16px;
     align-items: flex-end;
     flex-wrap: wrap;
   }
   .input-group {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
   }
   .input-group label {
-    color: #90e0ef;
-    font-weight: 600;
-    font-size: clamp(11px, 0.9vw, 13px);
+    color: var(--text-muted);
+    font-weight: 500;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
   .input-group input {
-    background: #16213e;
-    border: 1px solid rgba(144, 224, 239, 0.4);
-    color: #fff;
-    padding: 4px 8px;
-    border-radius: 4px;
-    width: 90px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 7px 10px;
+    border-radius: 6px;
+    width: 100px;
     font-family: inherit;
-    font-size: clamp(12px, 1vw, 14px);
+    font-size: 13px;
+    font-weight: 500;
     text-align: right;
-    transition: all 0.2s;
+    transition: all 0.15s ease;
+    font-variant-numeric: tabular-nums;
+  }
+  .input-group input:hover {
+    border-color: rgba(148, 163, 184, 0.3);
   }
   .input-group input:focus {
     outline: none;
-    border-color: #90e0ef;
-    box-shadow: 0 0 5px rgba(144, 224, 239, 0.3);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
   }
   .input-group input.manual-override {
-    border-color: #f9c74f;
-    background: rgba(249, 199, 79, 0.15);
-    color: #f9c74f;
-    font-weight: bold;
+    border-color: var(--accent-warm);
+    background: rgba(251, 191, 36, 0.08);
+    color: var(--accent-warm);
   }
 
   .center-panel {
@@ -99,57 +120,68 @@
     align-items: center;
     gap: 10px;
     flex: 1;
-    padding-top: 15px;
+    padding-top: 12px;
   }
   .legend-row {
     display: flex;
-    gap: 15px;
-    font-size: clamp(11px, 1vw, 13px);
+    gap: 6px;
+    font-size: 11px;
     flex-wrap: wrap;
     justify-content: center;
-    color: #a0a0b0;
+    color: var(--text-muted);
   }
   .legend-item {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 7px;
+    padding: 5px 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-weight: 500;
   }
   .swatch {
-    width: 12px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
+    box-shadow: 0 0 8px rgba(0,0,0,0.2);
   }
 
   .right-panel {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 12px;
+    gap: 8px;
     min-width: 320px;
     position: relative;
-    padding-top: 5px;
+    padding-top: 2px;
   }
 
   .formula-item {
     display: flex;
     align-items: baseline;
     gap: 8px;
-    color: #90e0ef;
+    color: var(--text-muted);
     font-family: 'Times New Roman', Times, serif;
-    font-size: clamp(13px, 1.1vw, 16px);
+    font-size: 14px;
     font-style: italic;
     white-space: nowrap;
     position: relative;
     cursor: help;
-    border-bottom: 1px dashed rgba(144, 224, 239, 0.3);
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
   }
   .formula-item strong {
-    font-family: system-ui, -apple-system, sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
     font-style: normal;
-    color: #e0e0e0;
-    font-size: clamp(11px, 0.9vw, 13px);
+    color: var(--text);
+    font-size: 11px;
     font-weight: 600;
-    margin-right: 5px;
+    margin-right: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
   }
 
   .exp {
@@ -166,21 +198,21 @@
     top: 100%;
     right: 0;
     margin-top: 8px;
-    background: #16213e;
-    border: 1px solid rgba(144, 224, 239, 0.3);
-    padding: 10px 15px;
-    border-radius: 6px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    background: var(--surface-2);
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    padding: 12px 16px;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    font-family: system-ui, -apple-system, sans-serif;
+    gap: 8px;
+    font-family: 'Inter', system-ui, sans-serif;
     font-style: normal;
     font-size: 12px;
-    color: #a0a0b0;
+    color: var(--text-muted);
     white-space: nowrap;
     z-index: 100;
-    transition: opacity 0.2s, visibility 0.2s;
+    transition: opacity 0.15s, visibility 0.15s;
     pointer-events: none;
   }
 
@@ -192,11 +224,12 @@
   .const-item {
     display: flex;
     justify-content: space-between;
-    gap: 15px;
+    gap: 20px;
   }
   .const-val {
-    color: #f9c74f;
+    color: var(--accent-warm);
     font-weight: 600;
+    font-variant-numeric: tabular-nums;
   }
 
   canvas {
@@ -205,6 +238,8 @@
     cursor: crosshair;
     min-height: 0;
     background: transparent;
+    border-radius: 12px;
+    border: 1px solid var(--border);
   }
 </style>
 </head>
@@ -226,44 +261,42 @@
           <input type="number" id="temp-val" value="15" step="1" min="-40" max="50">
         </div>
         <div class="input-group">
-          <label for="start-hpa">P<sub>h</sub> Active Surface (hPa)</label>
+          <label for="start-hpa">P<sub>h</sub> Surface (hPa)</label>
           <input type="number" id="start-hpa" value="1013.25" step="0.1" min="500" max="1100">
         </div>
       </div>
 
       <div class="center-panel">
         <div class="legend-row">
-          <div class="legend-item"><div class="swatch" style="background:#6c757d"></div> Hypoxic (0 – 0.18 bar)</div>
-          <div class="legend-item"><div class="swatch" style="background:#90ee90"></div> Normoxic (0.18 – 0.21 bar)</div>
-          <div class="legend-item"><div class="swatch" style="background:#00b4d8"></div> Hyperoxic (0.21 – 1.4 bar)</div>
-          <div class="legend-item"><div class="swatch" style="background:#f9c74f"></div> Critical (1.4 – 1.6 bar)</div>
-          <div class="legend-item"><div class="swatch" style="background:#e94560"></div> Toxic (&gt; 1.6 bar)</div>
+          <div class="legend-item"><div class="swatch" style="background:#64748b"></div> Hypoxic</div>
+          <div class="legend-item"><div class="swatch" style="background:#4ade80"></div> Normoxic</div>
+          <div class="legend-item"><div class="swatch" style="background:#22d3ee"></div> Hyperoxic</div>
+          <div class="legend-item"><div class="swatch" style="background:#fbbf24"></div> Critical</div>
+          <div class="legend-item"><div class="swatch" style="background:#f43f5e"></div> Toxic</div>
         </div>
       </div>
 
       <div class="right-panel">
         <div class="formula-item">
-          <strong>Partial Pressure:</strong>
-          <span>pO<sub>2</sub> = F<sub>O<sub>2</sub></sub> × (P<sub>h</sub> / P<sub>0</sub> + D / 10.06)</span>
+          <strong>pO₂</strong>
+          <span>F<sub>O₂</sub> × (P<sub>h</sub> / P<sub>0</sub> + D / 10.06)</span>
 
           <div class="tooltip">
-            <div class="const-item"><span>P<sub>0</sub> (Sea Level Ref):</span> <span id="p0-display" class="const-val">1013.25 hPa</span></div>
-            <div class="const-item"><span>P<sub>h</sub> (Active Surface):</span> <span id="pressure-display" class="const-val">1013.25 hPa</span></div>
+            <div class="const-item"><span>P<sub>0</sub> Sea Level Ref:</span> <span id="p0-display" class="const-val">1013.25 hPa</span></div>
+            <div class="const-item"><span>P<sub>h</sub> Active Surface:</span> <span id="pressure-display" class="const-val">1013.25 hPa</span></div>
             <div class="const-item"><span>MSW/ATM:</span> <span class="const-val">10.06 m/atm</span></div>
           </div>
         </div>
 
         <div class="formula-item">
-          <strong>Barometric:</strong>
-          <span>
-            P<sub>h</sub> = P<sub>0</sub> · e<sup class="exp">− (M·g·h) / (R·T)</sup>
-          </span>
+          <strong>Barometric</strong>
+          <span>P<sub>h</sub> = P<sub>0</sub> · e<sup class="exp">− (M·g·h) / (R·T)</sup></span>
 
           <div class="tooltip">
-            <div class="const-item"><span>M (Air molar mass):</span> <span class="const-val">0.0289644 kg/mol</span></div>
-            <div class="const-item"><span>g (Gravity):</span> <span class="const-val">9.81 m/s²</span></div>
-            <div class="const-item"><span>R (Gas constant):</span> <span class="const-val">8.314 J/(mol·K)</span></div>
-            <div class="const-item"><span>T (Absolute Temp):</span> <span id="temp-display" class="const-val">288.15 K</span></div>
+            <div class="const-item"><span>M Air molar mass:</span> <span class="const-val">0.0289644 kg/mol</span></div>
+            <div class="const-item"><span>g Gravity:</span> <span class="const-val">9.81 m/s²</span></div>
+            <div class="const-item"><span>R Gas constant:</span> <span class="const-val">8.314 J/(mol·K)</span></div>
+            <div class="const-item"><span>T Absolute Temp:</span> <span id="temp-display" class="const-val">288.15 K</span></div>
           </div>
         </div>
       </div>
@@ -276,7 +309,7 @@
 <script>
 (function() {
   const canvas = document.getElementById('chart');
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext('2d', { alpha: false });
 
   const altInput = document.getElementById('alt-val');
   const tempInput = document.getElementById('temp-val');
@@ -287,7 +320,7 @@
   const tempDisplay = document.getElementById('temp-display');
 
   let W = 0, H = 0;
-  let M = { top: 10, right: 20, bottom: 40, left: 60 };
+  let M = { top: 20, right: 20, bottom: 50, left: 60 };
   let plotW = 0, plotH = 0;
 
   const fracMin = 0, fracMax = 1.0;
@@ -306,14 +339,22 @@
   const NORMOXIC_MAX  = 0.21;
   const HYPEROXIC_MAX = 1.40;
   const CRITICAL_MAX  = 1.60;
-  // Toxic: > 1.60
 
-  // --- ZONE COLORS ---
-  const COLOR_HYPOXIC   = '#6c757d';   // grey
-  const COLOR_NORMOXIC  = '#90ee90';   // light green
-  const COLOR_HYPEROXIC = '#00b4d8';   // cyan
-  const COLOR_CRITICAL  = '#f9c74f';   // gold
-  const COLOR_TOXIC     = '#e94560';   // red
+  // --- Zone colors (hex for legend, rgb for canvas) ---
+  const ZONE_HEX = {
+    hypoxic:   '#64748b',
+    normoxic:  '#4ade80',
+    hyperoxic: '#22d3ee',
+    critical:  '#fbbf24',
+    toxic:     '#f43f5e'
+  };
+  const ZONE_RGB = {
+    hypoxic:   '100, 116, 139',
+    normoxic:  '74, 222, 128',
+    hyperoxic: '34, 211, 238',
+    critical:  '251, 191, 36',
+    toxic:     '244, 63, 94'
+  };
 
   function getPressureFromReference(altitude, tempC) {
     const tempK = tempC + 273.15;
@@ -335,13 +376,12 @@
     return fraction * (atm + depth / MSW_PER_ATM);
   }
 
-  // ---- Zone classification ----
   function getZone(o2) {
-    if (o2 < HYPOXIC_MAX)   return { label: 'Hypoxic',   color: COLOR_HYPOXIC };
-    if (o2 < NORMOXIC_MAX)  return { label: 'Normoxic',  color: COLOR_NORMOXIC };
-    if (o2 < HYPEROXIC_MAX) return { label: 'Hyperoxic', color: COLOR_HYPEROXIC };
-    if (o2 <= CRITICAL_MAX) return { label: 'Critical',  color: COLOR_CRITICAL };
-    return { label: 'Toxic', color: COLOR_TOXIC };
+    if (o2 < HYPOXIC_MAX)   return { label: 'Hypoxic',   hex: ZONE_HEX.hypoxic,   rgb: ZONE_RGB.hypoxic };
+    if (o2 < NORMOXIC_MAX)  return { label: 'Normoxic',  hex: ZONE_HEX.normoxic,  rgb: ZONE_RGB.normoxic };
+    if (o2 < HYPEROXIC_MAX) return { label: 'Hyperoxic', hex: ZONE_HEX.hyperoxic, rgb: ZONE_RGB.hyperoxic };
+    if (o2 <= CRITICAL_MAX) return { label: 'Critical',  hex: ZONE_HEX.critical,  rgb: ZONE_RGB.critical };
+    return { label: 'Toxic', hex: ZONE_HEX.toxic, rgb: ZONE_RGB.toxic };
   }
 
   let mouse = { x: -1, y: -1, inPlot: false };
@@ -349,9 +389,12 @@
   function resize() {
     const rect = canvas.parentElement.getBoundingClientRect();
     const headerHeight = document.querySelector('.header').offsetHeight;
+    const containerStyle = getComputedStyle(document.getElementById('container'));
+    const padX = parseFloat(containerStyle.paddingLeft) + parseFloat(containerStyle.paddingRight);
+    const padY = parseFloat(containerStyle.paddingTop) + parseFloat(containerStyle.paddingBottom);
 
-    W = rect.width - 60;
-    H = rect.height - headerHeight - 40;
+    W = rect.width - padX;
+    H = rect.height - headerHeight - padY;
 
     if (W <= 0 || H <= 0) return;
 
@@ -361,11 +404,11 @@
     canvas.style.width = W + 'px';
     canvas.style.height = H + 'px';
 
-    ctx.scale(dpr, dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    M.left = W < 600 ? 50 : 60;
-    M.bottom = H < 400 ? 40 : 50;
-    M.top = 10;
+    M.left = W < 600 ? 50 : 64;
+    M.bottom = H < 400 ? 44 : 54;
+    M.top = 20;
     M.right = 20;
 
     plotW = W - M.left - M.right;
@@ -401,70 +444,125 @@
     tempDisplay.textContent = tempK.toFixed(2) + ' K';
   }
 
+  // ---- Fast isopleth field via a single ImageData pass ----
+  // Instead of thousands of fillRect calls, we compute the color for
+  // every pixel once and blit the whole field in one putImageData call.
+  // This is dramatically faster and gives perfectly smooth gradients.
+  function drawField(currentHpa) {
+    const dpr = window.devicePixelRatio || 1;
+    const fieldW = Math.max(1, Math.floor(plotW * dpr));
+    const fieldH = Math.max(1, Math.floor(plotH * dpr));
+
+    // Reuse an offscreen canvas sized to the field so ImageData is
+    // created once per draw (only when size or pressure changes).
+    if (!drawField._buf || drawField._buf.width !== fieldW || drawField._buf.height !== fieldH) {
+      drawField._buf = document.createElement('canvas');
+      drawField._buf.width = fieldW;
+      drawField._buf.height = fieldH;
+      drawField._bufCtx = drawField._buf.getContext('2d');
+    }
+    const bufCtx = drawField._bufCtx;
+    const img = bufCtx.createImageData(fieldW, fieldH);
+    const data = img.data;
+
+    const atm = currentHpa / seaLevelReferenceHpa;
+    const depthRange = depthMax - depthMin;
+    const fracRange = fracMax - fracMin;
+
+    // Precompute depth and fraction for each row/column (in user units)
+    const dStep = depthRange / fieldH;
+    const fStep = fracRange / fieldW;
+
+    // Precompute per-row pO2 depth component: (atm + d/MSW)
+    const rowDepth = new Float32Array(fieldH);
+    for (let y = 0; y < fieldH; y++) {
+      const d = depthMin + (y + 0.5) * dStep;
+      rowDepth[y] = atm + d / MSW_PER_ATM;
+    }
+
+    // Precompute per-column fraction
+    const colFrac = new Float32Array(fieldW);
+    for (let x = 0; x < fieldW; x++) {
+      colFrac[x] = fracMin + (x + 0.5) * fStep;
+    }
+
+    // Zone RGB components as raw numbers
+    const cH = [100, 116, 139];
+    const cN = [74, 222, 128];
+    const cX = [34, 211, 238];
+    const cC = [251, 191, 36];
+    const cT = [244, 63, 94];
+
+    // Precompute per-row alpha contributions where possible
+    let idx = 0;
+    for (let y = 0; y < fieldH; y++) {
+      const depthFactor = rowDepth[y];
+      for (let x = 0; x < fieldW; x++) {
+        const o2 = colFrac[x] * depthFactor;
+
+        let r, g, b, a;
+
+        if (o2 < HYPOXIC_MAX) {
+          const t = o2 / HYPOXIC_MAX;
+          a = 0.06 + t * 0.28;
+          r = cH[0]; g = cH[1]; b = cH[2];
+        } else if (o2 < NORMOXIC_MAX) {
+          const t = (o2 - HYPOXIC_MAX) / (NORMOXIC_MAX - HYPOXIC_MAX);
+          const bell = Math.sin(Math.PI * t);
+          a = 0.28 + bell * 0.42;
+          r = cN[0]; g = cN[1]; b = cN[2];
+        } else if (o2 < HYPEROXIC_MAX) {
+          const t = (o2 - NORMOXIC_MAX) / (HYPEROXIC_MAX - NORMOXIC_MAX);
+          const bell = Math.sin(Math.PI * Math.min(1, t * 1.05));
+          a = 0.14 + bell * 0.30;
+          r = cX[0]; g = cX[1]; b = cX[2];
+        } else if (o2 <= CRITICAL_MAX) {
+          const t = (o2 - HYPEROXIC_MAX) / (CRITICAL_MAX - HYPEROXIC_MAX);
+          const bell = Math.sin(Math.PI * t);
+          a = 0.22 + bell * 0.38;
+          r = cC[0]; g = cC[1]; b = cC[2];
+        } else {
+          const t = Math.min(1, (o2 - CRITICAL_MAX) / 2.0);
+          a = 0.28 + t * 0.42;
+          r = cT[0]; g = cT[1]; b = cT[2];
+        }
+
+        // Blend onto dark background (#0b1220 = 11,18,32)
+        const bgR = 11, bgG = 18, bgB = 32;
+        data[idx]     = bgR + (r - bgR) * a;
+        data[idx + 1] = bgG + (g - bgG) * a;
+        data[idx + 2] = bgB + (b - bgB) * a;
+        data[idx + 3] = 255;
+        idx += 4;
+      }
+    }
+
+    bufCtx.putImageData(img, 0, 0);
+
+    // Blit to main canvas at plot position
+    ctx.drawImage(drawField._buf, 0, 0, fieldW, fieldH,
+                  M.left, M.top, plotW, plotH);
+  }
+
   function draw() {
     if (W <= 0 || H <= 0) return;
-
-    ctx.clearRect(0, 0, W, H);
-
-    let temp = parseFloat(tempInput.value);
-    if (isNaN(temp)) temp = 15;
 
     let currentHpa = parseFloat(startHpaInput.value);
     if (isNaN(currentHpa) || currentHpa <= 0) currentHpa = STANDARD_HPA;
 
-    const steps = 100;
-    for (let i = 0; i < steps; i++) {
-      const d0 = depthMin + (depthMax - depthMin) * i / steps;
-      const d1 = depthMin + (depthMax - depthMin) * (i + 1) / steps;
-      const y0 = yScale(d0);
-      const y1 = yScale(d1);
+    // Fill entire canvas background
+    ctx.fillStyle = '#0b1220';
+    ctx.fillRect(0, 0, W, H);
 
-      for (let j = 0; j < steps; j++) {
-        const f0 = fracMin + (fracMax - fracMin) * j / steps;
-        const f1 = fracMin + (fracMax - fracMin) * (j + 1) / steps;
-        const x0 = xScale(f0);
-        const x1 = xScale(f1);
+    // Draw the isopleth field (fast ImageData blit)
+    drawField(currentHpa);
 
-        const o2 = pO2((f0 + f1) / 2, (d0 + d1) / 2, currentHpa);
-
-        // --- Color mapping with requested zones ---
-        let color;
-        if (o2 < HYPOXIC_MAX) {
-          // Hypoxic: grey
-          color = `rgba(108, 117, 125, ${0.05 + (o2 / HYPOXIC_MAX) * 0.20})`;
-        } else if (o2 < NORMOXIC_MAX) {
-          // Normoxic: light green
-          const t = (o2 - HYPOXIC_MAX) / (NORMOXIC_MAX - HYPOXIC_MAX);
-          const alpha = 0.20 + (1 - Math.abs(t - 0.5) * 2) * 0.25;
-          color = `rgba(144, 238, 144, ${alpha})`;
-        } else if (o2 < HYPEROXIC_MAX) {
-          // Hyperoxic: cyan
-          const mid = (HYPEROXIC_MAX + NORMOXIC_MAX) / 2;
-          const half = (HYPEROXIC_MAX - NORMOXIC_MAX) / 2;
-          const alpha = 0.15 + (1 - Math.abs(o2 - mid) / half) * 0.20;
-          color = `rgba(0, 180, 216, ${alpha})`;
-        } else if (o2 <= CRITICAL_MAX) {
-          // Critical: gold
-          const mid = (CRITICAL_MAX + HYPEROXIC_MAX) / 2;
-          const half = (CRITICAL_MAX - HYPEROXIC_MAX) / 2;
-          const alpha = 0.18 + (1 - Math.abs(o2 - mid) / half) * 0.22;
-          color = `rgba(249, 199, 79, ${alpha})`;
-        } else {
-          // Toxic: red
-          color = `rgba(233, 69, 96, ${Math.min(0.65, 0.15 + (o2 - CRITICAL_MAX) * 0.25)})`;
-        }
-
-        ctx.fillStyle = color;
-        ctx.fillRect(x0, y0, x1 - x0 + 1, y1 - y0 + 1);
-      }
-    }
-
-    const fontSize = W < 600 ? '11px' : '13px';
-    ctx.font = `${fontSize} system-ui, sans-serif`;
-
+    // --- Grid lines ---
+    ctx.lineWidth = 1;
     for (let f = 0; f <= 1.0; f += 0.1) {
       const x = xScale(f);
-      ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+      const isWhole = Math.abs(f - Math.round(f)) < 0.001;
+      ctx.strokeStyle = isWhole ? 'rgba(148, 163, 184, 0.18)' : 'rgba(148, 163, 184, 0.08)';
       ctx.beginPath();
       ctx.moveTo(x, M.top);
       ctx.lineTo(x, M.top + plotH);
@@ -472,13 +570,14 @@
 
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
-      ctx.fillStyle = '#a0a0b0';
-      ctx.fillText((f * 100).toFixed(0) + '%', x, M.top + plotH + 10);
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '11px Inter, system-ui, sans-serif';
+      ctx.fillText((f * 100).toFixed(0) + '%', x, M.top + plotH + 12);
     }
 
     for (let d = depthMin; d <= depthMax; d += 10) {
       const y = yScale(d);
-      ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+      ctx.strokeStyle = d === 0 ? 'rgba(148, 163, 184, 0.25)' : 'rgba(148, 163, 184, 0.08)';
       ctx.beginPath();
       ctx.moveTo(M.left, y);
       ctx.lineTo(M.left + plotW, y);
@@ -486,35 +585,44 @@
 
       ctx.textAlign = 'right';
       ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#a0a0b0';
-      ctx.fillText(d + ' m', M.left - 10, y);
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '11px Inter, system-ui, sans-serif';
+      ctx.fillText(d + ' m', M.left - 12, y);
     }
 
+    // Axis labels
     ctx.save();
-    ctx.translate(20, M.top + plotH / 2);
+    ctx.translate(18, M.top + plotH / 2);
     ctx.rotate(-Math.PI / 2);
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillStyle = '#e0e0e0';
-    ctx.font = `${W < 600 ? '12px' : '14px'} system-ui, sans-serif`;
+    ctx.fillStyle = '#cbd5e1';
+    ctx.font = '600 12px Inter, system-ui, sans-serif';
     ctx.fillText('Depth (m)', 0, 0);
     ctx.restore();
 
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
-    ctx.fillStyle = '#e0e0e0';
-    ctx.font = `${W < 600 ? '12px' : '14px'} system-ui, sans-serif`;
+    ctx.fillStyle = '#cbd5e1';
+    ctx.font = '600 12px Inter, system-ui, sans-serif';
     ctx.fillText('Oxygen Fraction (FO₂)', M.left + plotW / 2, M.top + plotH + 30);
 
+    // Subtle outer border
+    ctx.strokeStyle = 'rgba(148, 163, 184, 0.15)';
+    ctx.strokeRect(M.left, M.top, plotW, plotH);
+
+    // --- Hover crosshair + tooltip ---
     if (mouse.inPlot) {
       const fraction = invX(mouse.x);
       const depth = invY(mouse.y);
       const o2 = pO2(fraction, depth, currentHpa);
       const zone = getZone(o2);
+      const zoneColor = zone.hex;
 
-      ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-      ctx.lineWidth = 1.5;
-      ctx.setLineDash([4, 4]);
+      // Crosshair
+      ctx.strokeStyle = 'rgba(226, 232, 240, 0.35)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 3]);
       ctx.beginPath();
       ctx.moveTo(M.left, mouse.y);
       ctx.lineTo(M.left + plotW, mouse.y);
@@ -523,63 +631,73 @@
       ctx.stroke();
       ctx.setLineDash([]);
 
+      // Highlight point
       ctx.beginPath();
-      ctx.arc(mouse.x, mouse.y, 6, 0, Math.PI * 2);
-      ctx.fillStyle = zone.color;
+      ctx.arc(mouse.x, mouse.y, 5, 0, Math.PI * 2);
+      ctx.fillStyle = zoneColor;
       ctx.fill();
-      ctx.strokeStyle = '#fff';
+      ctx.strokeStyle = '#f8fafc';
       ctx.lineWidth = 2;
       ctx.stroke();
 
+      // Tooltip content
       const lines = [
-        `FO₂: ${(fraction * 100).toFixed(1)}%`,
-        `Depth: ${depth.toFixed(1)} m`,
-        `pO₂: ${o2.toFixed(2)} bar`,
-        zone.label,
-        `pO₂ = ${fraction.toFixed(2)} × (${(currentHpa / seaLevelReferenceHpa).toFixed(3)} + ${(depth / MSW_PER_ATM).toFixed(2)})`
+        { text: `FO₂: ${(fraction * 100).toFixed(1)}%`, color: '#e2e8f0' },
+        { text: `Depth: ${depth.toFixed(1)} m`, color: '#e2e8f0' },
+        { text: `pO₂: ${o2.toFixed(2)} bar`, color: '#f8fafc', bold: true },
+        { text: zone.label, color: zoneColor, bold: true },
+        { text: `${fraction.toFixed(2)} × (${(currentHpa / seaLevelReferenceHpa).toFixed(3)} + ${(depth / MSW_PER_ATM).toFixed(2)})`, color: '#7dd3fc' }
       ];
 
-      ctx.font = `${fontSize} system-ui, sans-serif`;
-      const padding = 12;
-      const lineH = 22;
-      const textW = Math.max(...lines.map(l => ctx.measureText(l).width));
-      const boxW = textW + padding * 2;
-      const boxH = lines.length * lineH + padding * 2;
+      ctx.font = '12px Inter, system-ui, sans-serif';
+      const padding = 14;
+      const lineH = 20;
+      const textWidths = lines.map(l => {
+        ctx.font = l.bold ? '600 12px Inter, system-ui, sans-serif' : '12px Inter, system-ui, sans-serif';
+        return ctx.measureText(l.text).width;
+      });
+      const boxW = Math.max(...textWidths) + padding * 2;
+      const boxH = lines.length * lineH + padding * 2 - 4;
 
-      let bx = mouse.x + 15;
+      let bx = mouse.x + 18;
       let by = mouse.y - boxH / 2;
-      if (bx + boxW > W) bx = mouse.x - boxW - 15;
+      if (bx + boxW > W - 4) bx = mouse.x - boxW - 18;
       if (by < M.top) by = M.top;
       if (by + boxH > M.top + plotH) by = M.top + plotH - boxH;
+      if (bx < M.left) bx = M.left + 4;
 
-      ctx.shadowColor = 'rgba(0,0,0,0.8)';
-      ctx.shadowBlur = 10;
-      ctx.fillStyle = 'rgba(15, 52, 96, 0.95)';
+      // Shadow
+      ctx.shadowColor = 'rgba(0,0,0,0.6)';
+      ctx.shadowBlur = 16;
+      ctx.shadowOffsetY = 4;
+
+      // Background
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.96)';
       roundRect(bx, by, boxW, boxH, 8);
       ctx.fill();
-      ctx.shadowBlur = 0;
 
-      ctx.strokeStyle = 'rgba(233, 69, 96, 0.8)';
-      ctx.lineWidth = 1.5;
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetY = 0;
+
+      // Accent border on left
+      ctx.fillStyle = zoneColor;
+      roundRectLeft(bx, by, 3, boxH, 8, 0);
+      ctx.fill();
+
+      // Border
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.2)';
+      ctx.lineWidth = 1;
       roundRect(bx, by, boxW, boxH, 8);
       ctx.stroke();
 
+      // Text
       ctx.textAlign = 'left';
       ctx.textBaseline = 'top';
       lines.forEach((l, i) => {
-        let textColor = '#e0e0e0';
-        if (i === 3) {
-          textColor = zone.color;
-        } else if (i === 2) {
-          textColor = '#fff';
-        } else if (i === 4) {
-          textColor = '#90e0ef';
-          ctx.font = `bold ${fontSize} system-ui, sans-serif`;
-        } else {
-          ctx.font = `${fontSize} system-ui, sans-serif`;
-        }
-        ctx.fillStyle = textColor;
-        ctx.fillText(l, bx + padding, by + padding + i * lineH);
+        ctx.font = l.bold ? '600 12px Inter, system-ui, sans-serif' : '12px Inter, system-ui, sans-serif';
+        ctx.fillStyle = l.color;
+        ctx.fillText(l.text, bx + padding, by + padding + i * lineH - 2);
       });
     }
   }
@@ -594,18 +712,44 @@
     ctx.closePath();
   }
 
+  function roundRectLeft(x, y, w, h, rTop, rBottom) {
+    ctx.beginPath();
+    ctx.moveTo(x + rTop, y);
+    ctx.lineTo(x + w, y);
+    ctx.lineTo(x + w, y + h);
+    ctx.lineTo(x + rBottom, y + h);
+    if (rBottom > 0) {
+      ctx.quadraticCurveTo(x, y + h, x, y + h - rBottom);
+    } else {
+      ctx.lineTo(x, y + h);
+    }
+    ctx.lineTo(x, y + rTop);
+    if (rTop > 0) {
+      ctx.quadraticCurveTo(x, y, x + rTop, y);
+    }
+    ctx.closePath();
+  }
+
   function getPos(e) {
     const rect = canvas.getBoundingClientRect();
     return { x: e.clientX - rect.left, y: e.clientY - rect.top };
   }
 
+  // Throttle mousemove redraws to animation frames for smoothness
+  let mouseRaf = 0;
   canvas.addEventListener('mousemove', e => {
     const p = getPos(e);
     mouse.x = p.x;
     mouse.y = p.y;
     mouse.inPlot = p.x >= M.left && p.x <= M.left + plotW &&
                    p.y >= M.top && p.y <= M.top + plotH;
-    draw();
+
+    if (!mouseRaf) {
+      mouseRaf = requestAnimationFrame(() => {
+        mouseRaf = 0;
+        draw();
+      });
+    }
   });
 
   canvas.addEventListener('mouseleave', () => {
