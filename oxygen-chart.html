@@ -342,7 +342,7 @@
   let plotW = 0, plotH = 0;
 
   const fracMin = 0, fracMax = 1.0;
-  const depthMin = 0, depthMax = 90;   // depth now extends to 90 m
+  const depthMin = 0, depthMax = 90;
 
   const MSW_PER_ATM = 10.06;
   const STANDARD_HPA = 1013.25;
@@ -365,6 +365,15 @@
     hyperoxic: '#22d3ee',
     critical:  '#fbbf24',
     toxic:     '#9f1239'
+  };
+
+  // --- Flat field alpha per zone (no 3D/bevel effect) ---
+  const ZONE_ALPHA = {
+    hypoxic:   0.55,
+    normoxic:  0.80,
+    hyperoxic: 0.55,
+    critical:  0.70,
+    toxic:     0.80
   };
 
   // --- Transparency multiplier for the FIELD ONLY ---
@@ -459,6 +468,8 @@
   }
 
   // ---- Fast isopleth field via a single ImageData pass ----
+  // Zones are now FLAT: each pixel gets its zone's constant alpha,
+  // with no sine "bell" shading — removing the 3D/bevel look.
   function drawField(currentHpa) {
     const dpr = window.devicePixelRatio || 1;
     const fieldW = Math.max(1, Math.floor(plotW * dpr));
@@ -498,6 +509,12 @@
     const cC = [251, 191, 36];
     const cT = [159, 18, 57];
 
+    const aH = ZONE_ALPHA.hypoxic   * OPACITY;
+    const aN = ZONE_ALPHA.normoxic  * OPACITY;
+    const aX = ZONE_ALPHA.hyperoxic * OPACITY;
+    const aC = ZONE_ALPHA.critical  * OPACITY;
+    const aT = ZONE_ALPHA.toxic     * OPACITY;
+
     let idx = 0;
     for (let y = 0; y < fieldH; y++) {
       const depthFactor = rowDepth[y];
@@ -507,31 +524,16 @@
         let r, g, b, a;
 
         if (o2 < HYPOXIC_MAX) {
-          const t = o2 / HYPOXIC_MAX;
-          a = 0.06 + t * 0.28;
-          r = cH[0]; g = cH[1]; b = cH[2];
+          a = aH; r = cH[0]; g = cH[1]; b = cH[2];
         } else if (o2 < NORMOXIC_MAX) {
-          const t = (o2 - HYPOXIC_MAX) / (NORMOXIC_MAX - HYPOXIC_MAX);
-          const bell = Math.sin(Math.PI * t);
-          a = 0.28 + bell * 0.42;
-          r = cN[0]; g = cN[1]; b = cN[2];
+          a = aN; r = cN[0]; g = cN[1]; b = cN[2];
         } else if (o2 < HYPEROXIC_MAX) {
-          const t = (o2 - NORMOXIC_MAX) / (HYPEROXIC_MAX - NORMOXIC_MAX);
-          const bell = Math.sin(Math.PI * Math.min(1, t * 1.05));
-          a = 0.14 + bell * 0.30;
-          r = cX[0]; g = cX[1]; b = cX[2];
+          a = aX; r = cX[0]; g = cX[1]; b = cX[2];
         } else if (o2 <= CRITICAL_MAX) {
-          const t = (o2 - HYPEROXIC_MAX) / (CRITICAL_MAX - HYPEROXIC_MAX);
-          const bell = Math.sin(Math.PI * t);
-          a = 0.22 + bell * 0.38;
-          r = cC[0]; g = cC[1]; b = cC[2];
+          a = aC; r = cC[0]; g = cC[1]; b = cC[2];
         } else {
-          const t = Math.min(1, (o2 - CRITICAL_MAX) / 2.0);
-          a = 0.28 + t * 0.42;
-          r = cT[0]; g = cT[1]; b = cT[2];
+          a = aT; r = cT[0]; g = cT[1]; b = cT[2];
         }
-
-        a *= OPACITY;
 
         data[idx]     = r * a;
         data[idx + 1] = g * a;
@@ -572,12 +574,11 @@
 
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
-      ctx.fillStyle = '#ffffff';           // axis % labels now white
+      ctx.fillStyle = '#ffffff';
       ctx.font = '11px Inter, system-ui, sans-serif';
       ctx.fillText((f * 100).toFixed(0) + '%', x, M.top + plotH + 12);
     }
 
-    // Depth ticks every 10 m up to 90 m
     for (let d = depthMin; d <= depthMax; d += 10) {
       const y = yScale(d);
       ctx.strokeStyle = d === 0 ? 'rgba(148, 163, 184, 0.35)' : 'rgba(148, 163, 184, 0.15)';
@@ -588,7 +589,7 @@
 
       ctx.textAlign = 'right';
       ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#ffffff';           // depth labels now white
+      ctx.fillStyle = '#ffffff';
       ctx.font = '11px Inter, system-ui, sans-serif';
       ctx.fillText(d + ' m', M.left - 12, y);
     }
