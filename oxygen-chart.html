@@ -89,7 +89,7 @@
   }
   .input-group input {
     background: transparent;
-    border: 1px solid var(--border);
+    border: none;
     color: var(--text);
     padding: 7px 10px;
     border-radius: 6px;
@@ -102,16 +102,13 @@
     font-variant-numeric: tabular-nums;
   }
   .input-group input:hover {
-    border-color: rgba(148, 163, 184, 0.45);
+    background: rgba(148, 163, 184, 0.06);
   }
   .input-group input:focus {
     outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+    background: rgba(56, 189, 248, 0.08);
   }
   .input-group input.manual-override {
-    border-color: var(--accent-warm);
-    background: transparent;
     color: var(--accent-warm);
   }
 
@@ -174,7 +171,7 @@
     padding: 6px 10px;
     border-radius: 6px;
     background: transparent;
-    border: 1px solid var(--border);
+    border: none;
   }
   .formula-item strong {
     font-family: 'Inter', system-ui, sans-serif;
@@ -202,7 +199,7 @@
     right: 0;
     margin-top: 8px;
     background: #0a0a0a;
-    border: 1px solid rgba(148, 163, 184, 0.35);
+    border: none;
     padding: 12px 16px;
     border-radius: 8px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.6);
@@ -241,8 +238,8 @@
     cursor: crosshair;
     min-height: 0;
     background: transparent;
-    border-radius: 12px;
-    border: 1px solid var(--border);
+    border-radius: 0;
+    border: none;
   }
 </style>
 </head>
@@ -369,15 +366,15 @@
 
   // --- Flat field alpha per zone (no 3D/bevel effect) ---
   const ZONE_ALPHA = {
-    hypoxic:   0.55,
-    normoxic:  0.80,
-    hyperoxic: 0.55,
-    critical:  0.70,
-    toxic:     0.80
+    hypoxic:   0.65,
+    normoxic:  0.85,
+    hyperoxic: 0.65,
+    critical:  0.75,
+    toxic:     0.85
   };
 
   // --- Transparency multiplier for the FIELD ONLY ---
-  const OPACITY = 0.8;
+  const OPACITY = 0.72;
 
   function getPressureFromReference(altitude, tempC) {
     const tempK = tempC + 273.15;
@@ -468,8 +465,6 @@
   }
 
   // ---- Fast isopleth field via a single ImageData pass ----
-  // Zones are now FLAT: each pixel gets its zone's constant alpha,
-  // with no sine "bell" shading — removing the 3D/bevel look.
   function drawField(currentHpa) {
     const dpr = window.devicePixelRatio || 1;
     const fieldW = Math.max(1, Math.floor(plotW * dpr));
@@ -535,10 +530,10 @@
           a = aT; r = cT[0]; g = cT[1]; b = cT[2];
         }
 
-        data[idx]     = r * a;
-        data[idx + 1] = g * a;
-        data[idx + 2] = b * a;
-        data[idx + 3] = 255;
+        data[idx]     = r;
+        data[idx + 1] = g;
+        data[idx + 2] = b;
+        data[idx + 3] = Math.round(a * 255);
         idx += 4;
       }
     }
@@ -611,10 +606,6 @@
     ctx.font = '600 12px Inter, system-ui, sans-serif';
     ctx.fillText('Oxygen Fraction (FO₂)', M.left + plotW / 2, M.top + plotH + 30);
 
-    // Outer border
-    ctx.strokeStyle = 'rgba(148, 163, 184, 0.35)';
-    ctx.strokeRect(M.left, M.top, plotW, plotH);
-
     // --- Hover crosshair + tooltip ---
     if (mouse.inPlot) {
       const fraction = invX(mouse.x);
@@ -682,11 +673,6 @@
       ctx.fillStyle = zoneColor;
       roundRectLeft(bx, by, 3, boxH, 8, 0);
       ctx.fill();
-
-      ctx.strokeStyle = 'rgba(148, 163, 184, 0.35)';
-      ctx.lineWidth = 1;
-      roundRect(bx, by, boxW, boxH, 8);
-      ctx.stroke();
 
       ctx.textAlign = 'left';
       ctx.textBaseline = 'top';
