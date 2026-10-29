@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Volume Fraction vs. Depth — Axes Swapped</title>
+  <title>Volume Fraction vs. Depth — Boyle's Law</title>
   <style>
     :root {
       --bg: #000000;
@@ -84,33 +84,79 @@
       border-radius: 0;
       border: none;
     }
+
+    .equation-box {
+      flex-shrink: 0;
+      margin-top: 14px;
+      padding: 10px 16px;
+      background: rgba(56, 189, 248, 0.07);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 6px;
+      text-align: center;
+      font-size: 14px;
+      color: #e2e8f0;
+      font-family: 'Inter', system-ui, sans-serif;
+      letter-spacing: 0.01em;
+    }
+    .equation-box .eq-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-right: 12px;
+    }
+    .equation-box .eq-main {
+      font-size: 15px;
+      color: #f1f5f9;
+    }
+    .equation-box .eq-main i {
+      font-style: italic;
+      color: var(--accent);
+    }
+    .equation-box .eq-main sub {
+      font-size: 0.7em;
+      vertical-align: baseline;
+      position: relative;
+      bottom: -0.25em;
+    }
+    .equation-box .eq-note {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-left: 12px;
+    }
   </style>
 </head>
 <body>
 <div id="container">
   <div class="header">
     <div class="title">
-      Volume Fraction vs. Depth &nbsp;|&nbsp; <i>V</i>/<i>V</i><sub>₀</sub> = P<sub>₀</sub> / P &nbsp;·&nbsp; Pressure in <strong>bar</strong>
+      Volume Fraction <i>V</i>/<i>V</i><sub>₀</sub> vs. Depth &nbsp;|&nbsp; Boyle's Law
     </div>
     <div class="legend-row">
       <div class="legend-item">
         <div class="swatch" style="background:#38bdf8"></div>
-        Volume fraction &nbsp;<span class="limits">V/V₀ (dimensionless)</span>
+        Volume Fraction &nbsp;<span class="limits">V/V₀ (dimensionless)</span>
       </div>
       <div class="legend-item">
         <div class="swatch" style="background:#fbbf24"></div>
-        Reference points &nbsp;<span class="limits">(10 m grid + 3, 5, 6, 12, 15, 21 m)</span>
+        Reference Points &nbsp;<span class="limits">(10 m grid + 3, 5, 6, 12, 15, 21 m)</span>
       </div>
     </div>
   </div>
   <canvas id="chart"></canvas>
+  <div class="equation-box">
+    <span class="eq-label">Equation</span>
+    <span class="eq-main"><i>V</i>/<i>V</i><sub>₀</sub> = <i>P</i><sub>₀</sub> / <i>P</i> = 1 / (1 + <i>h</i>/10.06)</span>
+    <span class="eq-note">P₀ = 1 bar · seawater gradient 10.06 m/atm</span>
+  </div>
 </div>
 <script>
 (function() {
   const canvas = document.getElementById('chart');
   const ctx = canvas.getContext('2d', { alpha: false });
 
-  // ---------- FIXED CONSTANTS ----------
+  // ---------- PHYSICAL CONSTANTS ----------
   const SURFACE_PRESSURE_BAR = 1.0;   // 1 bar at surface
   const MSW_PER_ATM = 10.06;          // metres of seawater per atmosphere
   const DEPTH_MIN = 0;
@@ -124,16 +170,19 @@
   let plotW = 0, plotH = 0;
 
   // ---------- SCALES ----------
-  // x-axis = depth
+  // x-axis = depth (m)
   function xScale(depth) {
     return M.left + (depth - DEPTH_MIN) / (DEPTH_MAX - DEPTH_MIN) * plotW;
   }
-  // y-axis = fraction (inverted: 1 at top, 0 at bottom)
+  // y-axis = volume fraction V/V₀ (inverted: 1 at top, 0 at bottom)
   function yScale(frac) {
     return M.top + (FRAC_MAX - frac) / (FRAC_MAX - FRAC_MIN) * plotH;
   }
 
-  // ---------- VOLUME FRACTION MODEL ----------
+  // ---------- VOLUME FRACTION MODEL (Boyle's Law) ----------
+  // V/V₀ = P₀ / P_total, where P_total = P₀ + ρ·g·h
+  // With P₀ = 1 bar and MSW_PER_ATM = 10.06 m/atm, this simplifies to:
+  // V/V₀ = 1 / (1 + depth / 10.06)
   function fractionAtDepth(depth) {
     const pTotal = SURFACE_PRESSURE_BAR + depth / MSW_PER_ATM;
     return SURFACE_PRESSURE_BAR / pTotal;
@@ -174,12 +223,13 @@
   function resize() {
     const rect = canvas.parentElement.getBoundingClientRect();
     const headerHeight = document.querySelector('.header').offsetHeight;
+    const eqHeight = document.querySelector('.equation-box').offsetHeight;
     const containerStyle = getComputedStyle(document.getElementById('container'));
     const padX = parseFloat(containerStyle.paddingLeft) + parseFloat(containerStyle.paddingRight);
     const padY = parseFloat(containerStyle.paddingTop) + parseFloat(containerStyle.paddingBottom);
 
     W = rect.width - padX;
-    H = rect.height - headerHeight - padY;
+    H = rect.height - headerHeight - eqHeight - padY;
     if (W <= 0 || H <= 0) return;
 
     const dpr = window.devicePixelRatio || 1;
@@ -283,7 +333,7 @@
     ctx.textBaseline = 'middle';
     ctx.fillStyle = '#e2e8f0';
     ctx.font = '600 12px Inter, system-ui, sans-serif';
-    ctx.fillText('Volume Fraction (V / V₀)', 0, 0);
+    ctx.fillText('Volume Fraction  V/V₀', 0, 0);
     ctx.restore();
 
     // X-axis label (depth)
@@ -340,7 +390,7 @@
     ctx.font = '10px Inter, system-ui, sans-serif';
     ctx.textAlign = 'left';
     ctx.fillStyle = '#64748b';
-    ctx.fillText(`Boyle's law · V/V₀ = 1/(1 + depth/10.06)`, M.left + 8, M.top + 14);
+    ctx.fillText(`Boyle's Law: V/V₀ = 1/(1 + depth/10.06)`, M.left + 8, M.top + 14);
   }
 
   // ---------- INIT ----------
