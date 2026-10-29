@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gas Volume vs. Depth — Static Proportional Graph</title>
+  <style>
+    :root {
+      --bg: #000000;
+      --text: #e2e8f0;
+      --text-muted: #b0b8c4;
+      --accent: #38bdf8;
+      --accent-warm: #fbbf24;
+      --grid: rgba(148, 163, 184, 0.15);
+      --grid-strong: rgba(148, 163, 184, 0.35);
+    }
+    * { box-sizing: border-box; }
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+    #container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding: 24px 32px;
+      background: var(--bg);
+    }
+    .header {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 8px;
+      flex-shrink: 0;
+    }
+    .title {
+      font-size: clamp(17px, 1.8vw, 21px);
+      font-weight: 600;
+      color: #f1f5f9;
+      letter-spacing: -0.01em;
+      text-align: center;
+    }
+    .title i, .title sub { font-style: italic; font-weight: 400; color: var(--accent); }
+
+    .legend-row {
+      display: flex;
+      gap: 24px;
+      font-size: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .swatch {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .legend-item .limits {
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+      font-weight: 400;
+    }
+
+    canvas {
+      display: block;
+      flex: 1;
+      min-height: 0;
+      background: transparent;
+      border-radius: 0;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+<div id="container">
+  <div class="header">
+    <div class="title">
+      Gas Volume vs. Depth &nbsp;|&nbsp; <i>V</i> = <i>V</i><sub>₀</sub> · (P<sub>₀</sub> / P) &nbsp;·&nbsp; Pressure in <strong>bar</strong>
+    </div>
+    <div class="legend-row">
+      <div class="legend-item">
+        <div class="swatch" style="background:#38bdf8"></div>
+        Volume curve &nbsp;<span class="limits">V₀ = 1 L at surface</span>
+      </div>
+      <div class="legend-item">
+        <div class="swatch" style="background:#fbbf24"></div>
+        Reference points &nbsp;<span class="limits">(0, 10, 30, 90 m)</span>
+      </div>
+    </div>
+  </div>
+  <canvas id="chart"></canvas>
+</div>
+<script>
+(function() {
+  const canvas = document.getElementById('chart');
+  const ctx = canvas.getContext('2d', { alpha: false });
+
+  // ---------- FIXED CONSTANTS (no user input) ----------
+  const V0 = 1.0;                 // surface volume in litres
+  const SURFACE_PRESSURE_BAR = 1.0; // 1 bar at surface
+  const MSW_PER_ATM = 10.06;      // metres of seawater per atmosphere
+  const DEPTH_MIN = 0;
+  const DEPTH_MAX = 90;
+  const VOL_MIN = 0;
+  const VOL_MAX = 1.2;            // upper volume limit on x-axis (a bit above 1 L)
+
+  // ---------- LAYOUT ----------
+  let W = 0, H = 0;
+  const M = { top: 24, right: 30, bottom: 54, left: 64 };
+  let plotW = 0, plotH = 0;
+
+  // ---------- SCALES ----------
+  function xScale(vol) {
+    return M.left + (vol - VOL_MIN) / (VOL_MAX - VOL_MIN) * plotW;
+  }
+  function yScale(depth) {
+    return M.top + (depth - DEPTH_MIN) / (DEPTH_MAX - DEPTH_MIN) * plotH;
+  }
+
+  // ---------- VOLUME MODEL ----------
+  function volumeAtDepth(depth) {
+    const pTotal = SURFACE_PRESSURE_BAR + depth / MSW_PER_ATM;
+    return V0 * (SURFACE_PRESSURE_BAR / pTotal);
+  }
+
+  // ---------- RESIZE ----------
+  function resize() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const headerHeight = document.querySelector('.header').offsetHeight;
+    const containerStyle = getComputedStyle(document.getElementById('container'));
+    const padX = parseFloat(containerStyle.paddingLeft) + parseFloat(containerStyle.paddingRight);
+    const padY = parseFloat(containerStyle.paddingTop) + parseFloat(containerStyle.paddingBottom);
+
+    W = rect.width - padX;
+    H = rect.height - headerHeight - padY;
+    if (W <= 0 || H <= 0) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    M.left = W < 600 ? 50 : 64;
+    M.bottom = H < 400 ? 44 : 54;
+    M.top = 24;
+    M.right = 30;
+
+    plotW = W - M.left - M.right;
+    plotH = H - M.top - M.bottom;
+
+    draw();
+  }
+
+  // ---------- DRAW ----------
+  function draw() {
+    if (W <= 0 || H <= 0) return;
+
+    // ---- background ----
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, W, H);
+
+    // ---- filled area under the curve ----
+    const steps = 300;
+    ctx.beginPath();
+    ctx.moveTo(xScale(0), yScale(DEPTH_MAX));
+    for (let i = 0; i <= steps; i++) {
+      const d = DEPTH_MIN + (i / steps) * (DEPTH_MAX - DEPTH_MIN);
+      const v = volumeAtDepth(d);
+      const px = xScale(v);
+      const py = yScale(d);
+      if (i === 0) ctx.lineTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.lineTo(xScale(0), yScale(DEPTH_MAX));
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(56, 189, 248, 0.07)';
+    ctx.fill();
+
+    // ---- the volume curve ----
+    ctx.beginPath();
+    for (let i = 0; i <= steps; i++) {
+      const d = DEPTH_MIN + (i / steps) * (DEPTH_MAX - DEPTH_MIN);
+      const v = volumeAtDepth(d);
+      const px = xScale(v);
+      const py = yScale(d);
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 2.4;
+    ctx.shadowColor = 'rgba(56, 189, 248, 0.35)';
+    ctx.shadowBlur = 12;
+    ctx.stroke();
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+
+    // ---- grid lines: vertical (volume) ----
+    ctx.lineWidth = 1;
+    const volSteps = [0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2];
+    volSteps.forEach(v => {
+      if (v > VOL_MAX + 0.001) return;
+      const x = xScale(v);
+      ctx.strokeStyle = (v === 0) ? 'rgba(148, 163, 184, 0.35)' : 'rgba(148, 163, 184, 0.15)';
+      ctx.beginPath();
+      ctx.moveTo(x, M.top);
+      ctx.lineTo(x, M.top + plotH);
+      ctx.stroke();
+
+      // label
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '11px Inter, system-ui, sans-serif';
+      ctx.fillText(v.toFixed(1) + ' L', x, M.top + plotH + 12);
+    });
+
+    // ---- grid lines: horizontal (depth) ----
+    for (let d = DEPTH_MIN; d <= DEPTH_MAX; d += 10) {
+      const y = yScale(d);
+      ctx.strokeStyle = (d === 0) ? 'rgba(148, 163, 184, 0.35)' : 'rgba(148, 163, 184, 0.15)';
+      ctx.beginPath();
+      ctx.moveTo(M.left, y);
+      ctx.lineTo(M.left + plotW, y);
+      ctx.stroke();
+
+      // label
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '11px Inter, system-ui, sans-serif';
+      ctx.fillText(d + ' m', M.left - 12, y);
+    }
+
+    // ---- axis labels ----
+    // Y-axis
+    ctx.save();
+    ctx.translate(18, M.top + plotH / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#e2e8f0';
+    ctx.font = '600 12px Inter, system-ui, sans-serif';
+    ctx.fillText('Depth (m)', 0, 0);
+    ctx.restore();
+
+    // X-axis
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = '#e2e8f0';
+    ctx.font = '600 12px Inter, system-ui, sans-serif';
+    ctx.fillText('Volume (L)', M.left + plotW / 2, M.top + plotH + 30);
+
+    // ---- reference points on the curve ----
+    const refDepths = [0, 10, 30, 90];
+    refDepths.forEach(d => {
+      const v = volumeAtDepth(d);
+      const px = xScale(v);
+      const py = yScale(d);
+
+      // dot
+      ctx.beginPath();
+      ctx.arc(px, py, 5.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#fbbf24';
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.8;
+      ctx.stroke();
+
+      // label next to dot (right side, except for the last one)
+      ctx.font = '11px Inter, system-ui, sans-serif';
+      ctx.textBaseline = 'middle';
+      const label = `${v.toFixed(2)} L @ ${d} m`;
+      const textWidth = ctx.measureText(label).width;
+      const offsetX = (d === 90) ? -textWidth - 14 : 12;
+
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#fbbf24';
+      // subtle dark backing for readability
+      const tx = px + offsetX;
+      const ty = py;
+      if (offsetX > 0) {
+        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+        ctx.fillRect(tx - 3, ty - 9, textWidth + 6, 18);
+      } else {
+        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+        ctx.fillRect(tx - 3, ty - 9, textWidth + 6, 18);
+      }
+      ctx.fillStyle = '#fbbf24';
+      ctx.fillText(label, tx, ty);
+    });
+
+    // ---- small annotation for clarity ----
+    ctx.font = '10px Inter, system-ui, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#64748b';
+    ctx.fillText(`Boyle's law · V₀ = ${V0.toFixed(2)} L at surface (1 bar)`, M.left + 8, M.top + 14);
+  }
+
+  // ---------- INIT ----------
+  window.addEventListener('resize', resize);
+  setTimeout(() => {
+    resize();
+  }, 50);
+})();
+</script>
+</body>
+</html>
