@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PpO₂ vs Depth — Air vs Nitrox 32 vs Custom</title>
+  <title>Oxygen Partial Pressure vs. Depth — Air, Nitrox 32 and Variable FO₂</title>
   <style>
     :root {
       --bg: #000000;
@@ -50,6 +50,14 @@
       text-align: center;
     }
     .title i, .title sub { font-style: italic; font-weight: 400; color: var(--air); }
+    .subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+      font-style: italic;
+      margin-top: -2px;
+      letter-spacing: 0.01em;
+    }
 
     .legend-row {
       display: flex;
@@ -144,27 +152,30 @@
 <div id="container">
   <div class="header">
     <div class="title">
-      PpO₂ vs. Profondeur &nbsp;|&nbsp; Air vs <i>Nitrox 32</i> vs Gaz Personnalisé &nbsp;·&nbsp; PpO₂ = (D/10 + 1) × F<sub>O₂</sub>
+      Oxygen Partial Pressure (PpO₂) as a Function of Depth for Air, Nitrox 32 and a Variable-FO₂ Breathing Gas
+    </div>
+    <div class="subtitle">
+      Ambient pressure model: P<sub>amb</sub>(z) = P<sub>surface</sub> + z / 10 &nbsp;·&nbsp; PpO₂(z) = P<sub>amb</sub>(z) &times; FO₂ &nbsp;·&nbsp; 1 bar at surface
     </div>
     <div class="legend-row">
       <div class="legend-item">
         <div class="line-swatch" style="background:#38bdf8"></div>
-        Air (21% O₂)
+        Air (FO₂ = 0.21)
       </div>
       <div class="legend-item">
         <div class="line-swatch" style="background:#fbbf24"></div>
-        Nitrox 32 (32% O₂)
+        Nitrox 32 (FO₂ = 0.32)
       </div>
       <div class="legend-item">
         <div class="line-swatch" style="background:#22c55e"></div>
-        Gaz personnalisé
+        Variable gas (FO₂ adjustable)
       </div>
       <div class="legend-item">
         <div class="line-swatch" style="background:#8b0000"></div>
-        Limites PpO₂ 1.2 / 1.4 / 1.6 bar
+        PpO₂ exposure limits (1.2 / 1.4 / 1.6 bar)
       </div>
       <div class="control">
-        <label for="fo2">F<sub>O₂</sub></label>
+        <label for="fo2">FO₂</label>
         <input id="fo2" type="number" min="0" max="100" step="1" value="40">
         <span class="unit">%</span>
       </div>
@@ -191,7 +202,7 @@
   const PPO2_LIMIT_14 = 1.4;
   const PPO2_LIMIT_16 = 1.6;
 
-  // ---------- CUSTOM GAS STATE ----------
+  // ---------- VARIABLE GAS STATE ----------
   let FO2_CUSTOM = 0.40;
 
   // ---------- LAYOUT ----------
@@ -274,7 +285,7 @@
   }
 
   // ---------- DRAW LIMIT LINE ----------
-  function drawLimitLine(ppo2Limit, showLabel) {
+  function drawLimitLine(ppo2Limit) {
     if (ppo2Limit > PPO2_MAX) return;
     const y = yScale(ppo2Limit);
     ctx.strokeStyle = '#8b0000';
@@ -283,20 +294,6 @@
     ctx.moveTo(M.left, y);
     ctx.lineTo(M.left + plotW, y);
     ctx.stroke();
-
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = '#ff6666';
-    ctx.font = '600 11px Inter, system-ui, sans-serif';
-    ctx.fillText(ppo2Limit.toFixed(1), M.left - 10, y);
-
-    if (showLabel) {
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'bottom';
-      ctx.font = '10px Inter, system-ui, sans-serif';
-      ctx.fillStyle = 'rgba(255, 102, 102, 0.85)';
-      ctx.fillText(`Limite PpO₂ = ${ppo2Limit.toFixed(1)} bar`, M.left + 8, y - 4);
-    }
   }
 
   // ---------- DRAW ----------
@@ -309,7 +306,7 @@
     const steps = 400;
 
     // ============================================================
-    // CLIP everything that belongs to the plot area so curves and
+    // CLIP everything belonging to the plot area so curves and
     // fills are cleanly cut at the top (2.0 bar) and at the borders.
     // ============================================================
     ctx.save();
@@ -336,7 +333,6 @@
                    || Math.abs(p - PPO2_LIMIT_14) < 0.001
                    || Math.abs(p - PPO2_LIMIT_16) < 0.001;
       const isMajor = Math.abs(p - Math.round(p)) < 0.001;
-      const isHalf  = Math.abs(p - (Math.floor(p) + 0.5)) < 0.001;
 
       ctx.strokeStyle = isLimit
         ? 'rgba(139, 0, 0, 0.55)'
@@ -351,9 +347,9 @@
     }
 
     // ---- limit lines ----
-    drawLimitLine(PPO2_LIMIT_12, false);
-    drawLimitLine(PPO2_LIMIT_14, false);
-    drawLimitLine(PPO2_LIMIT_16, false);
+    drawLimitLine(PPO2_LIMIT_12);
+    drawLimitLine(PPO2_LIMIT_14);
+    drawLimitLine(PPO2_LIMIT_16);
 
     // ---- vertical grid lines ----
     for (let d = DEPTH_MIN; d <= DEPTH_MAX; d += 10) {
@@ -366,16 +362,16 @@
       ctx.stroke();
     }
 
-    // ---- curves (now naturally clipped at the plot border) ----
+    // ---- curves (naturally clipped at plot border) ----
     drawCurve(ppo2Custom, '#22c55e', 'rgba(34, 197, 94, 0.4)');
     drawCurve(ppo2Air,    '#38bdf8', 'rgba(56, 189, 248, 0.4)');
     drawCurve(ppo2Nx32,   '#fbbf24', 'rgba(251, 191, 36, 0.4)');
 
-    // ---- crossing dots (clipped to plot) ----
+    // ---- crossing dots (clipped) ----
     const gases = [
-      { fn: ppo2Air,    fo2: FO2_AIR,    color: '#38bdf8' },
-      { fn: ppo2Nx32,   fo2: FO2_NX32,   color: '#fbbf24' },
-      { fn: ppo2Custom, fo2: FO2_CUSTOM, color: '#22c55e' },
+      { fo2: FO2_AIR,    color: '#38bdf8' },
+      { fo2: FO2_NX32,   color: '#fbbf24' },
+      { fo2: FO2_CUSTOM, color: '#22c55e' },
     ];
     const limits = [PPO2_LIMIT_16, PPO2_LIMIT_14, PPO2_LIMIT_12];
 
@@ -429,17 +425,17 @@
       ctx.fillText(d + ' m', x, M.top + plotH + 12);
     }
 
-    // Limit annotations
+    // Limit annotations inside plot
     [PPO2_LIMIT_12, PPO2_LIMIT_14, PPO2_LIMIT_16].forEach(limit => {
       const y = yScale(limit);
       ctx.textAlign = 'left';
       ctx.textBaseline = 'bottom';
       ctx.font = '10px Inter, system-ui, sans-serif';
       ctx.fillStyle = 'rgba(255, 102, 102, 0.85)';
-      ctx.fillText(`Limite PpO₂ = ${limit.toFixed(1)} bar`, M.left + 8, y - 4);
+      ctx.fillText(`PpO₂ limit = ${limit.toFixed(1)} bar`, M.left + 8, y - 4);
     });
 
-    // Axis labels
+    // Axis titles
     ctx.save();
     ctx.translate(16, M.top + plotH / 2);
     ctx.rotate(-Math.PI / 2);
@@ -447,14 +443,14 @@
     ctx.textBaseline = 'middle';
     ctx.fillStyle = '#e2e8f0';
     ctx.font = '600 12px Inter, system-ui, sans-serif';
-    ctx.fillText('PpO₂ (bar)', 0, 0);
+    ctx.fillText('Oxygen Partial Pressure  PpO₂ (bar)', 0, 0);
     ctx.restore();
 
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
     ctx.fillStyle = '#e2e8f0';
     ctx.font = '600 12px Inter, system-ui, sans-serif';
-    ctx.fillText('Profondeur (m)', M.left + plotW / 2, M.top + plotH + 28);
+    ctx.fillText('Depth  z (m)', M.left + plotW / 2, M.top + plotH + 28);
 
     // End-of-curve labels
     const endX = xScale(DEPTH_MAX) - 6;
@@ -467,10 +463,10 @@
       ctx.fillText(text, endX, yScale(p) - 6);
     }
     endLabel('Air',    ppo2Air(DEPTH_MAX),    '#38bdf8');
-    endLabel('Nx 32',  ppo2Nx32(DEPTH_MAX),   '#fbbf24');
-    endLabel(`Nx ${Math.round(FO2_CUSTOM*100)}`, ppo2Custom(DEPTH_MAX), '#22c55e');
+    endLabel('Nitrox 32', ppo2Nx32(DEPTH_MAX), '#fbbf24');
+    endLabel(`FO₂ = ${(FO2_CUSTOM*100).toFixed(0)}%`, ppo2Custom(DEPTH_MAX), '#22c55e');
 
-    // Crossing labels (outside clip, positioned like before)
+    // Crossing labels (MOD annotations)
     limits.forEach((limit) => {
       if (limit > PPO2_MAX) return;
       gases.forEach(c => {
@@ -479,7 +475,7 @@
 
         const px = xScale(dLimit);
         const py = yScale(limit);
-        const label = `${dLimit.toFixed(1)} m`;
+        const label = `MOD = ${dLimit.toFixed(1)} m`;
         ctx.font = '600 10px Inter, system-ui, sans-serif';
         ctx.textBaseline = 'bottom';
         const textWidth = ctx.measureText(label).width;
@@ -503,7 +499,7 @@
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
     ctx.fillStyle = '#64748b';
-    ctx.fillText(`PpO₂ = (D/10 + 1) × F(O₂)`, M.left + 8, M.top + 14);
+    ctx.fillText(`PpO₂(z) = (z / 10 + 1) × FO₂`, M.left + 8, M.top + 14);
   }
 
   // ---------- NUMBER INPUT CONTROL ----------
