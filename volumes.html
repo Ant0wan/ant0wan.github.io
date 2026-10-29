@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Volume Fraction vs. Depth — Extra Reference Points</title>
+  <title>Volume Fraction vs. Depth — Axes Swapped</title>
   <style>
     :root {
       --bg: #000000;
@@ -120,15 +120,17 @@
 
   // ---------- LAYOUT ----------
   let W = 0, H = 0;
-  const M = { top: 24, right: 40, bottom: 54, left: 64 };
+  const M = { top: 24, right: 40, bottom: 54, left: 70 };
   let plotW = 0, plotH = 0;
 
   // ---------- SCALES ----------
-  function xScale(frac) {
-    return M.left + (frac - FRAC_MIN) / (FRAC_MAX - FRAC_MIN) * plotW;
+  // x-axis = depth
+  function xScale(depth) {
+    return M.left + (depth - DEPTH_MIN) / (DEPTH_MAX - DEPTH_MIN) * plotW;
   }
-  function yScale(depth) {
-    return M.top + (depth - DEPTH_MIN) / (DEPTH_MAX - DEPTH_MIN) * plotH;
+  // y-axis = fraction (inverted: 1 at top, 0 at bottom)
+  function yScale(frac) {
+    return M.top + (FRAC_MAX - frac) / (FRAC_MAX - FRAC_MIN) * plotH;
   }
 
   // ---------- VOLUME FRACTION MODEL ----------
@@ -187,7 +189,7 @@
     canvas.style.height = H + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    M.left = W < 600 ? 50 : 64;
+    M.left = W < 600 ? 56 : 70;
     M.bottom = H < 400 ? 44 : 54;
     M.top = 24;
     M.right = 40;
@@ -205,16 +207,16 @@
     ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, W, H);
 
-    // filled area under curve
+    // filled area between curve and y-axis (frac=0)
     const steps = 400;
     ctx.beginPath();
-    ctx.moveTo(xScale(0), yScale(DEPTH_MAX));
+    ctx.moveTo(xScale(0), yScale(0));
     for (let i = 0; i <= steps; i++) {
       const d = DEPTH_MIN + (i / steps) * (DEPTH_MAX - DEPTH_MIN);
       const f = fractionAtDepth(d);
-      ctx.lineTo(xScale(f), yScale(d));
+      ctx.lineTo(xScale(d), yScale(f));
     }
-    ctx.lineTo(xScale(0), yScale(DEPTH_MAX));
+    ctx.lineTo(xScale(DEPTH_MAX), yScale(0));
     ctx.closePath();
     ctx.fillStyle = 'rgba(56, 189, 248, 0.07)';
     ctx.fill();
@@ -224,8 +226,8 @@
     for (let i = 0; i <= steps; i++) {
       const d = DEPTH_MIN + (i / steps) * (DEPTH_MAX - DEPTH_MIN);
       const f = fractionAtDepth(d);
-      const px = xScale(f);
-      const py = yScale(d);
+      const px = xScale(d);
+      const py = yScale(f);
       if (i === 0) ctx.moveTo(px, py);
       else ctx.lineTo(px, py);
     }
@@ -237,12 +239,29 @@
     ctx.shadowColor = 'transparent';
     ctx.shadowBlur = 0;
 
-    // vertical grid lines at nice fractions
+    // ---- horizontal grid lines at nice fractions ----
     const fracTicks = [0, 1/8, 1/4, 3/8, 1/2, 5/8, 3/4, 7/8, 1];
     ctx.lineWidth = 1;
     fracTicks.forEach(f => {
-      const x = xScale(f);
-      ctx.strokeStyle = (f === 0) ? 'rgba(148, 163, 184, 0.35)' : 'rgba(148, 163, 184, 0.15)';
+      const y = yScale(f);
+      ctx.strokeStyle = (f === 0 || f === 1) ? 'rgba(148, 163, 184, 0.35)' : 'rgba(148, 163, 184, 0.15)';
+      ctx.beginPath();
+      ctx.moveTo(M.left, y);
+      ctx.lineTo(M.left + plotW, y);
+      ctx.stroke();
+
+      // label on left
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '11px Inter, system-ui, sans-serif';
+      ctx.fillText(fractionLabel(f), M.left - 10, y);
+    });
+
+    // ---- vertical grid lines + labels every 10 m (depth on x-axis) ----
+    for (let d = DEPTH_MIN; d <= DEPTH_MAX; d += 10) {
+      const x = xScale(d);
+      ctx.strokeStyle = (d === 0) ? 'rgba(148, 163, 184, 0.35)' : 'rgba(148, 163, 184, 0.15)';
       ctx.beginPath();
       ctx.moveTo(x, M.top);
       ctx.lineTo(x, M.top + plotH);
@@ -252,26 +271,11 @@
       ctx.textBaseline = 'top';
       ctx.fillStyle = '#ffffff';
       ctx.font = '11px Inter, system-ui, sans-serif';
-      ctx.fillText(fractionLabel(f), x, M.top + plotH + 12);
-    });
-
-    // horizontal grid lines + labels every 10 m
-    for (let d = DEPTH_MIN; d <= DEPTH_MAX; d += 10) {
-      const y = yScale(d);
-      ctx.strokeStyle = (d === 0) ? 'rgba(148, 163, 184, 0.35)' : 'rgba(148, 163, 184, 0.15)';
-      ctx.beginPath();
-      ctx.moveTo(M.left, y);
-      ctx.lineTo(M.left + plotW, y);
-      ctx.stroke();
-
-      ctx.textAlign = 'right';
-      ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '11px Inter, system-ui, sans-serif';
-      ctx.fillText(d + ' m', M.left - 12, y);
+      ctx.fillText(d + ' m', x, M.top + plotH + 12);
     }
 
-    // axis labels
+    // ---- axis labels ----
+    // Y-axis label (volume fraction)
     ctx.save();
     ctx.translate(18, M.top + plotH / 2);
     ctx.rotate(-Math.PI / 2);
@@ -279,30 +283,30 @@
     ctx.textBaseline = 'middle';
     ctx.fillStyle = '#e2e8f0';
     ctx.font = '600 12px Inter, system-ui, sans-serif';
-    ctx.fillText('Depth (m)', 0, 0);
+    ctx.fillText('Volume Fraction (V / V₀)', 0, 0);
     ctx.restore();
 
+    // X-axis label (depth)
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
     ctx.fillStyle = '#e2e8f0';
     ctx.font = '600 12px Inter, system-ui, sans-serif';
-    ctx.fillText('Volume Fraction (V / V₀)', M.left + plotW / 2, M.top + plotH + 30);
+    ctx.fillText('Depth (m)', M.left + plotW / 2, M.top + plotH + 30);
 
-    // reference points: 10 m grid + extra depths
+    // ---- reference points ----
     const refDepths = new Set();
     for (let d = 0; d <= DEPTH_MAX; d += 10) refDepths.add(d);
     [3, 5, 6, 12, 15, 21].forEach(d => refDepths.add(d));
 
-    // Sort depths for consistent label placement
     const sortedDepths = Array.from(refDepths).sort((a, b) => a - b);
 
     sortedDepths.forEach(d => {
       const f = fractionAtDepth(d);
-      const px = xScale(f);
-      const py = yScale(d);
+      const px = xScale(d);
+      const py = yScale(f);
       const isExtra = ![0, 10, 20, 30, 40, 50, 60, 70, 80, 90].includes(d);
 
-      // dot: extra points slightly smaller or different color? Keep same for consistency
+      // dot
       ctx.beginPath();
       ctx.arc(px, py, isExtra ? 4.5 : 5.5, 0, Math.PI * 2);
       ctx.fillStyle = '#fbbf24';
@@ -311,31 +315,25 @@
       ctx.lineWidth = isExtra ? 1.4 : 1.8;
       ctx.stroke();
 
-      // label
+      // label above/below the dot
       ctx.font = '11px Inter, system-ui, sans-serif';
-      ctx.textBaseline = 'middle';
+      ctx.textBaseline = 'bottom';
       const label = `${fractionLabel(f)} @ ${d} m`;
       const textWidth = ctx.measureText(label).width;
 
-      // Choose side: for extra points, alternate side based on depth to avoid overlap
-      let offsetX;
-      if (d === DEPTH_MAX) {
-        offsetX = -textWidth - 14; // last point, label on left
-      } else if (isExtra) {
-        // For extra points, use left side for some to avoid overlap with grid points
-        // Simple heuristic: points near 10m multiples get right side, extras get left if near a grid point
-        offsetX = (d === 3 || d === 6 || d === 12 || d === 21) ? -textWidth - 14 : 12;
-      } else {
-        offsetX = 12;
-      }
+      let tx = px - textWidth / 2;
+      let ty = py - 9;
+
+      // Keep labels within bounds
+      if (tx < M.left + 2) tx = M.left + 2;
+      if (tx + textWidth > M.left + plotW - 2) tx = M.left + plotW - textWidth - 2;
+      if (ty < M.top + 2) ty = M.top + 14;
 
       ctx.textAlign = 'left';
-      const tx = px + offsetX;
-      const ty = py;
       ctx.fillStyle = 'rgba(0,0,0,0.75)';
-      ctx.fillRect(tx - 3, ty - 9, textWidth + 6, 18);
-      ctx.fillStyle = isExtra ? '#fcd34d' : '#fbbf24'; // slightly lighter for extras
-      ctx.fillText(label, tx, ty);
+      ctx.fillRect(tx - 3, ty - 11, textWidth + 6, 16);
+      ctx.fillStyle = isExtra ? '#fcd34d' : '#fbbf24';
+      ctx.fillText(label, tx, ty + 2);
     });
 
     // annotation
