@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gas Volume vs. Depth — Static Proportional Graph</title>
+  <title>Volume Fraction vs. Depth — Extra Reference Points</title>
   <style>
     :root {
       --bg: #000000;
@@ -11,8 +11,6 @@
       --text-muted: #b0b8c4;
       --accent: #38bdf8;
       --accent-warm: #fbbf24;
-      --grid: rgba(148, 163, 184, 0.15);
-      --grid-strong: rgba(148, 163, 184, 0.35);
     }
     * { box-sizing: border-box; }
     body, html {
@@ -92,16 +90,16 @@
 <div id="container">
   <div class="header">
     <div class="title">
-      Gas Volume vs. Depth &nbsp;|&nbsp; <i>V</i> = <i>V</i><sub>₀</sub> · (P<sub>₀</sub> / P) &nbsp;·&nbsp; Pressure in <strong>bar</strong>
+      Volume Fraction vs. Depth &nbsp;|&nbsp; <i>V</i>/<i>V</i><sub>₀</sub> = P<sub>₀</sub> / P &nbsp;·&nbsp; Pressure in <strong>bar</strong>
     </div>
     <div class="legend-row">
       <div class="legend-item">
         <div class="swatch" style="background:#38bdf8"></div>
-        Volume curve &nbsp;<span class="limits">V₀ = 1 L at surface</span>
+        Volume fraction &nbsp;<span class="limits">V/V₀ (dimensionless)</span>
       </div>
       <div class="legend-item">
         <div class="swatch" style="background:#fbbf24"></div>
-        Reference points &nbsp;<span class="limits">(0, 10, 30, 90 m)</span>
+        Reference points &nbsp;<span class="limits">(10 m grid + 3, 5, 6, 12, 15, 21 m)</span>
       </div>
     </div>
   </div>
@@ -112,32 +110,62 @@
   const canvas = document.getElementById('chart');
   const ctx = canvas.getContext('2d', { alpha: false });
 
-  // ---------- FIXED CONSTANTS (no user input) ----------
-  const V0 = 1.0;                 // surface volume in litres
-  const SURFACE_PRESSURE_BAR = 1.0; // 1 bar at surface
-  const MSW_PER_ATM = 10.06;      // metres of seawater per atmosphere
+  // ---------- FIXED CONSTANTS ----------
+  const SURFACE_PRESSURE_BAR = 1.0;   // 1 bar at surface
+  const MSW_PER_ATM = 10.06;          // metres of seawater per atmosphere
   const DEPTH_MIN = 0;
   const DEPTH_MAX = 90;
-  const VOL_MIN = 0;
-  const VOL_MAX = 1.2;            // upper volume limit on x-axis (a bit above 1 L)
+  const FRAC_MIN = 0;
+  const FRAC_MAX = 1.0;
 
   // ---------- LAYOUT ----------
   let W = 0, H = 0;
-  const M = { top: 24, right: 30, bottom: 54, left: 64 };
+  const M = { top: 24, right: 40, bottom: 54, left: 64 };
   let plotW = 0, plotH = 0;
 
   // ---------- SCALES ----------
-  function xScale(vol) {
-    return M.left + (vol - VOL_MIN) / (VOL_MAX - VOL_MIN) * plotW;
+  function xScale(frac) {
+    return M.left + (frac - FRAC_MIN) / (FRAC_MAX - FRAC_MIN) * plotW;
   }
   function yScale(depth) {
     return M.top + (depth - DEPTH_MIN) / (DEPTH_MAX - DEPTH_MIN) * plotH;
   }
 
-  // ---------- VOLUME MODEL ----------
-  function volumeAtDepth(depth) {
+  // ---------- VOLUME FRACTION MODEL ----------
+  function fractionAtDepth(depth) {
     const pTotal = SURFACE_PRESSURE_BAR + depth / MSW_PER_ATM;
-    return V0 * (SURFACE_PRESSURE_BAR / pTotal);
+    return SURFACE_PRESSURE_BAR / pTotal;
+  }
+
+  // ---------- FRACTION FORMATTING ----------
+  function fractionLabel(value) {
+    if (value < 0.005) return '0';
+    if (Math.abs(value - 1) < 0.005) return '1';
+
+    const denominators = [2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 16];
+    let best = null;
+    for (const d of denominators) {
+      const n = Math.round(value * d);
+      if (n === 0) continue;
+      const err = Math.abs(value - n / d);
+      if (err < 0.008) {
+        if (!best || err < best.err) best = { n, d, err };
+      }
+    }
+    if (best) {
+      const g = gcd(best.n, best.d);
+      const num = best.n / g;
+      const den = best.d / g;
+      if (den === 1) return num.toString();
+      return num + '/' + den;
+    }
+    return value.toFixed(2);
+  }
+
+  function gcd(a, b) {
+    a = Math.abs(a); b = Math.abs(b);
+    while (b) { [a, b] = [b, a % b]; }
+    return a;
   }
 
   // ---------- RESIZE ----------
@@ -162,7 +190,7 @@
     M.left = W < 600 ? 50 : 64;
     M.bottom = H < 400 ? 44 : 54;
     M.top = 24;
-    M.right = 30;
+    M.right = 40;
 
     plotW = W - M.left - M.right;
     plotH = H - M.top - M.bottom;
@@ -174,33 +202,29 @@
   function draw() {
     if (W <= 0 || H <= 0) return;
 
-    // ---- background ----
     ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, W, H);
 
-    // ---- filled area under the curve ----
-    const steps = 300;
+    // filled area under curve
+    const steps = 400;
     ctx.beginPath();
     ctx.moveTo(xScale(0), yScale(DEPTH_MAX));
     for (let i = 0; i <= steps; i++) {
       const d = DEPTH_MIN + (i / steps) * (DEPTH_MAX - DEPTH_MIN);
-      const v = volumeAtDepth(d);
-      const px = xScale(v);
-      const py = yScale(d);
-      if (i === 0) ctx.lineTo(px, py);
-      else ctx.lineTo(px, py);
+      const f = fractionAtDepth(d);
+      ctx.lineTo(xScale(f), yScale(d));
     }
     ctx.lineTo(xScale(0), yScale(DEPTH_MAX));
     ctx.closePath();
     ctx.fillStyle = 'rgba(56, 189, 248, 0.07)';
     ctx.fill();
 
-    // ---- the volume curve ----
+    // curve
     ctx.beginPath();
     for (let i = 0; i <= steps; i++) {
       const d = DEPTH_MIN + (i / steps) * (DEPTH_MAX - DEPTH_MIN);
-      const v = volumeAtDepth(d);
-      const px = xScale(v);
+      const f = fractionAtDepth(d);
+      const px = xScale(f);
       const py = yScale(d);
       if (i === 0) ctx.moveTo(px, py);
       else ctx.lineTo(px, py);
@@ -213,27 +237,25 @@
     ctx.shadowColor = 'transparent';
     ctx.shadowBlur = 0;
 
-    // ---- grid lines: vertical (volume) ----
+    // vertical grid lines at nice fractions
+    const fracTicks = [0, 1/8, 1/4, 3/8, 1/2, 5/8, 3/4, 7/8, 1];
     ctx.lineWidth = 1;
-    const volSteps = [0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2];
-    volSteps.forEach(v => {
-      if (v > VOL_MAX + 0.001) return;
-      const x = xScale(v);
-      ctx.strokeStyle = (v === 0) ? 'rgba(148, 163, 184, 0.35)' : 'rgba(148, 163, 184, 0.15)';
+    fracTicks.forEach(f => {
+      const x = xScale(f);
+      ctx.strokeStyle = (f === 0) ? 'rgba(148, 163, 184, 0.35)' : 'rgba(148, 163, 184, 0.15)';
       ctx.beginPath();
       ctx.moveTo(x, M.top);
       ctx.lineTo(x, M.top + plotH);
       ctx.stroke();
 
-      // label
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
       ctx.fillStyle = '#ffffff';
       ctx.font = '11px Inter, system-ui, sans-serif';
-      ctx.fillText(v.toFixed(1) + ' L', x, M.top + plotH + 12);
+      ctx.fillText(fractionLabel(f), x, M.top + plotH + 12);
     });
 
-    // ---- grid lines: horizontal (depth) ----
+    // horizontal grid lines + labels every 10 m
     for (let d = DEPTH_MIN; d <= DEPTH_MAX; d += 10) {
       const y = yScale(d);
       ctx.strokeStyle = (d === 0) ? 'rgba(148, 163, 184, 0.35)' : 'rgba(148, 163, 184, 0.15)';
@@ -242,7 +264,6 @@
       ctx.lineTo(M.left + plotW, y);
       ctx.stroke();
 
-      // label
       ctx.textAlign = 'right';
       ctx.textBaseline = 'middle';
       ctx.fillStyle = '#ffffff';
@@ -250,8 +271,7 @@
       ctx.fillText(d + ' m', M.left - 12, y);
     }
 
-    // ---- axis labels ----
-    // Y-axis
+    // axis labels
     ctx.save();
     ctx.translate(18, M.top + plotH / 2);
     ctx.rotate(-Math.PI / 2);
@@ -262,64 +282,72 @@
     ctx.fillText('Depth (m)', 0, 0);
     ctx.restore();
 
-    // X-axis
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
     ctx.fillStyle = '#e2e8f0';
     ctx.font = '600 12px Inter, system-ui, sans-serif';
-    ctx.fillText('Volume (L)', M.left + plotW / 2, M.top + plotH + 30);
+    ctx.fillText('Volume Fraction (V / V₀)', M.left + plotW / 2, M.top + plotH + 30);
 
-    // ---- reference points on the curve ----
-    const refDepths = [0, 10, 30, 90];
-    refDepths.forEach(d => {
-      const v = volumeAtDepth(d);
-      const px = xScale(v);
+    // reference points: 10 m grid + extra depths
+    const refDepths = new Set();
+    for (let d = 0; d <= DEPTH_MAX; d += 10) refDepths.add(d);
+    [3, 5, 6, 12, 15, 21].forEach(d => refDepths.add(d));
+
+    // Sort depths for consistent label placement
+    const sortedDepths = Array.from(refDepths).sort((a, b) => a - b);
+
+    sortedDepths.forEach(d => {
+      const f = fractionAtDepth(d);
+      const px = xScale(f);
       const py = yScale(d);
+      const isExtra = ![0, 10, 20, 30, 40, 50, 60, 70, 80, 90].includes(d);
 
-      // dot
+      // dot: extra points slightly smaller or different color? Keep same for consistency
       ctx.beginPath();
-      ctx.arc(px, py, 5.5, 0, Math.PI * 2);
+      ctx.arc(px, py, isExtra ? 4.5 : 5.5, 0, Math.PI * 2);
       ctx.fillStyle = '#fbbf24';
       ctx.fill();
       ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 1.8;
+      ctx.lineWidth = isExtra ? 1.4 : 1.8;
       ctx.stroke();
 
-      // label next to dot (right side, except for the last one)
+      // label
       ctx.font = '11px Inter, system-ui, sans-serif';
       ctx.textBaseline = 'middle';
-      const label = `${v.toFixed(2)} L @ ${d} m`;
+      const label = `${fractionLabel(f)} @ ${d} m`;
       const textWidth = ctx.measureText(label).width;
-      const offsetX = (d === 90) ? -textWidth - 14 : 12;
+
+      // Choose side: for extra points, alternate side based on depth to avoid overlap
+      let offsetX;
+      if (d === DEPTH_MAX) {
+        offsetX = -textWidth - 14; // last point, label on left
+      } else if (isExtra) {
+        // For extra points, use left side for some to avoid overlap with grid points
+        // Simple heuristic: points near 10m multiples get right side, extras get left if near a grid point
+        offsetX = (d === 3 || d === 6 || d === 12 || d === 21) ? -textWidth - 14 : 12;
+      } else {
+        offsetX = 12;
+      }
 
       ctx.textAlign = 'left';
-      ctx.fillStyle = '#fbbf24';
-      // subtle dark backing for readability
       const tx = px + offsetX;
       const ty = py;
-      if (offsetX > 0) {
-        ctx.fillStyle = 'rgba(0,0,0,0.7)';
-        ctx.fillRect(tx - 3, ty - 9, textWidth + 6, 18);
-      } else {
-        ctx.fillStyle = 'rgba(0,0,0,0.7)';
-        ctx.fillRect(tx - 3, ty - 9, textWidth + 6, 18);
-      }
-      ctx.fillStyle = '#fbbf24';
+      ctx.fillStyle = 'rgba(0,0,0,0.75)';
+      ctx.fillRect(tx - 3, ty - 9, textWidth + 6, 18);
+      ctx.fillStyle = isExtra ? '#fcd34d' : '#fbbf24'; // slightly lighter for extras
       ctx.fillText(label, tx, ty);
     });
 
-    // ---- small annotation for clarity ----
+    // annotation
     ctx.font = '10px Inter, system-ui, sans-serif';
     ctx.textAlign = 'left';
     ctx.fillStyle = '#64748b';
-    ctx.fillText(`Boyle's law · V₀ = ${V0.toFixed(2)} L at surface (1 bar)`, M.left + 8, M.top + 14);
+    ctx.fillText(`Boyle's law · V/V₀ = 1/(1 + depth/10.06)`, M.left + 8, M.top + 14);
   }
 
   // ---------- INIT ----------
   window.addEventListener('resize', resize);
-  setTimeout(() => {
-    resize();
-  }, 50);
+  setTimeout(resize, 50);
 })();
 </script>
 </body>
