@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Oxygen Partial Pressure vs. Depth — Air, Nitrox 32 and Variable FO₂</title>
+  <style>
+    :root {
+      --bg: #000000;
+      --text: #e2e8f0;
+      --text-muted: #b0b8c4;
+      --air: #38bdf8;
+      --nx32: #fbbf24;
+      --custom: #22c55e;
+      --limit: #8b0000;
+      --limit-bright: #ff6666;
+    }
+    * { box-sizing: border-box; }
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+    #container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding: 20px 28px;
+      background: var(--bg);
+    }
+    .header {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 6px;
+      flex-shrink: 0;
+    }
+    .title {
+      font-size: clamp(16px, 1.7vw, 20px);
+      font-weight: 600;
+      color: #f1f5f9;
+      letter-spacing: -0.01em;
+      text-align: center;
+    }
+    .title i, .title sub { font-style: italic; font-weight: 400; color: var(--air); }
+    .subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+      font-style: italic;
+      margin-top: -2px;
+      letter-spacing: 0.01em;
+    }
+
+    .legend-row {
+      display: flex;
+      gap: 20px;
+      font-size: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+      align-items: center;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .swatch {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .legend-item .limits {
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+      font-weight: 400;
+    }
+    .line-swatch {
+      width: 18px;
+      height: 2px;
+      border-radius: 1px;
+      flex-shrink: 0;
+    }
+
+    .control {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 12px;
+      background: rgba(34, 197, 94, 0.10);
+      border: 1px solid rgba(34, 197, 94, 0.40);
+      border-radius: 6px;
+    }
+    .control label {
+      color: #86efac;
+      font-weight: 600;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .control input[type="number"] {
+      width: 62px;
+      padding: 3px 6px;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(34, 197, 94, 0.5);
+      border-radius: 4px;
+      color: #ffffff;
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+      font-size: 12px;
+      font-family: inherit;
+      outline: none;
+      -moz-appearance: textfield;
+    }
+    .control input[type="number"]:focus {
+      border-color: #22c55e;
+      box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.25);
+    }
+    .control input[type="number"]::-webkit-outer-spin-button,
+    .control input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .control .unit {
+      color: #86efac;
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    canvas {
+      display: block;
+      flex: 1;
+      min-height: 0;
+      background: transparent;
+      border-radius: 0;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+<div id="container">
+  <div class="header">
+    <div class="title">
+      Oxygen Partial Pressure (PpO₂) as a Function of Depth for Air, Nitrox 32 and a Variable-FO₂ Breathing Gas
+    </div>
+    <div class="subtitle">
+      Ambient pressure model: P<sub>amb</sub>(z) = P<sub>surface</sub> + z / 10 &nbsp;·&nbsp; PpO₂(z) = P<sub>amb</sub>(z) &times; FO₂ &nbsp;·&nbsp; 1 bar at surface
+    </div>
+    <div class="legend-row">
+      <div class="legend-item">
+        <div class="line-swatch" style="background:#38bdf8"></div>
+        Air (FO₂ = 0.21)
+      </div>
+      <div class="legend-item">
+        <div class="line-swatch" style="background:#fbbf24"></div>
+        Nitrox 32 (FO₂ = 0.32)
+      </div>
+      <div class="legend-item">
+        <div class="line-swatch" style="background:#22c55e"></div>
+        Variable gas (FO₂ adjustable)
+      </div>
+      <div class="legend-item">
+        <div class="line-swatch" style="background:#8b0000"></div>
+        PpO₂ exposure limits (1.2 / 1.4 / 1.6 bar)
+      </div>
+      <div class="control">
+        <label for="fo2">FO₂</label>
+        <input id="fo2" type="number" min="0" max="100" step="1" value="40">
+        <span class="unit">%</span>
+      </div>
+    </div>
+  </div>
+  <canvas id="chart"></canvas>
+</div>
+<script>
+(function() {
+  const canvas = document.getElementById('chart');
+  const ctx = canvas.getContext('2d', { alpha: false });
+
+  // ---------- CONSTANTS ----------
+  const FO2_AIR = 0.21;
+  const FO2_NX32 = 0.32;
+  const SURFACE_PRESSURE_BAR = 1.0;
+  const M_PER_ATM = 10;
+
+  const DEPTH_MIN = 0;
+  const DEPTH_MAX = 70;
+  const PPO2_MIN = 0;
+  const PPO2_MAX = 2.0;
+  const PPO2_LIMIT_12 = 1.2;
+  const PPO2_LIMIT_14 = 1.4;
+  const PPO2_LIMIT_16 = 1.6;
+
+  // ---------- VARIABLE GAS STATE ----------
+  let FO2_CUSTOM = 0.40;
+
+  // ---------- LAYOUT ----------
+  let W = 0, H = 0;
+  const M = { top: 20, right: 44, bottom: 50, left: 66 };
+  let plotW = 0, plotH = 0;
+
+  // ---------- SCALES ----------
+  function xScale(depth) {
+    return M.left + (depth - DEPTH_MIN) / (DEPTH_MAX - DEPTH_MIN) * plotW;
+  }
+  function yScale(ppo2) {
+    return M.top + (PPO2_MAX - ppo2) / (PPO2_MAX - PPO2_MIN) * plotH;
+  }
+
+  // ---------- MODEL ----------
+  function pressureAtDepth(depth) {
+    return SURFACE_PRESSURE_BAR + depth / M_PER_ATM;
+  }
+  function ppo2Air(depth)    { return pressureAtDepth(depth) * FO2_AIR; }
+  function ppo2Nx32(depth)   { return pressureAtDepth(depth) * FO2_NX32; }
+  function ppo2Custom(depth) { return pressureAtDepth(depth) * FO2_CUSTOM; }
+
+  function depthAtPpo2(ppo2, fo2) {
+    if (fo2 <= 0) return Infinity;
+    return (ppo2 / fo2 - SURFACE_PRESSURE_BAR) * M_PER_ATM;
+  }
+
+  // ---------- RESIZE ----------
+  function resize() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const headerHeight = document.querySelector('.header').offsetHeight;
+    const containerStyle = getComputedStyle(document.getElementById('container'));
+    const padX = parseFloat(containerStyle.paddingLeft) + parseFloat(containerStyle.paddingRight);
+    const padY = parseFloat(containerStyle.paddingTop) + parseFloat(containerStyle.paddingBottom);
+
+    W = rect.width - padX;
+    H = rect.height - headerHeight - padY;
+    if (W <= 0 || H <= 0) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    M.left = W < 600 ? 54 : 66;
+    M.bottom = H < 400 ? 42 : 50;
+    M.top = 20;
+    M.right = 44;
+
+    plotW = W - M.left - M.right;
+    plotH = H - M.top - M.bottom;
+
+    draw();
+  }
+
+  // ---------- DRAW CURVE HELPER ----------
+  function drawCurve(fn, color, glow) {
+    const steps = 400;
+    ctx.beginPath();
+    for (let i = 0; i <= steps; i++) {
+      const d = DEPTH_MIN + (i / steps) * (DEPTH_MAX - DEPTH_MIN);
+      const p = fn(d);
+      const px = xScale(d);
+      const py = yScale(p);
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2.4;
+    if (glow) {
+      ctx.shadowColor = glow;
+      ctx.shadowBlur = 12;
+    }
+    ctx.stroke();
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+  }
+
+  // ---------- DRAW LIMIT LINE ----------
+  function drawLimitLine(ppo2Limit) {
+    if (ppo2Limit > PPO2_MAX) return;
+    const y = yScale(ppo2Limit);
+    ctx.strokeStyle = '#8b0000';
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.moveTo(M.left, y);
+    ctx.lineTo(M.left + plotW, y);
+    ctx.stroke();
+  }
+
+  // ---------- DRAW ----------
+  function draw() {
+    if (W <= 0 || H <= 0) return;
+
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, W, H);
+
+    const steps = 400;
+
+    // ============================================================
+    // CLIP everything belonging to the plot area so curves and
+    // fills are cleanly cut at the top (2.0 bar) and at the borders.
+    // ============================================================
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(M.left, M.top, plotW, plotH);
+    ctx.clip();
+
+    // ---- filled area under Air curve only ----
+    ctx.beginPath();
+    ctx.moveTo(xScale(DEPTH_MIN), yScale(PPO2_MIN));
+    for (let i = 0; i <= steps; i++) {
+      const d = DEPTH_MIN + (i / steps) * (DEPTH_MAX - DEPTH_MIN);
+      ctx.lineTo(xScale(d), yScale(ppo2Air(d)));
+    }
+    ctx.lineTo(xScale(DEPTH_MAX), yScale(PPO2_MIN));
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(56, 189, 248, 0.06)';
+    ctx.fill();
+
+    // ---- horizontal grid lines ----
+    for (let p = 0; p <= PPO2_MAX + 0.001; p += 0.2) {
+      const y = yScale(p);
+      const isLimit = Math.abs(p - PPO2_LIMIT_12) < 0.001
+                   || Math.abs(p - PPO2_LIMIT_14) < 0.001
+                   || Math.abs(p - PPO2_LIMIT_16) < 0.001;
+      const isMajor = Math.abs(p - Math.round(p)) < 0.001;
+
+      ctx.strokeStyle = isLimit
+        ? 'rgba(139, 0, 0, 0.55)'
+        : isMajor
+          ? 'rgba(148, 163, 184, 0.30)'
+          : 'rgba(148, 163, 184, 0.10)';
+      ctx.lineWidth = isLimit ? 1.5 : 1;
+      ctx.beginPath();
+      ctx.moveTo(M.left, y);
+      ctx.lineTo(M.left + plotW, y);
+      ctx.stroke();
+    }
+
+    // ---- limit lines ----
+    drawLimitLine(PPO2_LIMIT_12);
+    drawLimitLine(PPO2_LIMIT_14);
+    drawLimitLine(PPO2_LIMIT_16);
+
+    // ---- vertical grid lines ----
+    for (let d = DEPTH_MIN; d <= DEPTH_MAX; d += 10) {
+      const x = xScale(d);
+      ctx.strokeStyle = (d === 0) ? 'rgba(148, 163, 184, 0.35)' : 'rgba(148, 163, 184, 0.15)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x, M.top);
+      ctx.lineTo(x, M.top + plotH);
+      ctx.stroke();
+    }
+
+    // ---- curves (naturally clipped at plot border) ----
+    drawCurve(ppo2Custom, '#22c55e', 'rgba(34, 197, 94, 0.4)');
+    drawCurve(ppo2Air,    '#38bdf8', 'rgba(56, 189, 248, 0.4)');
+    drawCurve(ppo2Nx32,   '#fbbf24', 'rgba(251, 191, 36, 0.4)');
+
+    // ---- crossing dots (clipped) ----
+    const gases = [
+      { fo2: FO2_AIR,    color: '#38bdf8' },
+      { fo2: FO2_NX32,   color: '#fbbf24' },
+      { fo2: FO2_CUSTOM, color: '#22c55e' },
+    ];
+    const limits = [PPO2_LIMIT_16, PPO2_LIMIT_14, PPO2_LIMIT_12];
+
+    limits.forEach((limit) => {
+      gases.forEach(c => {
+        const dLimit = depthAtPpo2(limit, c.fo2);
+        if (!isFinite(dLimit) || dLimit < DEPTH_MIN || dLimit > DEPTH_MAX) return;
+        const px = xScale(dLimit);
+        const py = yScale(limit);
+
+        ctx.beginPath();
+        ctx.arc(px, py, 5.5, 0, Math.PI * 2);
+        ctx.fillStyle = '#8b0000';
+        ctx.fill();
+        ctx.strokeStyle = '#ff6666';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      });
+    });
+
+    ctx.restore(); // end plot-area clipping
+
+    // ============================================================
+    // Axis labels and annotations (drawn OUTSIDE the clip)
+    // ============================================================
+
+    // Y tick labels
+    for (let p = 0; p <= PPO2_MAX + 0.001; p += 0.2) {
+      const isLimit = Math.abs(p - PPO2_LIMIT_12) < 0.001
+                   || Math.abs(p - PPO2_LIMIT_14) < 0.001
+                   || Math.abs(p - PPO2_LIMIT_16) < 0.001;
+      const isMajor = Math.abs(p - Math.round(p)) < 0.001;
+      const isHalf  = Math.abs(p - (Math.floor(p) + 0.5)) < 0.001;
+      if (!(isMajor || isHalf || isLimit)) continue;
+
+      const y = yScale(p);
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = isLimit ? '#ff6666' : '#ffffff';
+      ctx.font = (isLimit ? '600 ' : '') + '11px Inter, system-ui, sans-serif';
+      ctx.fillText(p.toFixed(1), M.left - 10, y);
+    }
+
+    // X tick labels
+    for (let d = DEPTH_MIN; d <= DEPTH_MAX; d += 10) {
+      const x = xScale(d);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '11px Inter, system-ui, sans-serif';
+      ctx.fillText(d + ' m', x, M.top + plotH + 12);
+    }
+
+    // Limit annotations inside plot
+    [PPO2_LIMIT_12, PPO2_LIMIT_14, PPO2_LIMIT_16].forEach(limit => {
+      const y = yScale(limit);
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'bottom';
+      ctx.font = '10px Inter, system-ui, sans-serif';
+      ctx.fillStyle = 'rgba(255, 102, 102, 0.85)';
+      ctx.fillText(`PpO₂ limit = ${limit.toFixed(1)} bar`, M.left + 8, y - 4);
+    });
+
+    // Axis titles
+    ctx.save();
+    ctx.translate(16, M.top + plotH / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#e2e8f0';
+    ctx.font = '600 12px Inter, system-ui, sans-serif';
+    ctx.fillText('Oxygen Partial Pressure  PpO₂ (bar)', 0, 0);
+    ctx.restore();
+
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = '#e2e8f0';
+    ctx.font = '600 12px Inter, system-ui, sans-serif';
+    ctx.fillText('Depth  z (m)', M.left + plotW / 2, M.top + plotH + 28);
+
+    // End-of-curve labels
+    const endX = xScale(DEPTH_MAX) - 6;
+    function endLabel(text, p, color) {
+      if (p > PPO2_MAX) return;
+      ctx.font = '600 11px Inter, system-ui, sans-serif';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'bottom';
+      ctx.fillStyle = color;
+      ctx.fillText(text, endX, yScale(p) - 6);
+    }
+    endLabel('Air',    ppo2Air(DEPTH_MAX),    '#38bdf8');
+    endLabel('Nitrox 32', ppo2Nx32(DEPTH_MAX), '#fbbf24');
+    endLabel(`FO₂ = ${(FO2_CUSTOM*100).toFixed(0)}%`, ppo2Custom(DEPTH_MAX), '#22c55e');
+
+    // Crossing labels (MOD annotations)
+    limits.forEach((limit) => {
+      if (limit > PPO2_MAX) return;
+      gases.forEach(c => {
+        const dLimit = depthAtPpo2(limit, c.fo2);
+        if (!isFinite(dLimit) || dLimit < DEPTH_MIN || dLimit > DEPTH_MAX) return;
+
+        const px = xScale(dLimit);
+        const py = yScale(limit);
+        const label = `MOD = ${dLimit.toFixed(1)} m`;
+        ctx.font = '600 10px Inter, system-ui, sans-serif';
+        ctx.textBaseline = 'bottom';
+        const textWidth = ctx.measureText(label).width;
+
+        let tx = px - textWidth / 2;
+        let ty = py - 10;
+        if (tx < M.left + 2) tx = M.left + 2;
+        if (tx + textWidth > M.left + plotW - 2) tx = M.left + plotW - textWidth - 2;
+        if (ty < M.top + 2) ty = M.top + 13;
+
+        ctx.textAlign = 'left';
+        ctx.fillStyle = 'rgba(0,0,0,0.85)';
+        ctx.fillRect(tx - 3, ty - 11, textWidth + 6, 15);
+        ctx.fillStyle = c.color;
+        ctx.fillText(label, tx, ty + 1);
+      });
+    });
+
+    // Top-left annotation
+    ctx.font = '10px Inter, system-ui, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = '#64748b';
+    ctx.fillText(`PpO₂(z) = (z / 10 + 1) × FO₂`, M.left + 8, M.top + 14);
+  }
+
+  // ---------- NUMBER INPUT CONTROL ----------
+  const input = document.getElementById('fo2');
+  function applyCustomFo2() {
+    let v = parseFloat(input.value);
+    if (isNaN(v)) v = 0;
+    v = Math.max(0, Math.min(100, v));
+    FO2_CUSTOM = v / 100;
+    if (String(v) !== input.value && document.activeElement !== input) {
+      input.value = v;
+    }
+    draw();
+  }
+  input.addEventListener('input', applyCustomFo2);
+  input.addEventListener('change', () => {
+    let v = parseFloat(input.value);
+    if (isNaN(v)) v = 0;
+    v = Math.max(0, Math.min(100, Math.round(v)));
+    input.value = v;
+    FO2_CUSTOM = v / 100;
+    draw();
+  });
+
+  // ---------- INIT ----------
+  window.addEventListener('resize', resize);
+  setTimeout(resize, 50);
+})();
+</script>
+</body>
+</html>

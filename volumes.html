@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Volume Fraction vs. Depth — Boyle's Law</title>
+  <style>
+    :root {
+      --bg: #000000;
+      --text: #e2e8f0;
+      --text-muted: #b0b8c4;
+      --accent: #38bdf8;
+      --accent-warm: #fbbf24;
+    }
+    * { box-sizing: border-box; }
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+    #container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding: 24px 32px;
+      background: var(--bg);
+    }
+    .header {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 8px;
+      flex-shrink: 0;
+    }
+    .title {
+      font-size: clamp(17px, 1.8vw, 21px);
+      font-weight: 600;
+      color: #f1f5f9;
+      letter-spacing: -0.01em;
+      text-align: center;
+    }
+    .title i, .title sub { font-style: italic; font-weight: 400; color: var(--accent); }
+
+    .formula-line {
+      text-align: center;
+      font-size: 13.5px;
+      color: #cbd5e1;
+      letter-spacing: 0.01em;
+      line-height: 1.5;
+    }
+    .formula-line i {
+      font-style: italic;
+      color: var(--accent);
+    }
+    .formula-line sub {
+      font-size: 0.7em;
+      vertical-align: baseline;
+      position: relative;
+      bottom: -0.25em;
+    }
+    .formula-line .param {
+      color: #94a3b8;
+      font-size: 11.5px;
+      margin-left: 6px;
+    }
+
+    .legend-row {
+      display: flex;
+      gap: 24px;
+      font-size: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .swatch {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .legend-item .limits {
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+      font-weight: 400;
+    }
+
+    canvas {
+      display: block;
+      flex: 1;
+      min-height: 0;
+      background: transparent;
+      border-radius: 0;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+<div id="container">
+  <div class="header">
+    <div class="title">
+      Volume Fraction <i>V</i>/<i>V</i><sub>₀</sub> vs. Depth
+    </div>
+    <div class="formula-line">
+      <i>V</i>/<i>V</i><sub>₀</sub> = <i>P</i><sub>₀</sub> / <i>P</i> = 1 / (1 + <i>h</i>/10.06)
+      <span class="param">P₀ = 1 bar · 10.06 m/atm seawater gradient</span>
+    </div>
+    <div class="legend-row">
+      <div class="legend-item">
+        <div class="swatch" style="background:#38bdf8"></div>
+        Volume Fraction &nbsp;<span class="limits">V/V₀ (dimensionless)</span>
+      </div>
+      <div class="legend-item">
+        <div class="swatch" style="background:#fbbf24"></div>
+        Reference Points &nbsp;<span class="limits">(10 m grid + 3, 5, 6, 12, 15, 21 m)</span>
+      </div>
+    </div>
+  </div>
+  <canvas id="chart"></canvas>
+</div>
+<script>
+(function() {
+  const canvas = document.getElementById('chart');
+  const ctx = canvas.getContext('2d', { alpha: false });
+
+  // ---------- PHYSICAL CONSTANTS ----------
+  const SURFACE_PRESSURE_BAR = 1.0;   // 1 bar at surface
+  const MSW_PER_ATM = 10.06;          // metres of seawater per atmosphere
+  const DEPTH_MIN = 0;
+  const DEPTH_MAX = 90;
+  const FRAC_MIN = 0;
+  const FRAC_MAX = 1.0;
+
+  // ---------- LAYOUT ----------
+  let W = 0, H = 0;
+  const M = { top: 24, right: 40, bottom: 54, left: 70 };
+  let plotW = 0, plotH = 0;
+
+  // ---------- SCALES ----------
+  function xScale(depth) {
+    return M.left + (depth - DEPTH_MIN) / (DEPTH_MAX - DEPTH_MIN) * plotW;
+  }
+  function yScale(frac) {
+    return M.top + (FRAC_MAX - frac) / (FRAC_MAX - FRAC_MIN) * plotH;
+  }
+
+  // ---------- VOLUME FRACTION MODEL (Boyle's Law) ----------
+  function fractionAtDepth(depth) {
+    const pTotal = SURFACE_PRESSURE_BAR + depth / MSW_PER_ATM;
+    return SURFACE_PRESSURE_BAR / pTotal;
+  }
+
+  // ---------- FRACTION FORMATTING ----------
+  function fractionLabel(value) {
+    if (value < 0.005) return '0';
+    if (Math.abs(value - 1) < 0.005) return '1';
+
+    const denominators = [2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 16];
+    let best = null;
+    for (const d of denominators) {
+      const n = Math.round(value * d);
+      if (n === 0) continue;
+      const err = Math.abs(value - n / d);
+      if (err < 0.008) {
+        if (!best || err < best.err) best = { n, d, err };
+      }
+    }
+    if (best) {
+      const g = gcd(best.n, best.d);
+      const num = best.n / g;
+      const den = best.d / g;
+      if (den === 1) return num.toString();
+      return num + '/' + den;
+    }
+    return value.toFixed(2);
+  }
+
+  function gcd(a, b) {
+    a = Math.abs(a); b = Math.abs(b);
+    while (b) { [a, b] = [b, a % b]; }
+    return a;
+  }
+
+  // ---------- RESIZE ----------
+  function resize() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const headerHeight = document.querySelector('.header').offsetHeight;
+    const containerStyle = getComputedStyle(document.getElementById('container'));
+    const padX = parseFloat(containerStyle.paddingLeft) + parseFloat(containerStyle.paddingRight);
+    const padY = parseFloat(containerStyle.paddingTop) + parseFloat(containerStyle.paddingBottom);
+
+    W = rect.width - padX;
+    H = rect.height - headerHeight - padY;
+    if (W <= 0 || H <= 0) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    M.left = W < 600 ? 56 : 70;
+    M.bottom = H < 400 ? 44 : 54;
+    M.top = 24;
+    M.right = 40;
+
+    plotW = W - M.left - M.right;
+    plotH = H - M.top - M.bottom;
+
+    draw();
+  }
+
+  // ---------- DRAW ----------
+  function draw() {
+    if (W <= 0 || H <= 0) return;
+
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, W, H);
+
+    // filled area
+    const steps = 400;
+    ctx.beginPath();
+    ctx.moveTo(xScale(0), yScale(0));
+    for (let i = 0; i <= steps; i++) {
+      const d = DEPTH_MIN + (i / steps) * (DEPTH_MAX - DEPTH_MIN);
+      const f = fractionAtDepth(d);
+      ctx.lineTo(xScale(d), yScale(f));
+    }
+    ctx.lineTo(xScale(DEPTH_MAX), yScale(0));
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(56, 189, 248, 0.07)';
+    ctx.fill();
+
+    // curve
+    ctx.beginPath();
+    for (let i = 0; i <= steps; i++) {
+      const d = DEPTH_MIN + (i / steps) * (DEPTH_MAX - DEPTH_MIN);
+      const f = fractionAtDepth(d);
+      const px = xScale(d);
+      const py = yScale(f);
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 2.4;
+    ctx.shadowColor = 'rgba(56, 189, 248, 0.35)';
+    ctx.shadowBlur = 12;
+    ctx.stroke();
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+
+    // horizontal grid lines
+    const fracTicks = [0, 1/8, 1/4, 3/8, 1/2, 5/8, 3/4, 7/8, 1];
+    ctx.lineWidth = 1;
+    fracTicks.forEach(f => {
+      const y = yScale(f);
+      ctx.strokeStyle = (f === 0 || f === 1) ? 'rgba(148, 163, 184, 0.35)' : 'rgba(148, 163, 184, 0.15)';
+      ctx.beginPath();
+      ctx.moveTo(M.left, y);
+      ctx.lineTo(M.left + plotW, y);
+      ctx.stroke();
+
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '11px Inter, system-ui, sans-serif';
+      ctx.fillText(fractionLabel(f), M.left - 10, y);
+    });
+
+    // vertical grid lines
+    for (let d = DEPTH_MIN; d <= DEPTH_MAX; d += 10) {
+      const x = xScale(d);
+      ctx.strokeStyle = (d === 0) ? 'rgba(148, 163, 184, 0.35)' : 'rgba(148, 163, 184, 0.15)';
+      ctx.beginPath();
+      ctx.moveTo(x, M.top);
+      ctx.lineTo(x, M.top + plotH);
+      ctx.stroke();
+
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '11px Inter, system-ui, sans-serif';
+      ctx.fillText(d + ' m', x, M.top + plotH + 12);
+    }
+
+    // axis labels
+    ctx.save();
+    ctx.translate(18, M.top + plotH / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#e2e8f0';
+    ctx.font = '600 12px Inter, system-ui, sans-serif';
+    ctx.fillText('Volume Fraction  V/V₀', 0, 0);
+    ctx.restore();
+
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = '#e2e8f0';
+    ctx.font = '600 12px Inter, system-ui, sans-serif';
+    ctx.fillText('Depth (m)', M.left + plotW / 2, M.top + plotH + 30);
+
+    // reference points
+    const refDepths = new Set();
+    for (let d = 0; d <= DEPTH_MAX; d += 10) refDepths.add(d);
+    [3, 5, 6, 12, 15, 21].forEach(d => refDepths.add(d));
+
+    const sortedDepths = Array.from(refDepths).sort((a, b) => a - b);
+
+    sortedDepths.forEach(d => {
+      const f = fractionAtDepth(d);
+      const px = xScale(d);
+      const py = yScale(f);
+      const isExtra = ![0, 10, 20, 30, 40, 50, 60, 70, 80, 90].includes(d);
+
+      ctx.beginPath();
+      ctx.arc(px, py, isExtra ? 4.5 : 5.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#fbbf24';
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = isExtra ? 1.4 : 1.8;
+      ctx.stroke();
+
+      ctx.font = '11px Inter, system-ui, sans-serif';
+      ctx.textBaseline = 'bottom';
+      const label = `${fractionLabel(f)} @ ${d} m`;
+      const textWidth = ctx.measureText(label).width;
+
+      let tx = px - textWidth / 2;
+      let ty = py - 9;
+
+      if (tx < M.left + 2) tx = M.left + 2;
+      if (tx + textWidth > M.left + plotW - 2) tx = M.left + plotW - textWidth - 2;
+      if (ty < M.top + 2) ty = M.top + 14;
+
+      ctx.textAlign = 'left';
+      ctx.fillStyle = 'rgba(0,0,0,0.75)';
+      ctx.fillRect(tx - 3, ty - 11, textWidth + 6, 16);
+      ctx.fillStyle = isExtra ? '#fcd34d' : '#fbbf24';
+      ctx.fillText(label, tx, ty + 2);
+    });
+
+    // annotation
+    ctx.font = '10px Inter, system-ui, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#64748b';
+    ctx.fillText(`Boyle's Law: V/V₀ = 1/(1 + depth/10.06)`, M.left + 8, M.top + 14);
+  }
+
+  // ---------- INIT ----------
+  window.addEventListener('resize', resize);
+  setTimeout(resize, 50);
+})();
+</script>
+</body>
+</html>
