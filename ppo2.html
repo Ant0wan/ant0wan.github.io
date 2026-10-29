@@ -32,18 +32,18 @@
       height: 100%;
       display: flex;
       flex-direction: column;
-      padding: 24px 32px;
+      padding: 20px 28px;
       background: var(--bg);
     }
     .header {
       display: flex;
       flex-direction: column;
-      gap: 14px;
-      margin-bottom: 8px;
+      gap: 10px;
+      margin-bottom: 6px;
       flex-shrink: 0;
     }
     .title {
-      font-size: clamp(17px, 1.8vw, 21px);
+      font-size: clamp(16px, 1.7vw, 20px);
       font-weight: 600;
       color: #f1f5f9;
       letter-spacing: -0.01em;
@@ -53,12 +53,12 @@
 
     .legend-row {
       display: flex;
-      gap: 22px;
+      gap: 20px;
       font-size: 12px;
       flex-wrap: wrap;
       justify-content: center;
       color: var(--text-muted);
-      margin-bottom: 4px;
+      margin-bottom: 2px;
       align-items: center;
     }
     .legend-item {
@@ -184,19 +184,19 @@
   const M_PER_ATM = 10;
 
   const DEPTH_MIN = 0;
-  const DEPTH_MAX = 60;
+  const DEPTH_MAX = 70;
   const PPO2_MIN = 0;
   const PPO2_MAX = 2.0;
-  const PPO2_LIMIT_12 = 1.2;   // conservative limit
-  const PPO2_LIMIT_14 = 1.4;   // working limit
-  const PPO2_LIMIT_16 = 1.6;   // contingency limit
+  const PPO2_LIMIT_12 = 1.2;
+  const PPO2_LIMIT_14 = 1.4;
+  const PPO2_LIMIT_16 = 1.6;
 
   // ---------- CUSTOM GAS STATE ----------
-  let FO2_CUSTOM = 0.40;  // Nitrox 40 by default
+  let FO2_CUSTOM = 0.40;
 
   // ---------- LAYOUT ----------
   let W = 0, H = 0;
-  const M = { top: 24, right: 40, bottom: 54, left: 70 };
+  const M = { top: 20, right: 44, bottom: 50, left: 66 };
   let plotW = 0, plotH = 0;
 
   // ---------- SCALES ----------
@@ -239,10 +239,10 @@
     canvas.style.height = H + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    M.left = W < 600 ? 56 : 70;
-    M.bottom = H < 400 ? 44 : 54;
-    M.top = 24;
-    M.right = 40;
+    M.left = W < 600 ? 54 : 66;
+    M.bottom = H < 400 ? 42 : 50;
+    M.top = 20;
+    M.right = 44;
 
     plotW = W - M.left - M.right;
     plotH = H - M.top - M.bottom;
@@ -275,6 +275,7 @@
 
   // ---------- DRAW LIMIT LINE ----------
   function drawLimitLine(ppo2Limit, showLabel) {
+    if (ppo2Limit > PPO2_MAX) return;
     const y = yScale(ppo2Limit);
     ctx.strokeStyle = '#8b0000';
     ctx.lineWidth = 1.6;
@@ -283,14 +284,12 @@
     ctx.lineTo(M.left + plotW, y);
     ctx.stroke();
 
-    // axis label
     ctx.textAlign = 'right';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = '#ff6666';
     ctx.font = '600 11px Inter, system-ui, sans-serif';
     ctx.fillText(ppo2Limit.toFixed(1), M.left - 10, y);
 
-    // in-plot annotation
     if (showLabel) {
       ctx.textAlign = 'left';
       ctx.textBaseline = 'bottom';
@@ -309,7 +308,16 @@
 
     const steps = 400;
 
-    // ---- filled area under Air curve only (no fill for custom gas) ----
+    // ============================================================
+    // CLIP everything that belongs to the plot area so curves and
+    // fills are cleanly cut at the top (2.0 bar) and at the borders.
+    // ============================================================
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(M.left, M.top, plotW, plotH);
+    ctx.clip();
+
+    // ---- filled area under Air curve only ----
     ctx.beginPath();
     ctx.moveTo(xScale(DEPTH_MIN), yScale(PPO2_MIN));
     for (let i = 0; i <= steps; i++) {
@@ -327,30 +335,25 @@
       const isLimit = Math.abs(p - PPO2_LIMIT_12) < 0.001
                    || Math.abs(p - PPO2_LIMIT_14) < 0.001
                    || Math.abs(p - PPO2_LIMIT_16) < 0.001;
+      const isMajor = Math.abs(p - Math.round(p)) < 0.001;
+      const isHalf  = Math.abs(p - (Math.floor(p) + 0.5)) < 0.001;
+
       ctx.strokeStyle = isLimit
         ? 'rgba(139, 0, 0, 0.55)'
-        : (p === 0 || Math.abs(p - PPO2_MAX) < 0.001)
-          ? 'rgba(148, 163, 184, 0.35)'
-          : 'rgba(148, 163, 184, 0.15)';
+        : isMajor
+          ? 'rgba(148, 163, 184, 0.30)'
+          : 'rgba(148, 163, 184, 0.10)';
       ctx.lineWidth = isLimit ? 1.5 : 1;
       ctx.beginPath();
       ctx.moveTo(M.left, y);
       ctx.lineTo(M.left + plotW, y);
       ctx.stroke();
-
-      if (isLimit) continue; // limit labels drawn separately, in red
-
-      ctx.textAlign = 'right';
-      ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '11px Inter, system-ui, sans-serif';
-      ctx.fillText(p.toFixed(1), M.left - 10, y);
     }
 
-    // ---- limit lines (1.2, 1.4 and 1.6 bar) ----
-    drawLimitLine(PPO2_LIMIT_12, true);
-    drawLimitLine(PPO2_LIMIT_14, true);
-    drawLimitLine(PPO2_LIMIT_16, true);
+    // ---- limit lines ----
+    drawLimitLine(PPO2_LIMIT_12, false);
+    drawLimitLine(PPO2_LIMIT_14, false);
+    drawLimitLine(PPO2_LIMIT_16, false);
 
     // ---- vertical grid lines ----
     for (let d = DEPTH_MIN; d <= DEPTH_MAX; d += 10) {
@@ -361,7 +364,64 @@
       ctx.moveTo(x, M.top);
       ctx.lineTo(x, M.top + plotH);
       ctx.stroke();
+    }
 
+    // ---- curves (now naturally clipped at the plot border) ----
+    drawCurve(ppo2Custom, '#22c55e', 'rgba(34, 197, 94, 0.4)');
+    drawCurve(ppo2Air,    '#38bdf8', 'rgba(56, 189, 248, 0.4)');
+    drawCurve(ppo2Nx32,   '#fbbf24', 'rgba(251, 191, 36, 0.4)');
+
+    // ---- crossing dots (clipped to plot) ----
+    const gases = [
+      { fn: ppo2Air,    fo2: FO2_AIR,    color: '#38bdf8' },
+      { fn: ppo2Nx32,   fo2: FO2_NX32,   color: '#fbbf24' },
+      { fn: ppo2Custom, fo2: FO2_CUSTOM, color: '#22c55e' },
+    ];
+    const limits = [PPO2_LIMIT_16, PPO2_LIMIT_14, PPO2_LIMIT_12];
+
+    limits.forEach((limit) => {
+      gases.forEach(c => {
+        const dLimit = depthAtPpo2(limit, c.fo2);
+        if (!isFinite(dLimit) || dLimit < DEPTH_MIN || dLimit > DEPTH_MAX) return;
+        const px = xScale(dLimit);
+        const py = yScale(limit);
+
+        ctx.beginPath();
+        ctx.arc(px, py, 5.5, 0, Math.PI * 2);
+        ctx.fillStyle = '#8b0000';
+        ctx.fill();
+        ctx.strokeStyle = '#ff6666';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      });
+    });
+
+    ctx.restore(); // end plot-area clipping
+
+    // ============================================================
+    // Axis labels and annotations (drawn OUTSIDE the clip)
+    // ============================================================
+
+    // Y tick labels
+    for (let p = 0; p <= PPO2_MAX + 0.001; p += 0.2) {
+      const isLimit = Math.abs(p - PPO2_LIMIT_12) < 0.001
+                   || Math.abs(p - PPO2_LIMIT_14) < 0.001
+                   || Math.abs(p - PPO2_LIMIT_16) < 0.001;
+      const isMajor = Math.abs(p - Math.round(p)) < 0.001;
+      const isHalf  = Math.abs(p - (Math.floor(p) + 0.5)) < 0.001;
+      if (!(isMajor || isHalf || isLimit)) continue;
+
+      const y = yScale(p);
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = isLimit ? '#ff6666' : '#ffffff';
+      ctx.font = (isLimit ? '600 ' : '') + '11px Inter, system-ui, sans-serif';
+      ctx.fillText(p.toFixed(1), M.left - 10, y);
+    }
+
+    // X tick labels
+    for (let d = DEPTH_MIN; d <= DEPTH_MAX; d += 10) {
+      const x = xScale(d);
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
       ctx.fillStyle = '#ffffff';
@@ -369,14 +429,19 @@
       ctx.fillText(d + ' m', x, M.top + plotH + 12);
     }
 
-    // ---- curves ----
-    drawCurve(ppo2Custom, '#22c55e', 'rgba(34, 197, 94, 0.4)');
-    drawCurve(ppo2Air,    '#38bdf8', 'rgba(56, 189, 248, 0.4)');
-    drawCurve(ppo2Nx32,   '#fbbf24', 'rgba(251, 191, 36, 0.4)');
+    // Limit annotations
+    [PPO2_LIMIT_12, PPO2_LIMIT_14, PPO2_LIMIT_16].forEach(limit => {
+      const y = yScale(limit);
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'bottom';
+      ctx.font = '10px Inter, system-ui, sans-serif';
+      ctx.fillStyle = 'rgba(255, 102, 102, 0.85)';
+      ctx.fillText(`Limite PpO₂ = ${limit.toFixed(1)} bar`, M.left + 8, y - 4);
+    });
 
-    // ---- axis labels ----
+    // Axis labels
     ctx.save();
-    ctx.translate(18, M.top + plotH / 2);
+    ctx.translate(16, M.top + plotH / 2);
     ctx.rotate(-Math.PI / 2);
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -389,9 +454,9 @@
     ctx.textBaseline = 'top';
     ctx.fillStyle = '#e2e8f0';
     ctx.font = '600 12px Inter, system-ui, sans-serif';
-    ctx.fillText('Profondeur (m)', M.left + plotW / 2, M.top + plotH + 30);
+    ctx.fillText('Profondeur (m)', M.left + plotW / 2, M.top + plotH + 28);
 
-    // ---- end-of-curve labels ----
+    // End-of-curve labels
     const endX = xScale(DEPTH_MAX) - 6;
     function endLabel(text, p, color) {
       if (p > PPO2_MAX) return;
@@ -405,32 +470,15 @@
     endLabel('Nx 32',  ppo2Nx32(DEPTH_MAX),   '#fbbf24');
     endLabel(`Nx ${Math.round(FO2_CUSTOM*100)}`, ppo2Custom(DEPTH_MAX), '#22c55e');
 
-    // ---- reference points at 1.2, 1.4 and 1.6 bar crossings ----
-    const gases = [
-      { fn: ppo2Air,    fo2: FO2_AIR,    color: '#38bdf8' },
-      { fn: ppo2Nx32,   fo2: FO2_NX32,   color: '#fbbf24' },
-      { fn: ppo2Custom, fo2: FO2_CUSTOM, color: '#22c55e' },
-    ];
-
-    // Draw highest limit first so labels stack upward away from the curve
-    const limits = [PPO2_LIMIT_16, PPO2_LIMIT_14, PPO2_LIMIT_12];
-
+    // Crossing labels (outside clip, positioned like before)
     limits.forEach((limit) => {
+      if (limit > PPO2_MAX) return;
       gases.forEach(c => {
         const dLimit = depthAtPpo2(limit, c.fo2);
         if (!isFinite(dLimit) || dLimit < DEPTH_MIN || dLimit > DEPTH_MAX) return;
 
         const px = xScale(dLimit);
         const py = yScale(limit);
-
-        ctx.beginPath();
-        ctx.arc(px, py, 5.5, 0, Math.PI * 2);
-        ctx.fillStyle = '#8b0000';
-        ctx.fill();
-        ctx.strokeStyle = '#ff6666';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
         const label = `${dLimit.toFixed(1)} m`;
         ctx.font = '600 10px Inter, system-ui, sans-serif';
         ctx.textBaseline = 'bottom';
@@ -440,6 +488,7 @@
         let ty = py - 10;
         if (tx < M.left + 2) tx = M.left + 2;
         if (tx + textWidth > M.left + plotW - 2) tx = M.left + plotW - textWidth - 2;
+        if (ty < M.top + 2) ty = M.top + 13;
 
         ctx.textAlign = 'left';
         ctx.fillStyle = 'rgba(0,0,0,0.85)';
@@ -449,7 +498,7 @@
       });
     });
 
-    // ---- top-left annotation ----
+    // Top-left annotation
     ctx.font = '10px Inter, system-ui, sans-serif';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
