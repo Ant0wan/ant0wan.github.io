@@ -2,191 +2,52 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Oxygen Partial Pressure vs. Depth — Air, Nitrox 32 and Variable FO₂</title>
-  <style>
-    :root {
-      --bg: #000000;
-      --text: #e2e8f0;
-      --text-muted: #b0b8c4;
-      --air: #38bdf8;
-      --nx32: #fbbf24;
-      --custom: #22c55e;
-      --limit: #8b0000;
-      --limit-bright: #ff6666;
-    }
-    * { box-sizing: border-box; }
-    body, html {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: var(--bg);
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      color: var(--text);
-      -webkit-font-smoothing: antialiased;
-    }
-    #container {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      padding: 20px 28px;
-      background: var(--bg);
-    }
-    .header {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-bottom: 6px;
-      flex-shrink: 0;
-    }
-    .title {
-      font-size: clamp(16px, 1.7vw, 20px);
-      font-weight: 600;
-      color: #f1f5f9;
-      letter-spacing: -0.01em;
-      text-align: center;
-    }
-    .title i, .title sub { font-style: italic; font-weight: 400; color: var(--air); }
-    .subtitle {
-      font-size: 11px;
-      color: var(--text-muted);
-      text-align: center;
-      font-style: italic;
-      margin-top: -2px;
-      letter-spacing: 0.01em;
-    }
-
-    .legend-row {
-      display: flex;
-      gap: 20px;
-      font-size: 12px;
-      flex-wrap: wrap;
-      justify-content: center;
-      color: var(--text-muted);
-      margin-bottom: 2px;
-      align-items: center;
-    }
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 500;
-      white-space: nowrap;
-    }
-    .swatch {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-    .legend-item .limits {
-      color: var(--text-muted);
-      font-variant-numeric: tabular-nums;
-      font-weight: 400;
-    }
-    .line-swatch {
-      width: 18px;
-      height: 2px;
-      border-radius: 1px;
-      flex-shrink: 0;
-    }
-
-    .control {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 5px 12px;
-      background: rgba(34, 197, 94, 0.10);
-      border: 1px solid rgba(34, 197, 94, 0.40);
-      border-radius: 6px;
-    }
-    .control label {
-      color: #86efac;
-      font-weight: 600;
-      font-size: 12px;
-      white-space: nowrap;
-    }
-    .control input[type="number"] {
-      width: 62px;
-      padding: 3px 6px;
-      background: rgba(0, 0, 0, 0.5);
-      border: 1px solid rgba(34, 197, 94, 0.5);
-      border-radius: 4px;
-      color: #ffffff;
-      font-variant-numeric: tabular-nums;
-      font-weight: 600;
-      font-size: 12px;
-      font-family: inherit;
-      outline: none;
-      -moz-appearance: textfield;
-    }
-    .control input[type="number"]:focus {
-      border-color: #22c55e;
-      box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.25);
-    }
-    .control input[type="number"]::-webkit-outer-spin-button,
-    .control input[type="number"]::-webkit-inner-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-    }
-    .control .unit {
-      color: #86efac;
-      font-weight: 600;
-      font-size: 12px;
-    }
-
-    canvas {
-      display: block;
-      flex: 1;
-      min-height: 0;
-      background: transparent;
-      border-radius: 0;
-      border: none;
-    }
-  </style>
+  <meta name="description" content="Interactive figure: PpO2 versus depth and MOD.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <script>(function(){var t=null;try{t=localStorage.getItem('theme')}catch(e){}if(!t){var m=/(?:^|;)theme=(dark|light)/.exec(window.name);if(m)t=m[1]}if(!t&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)t='dark';document.documentElement.setAttribute('data-theme',t||'light')})()</script>
+  <link rel="stylesheet" href="site.css">
+  <script src="site.js"></script>
 </head>
 <body>
-<div id="container">
-  <div class="header">
-    <div class="title">
-      Oxygen Partial Pressure (PpO₂) as a Function of Depth for Air, Nitrox 32 and a Variable-FO₂ Breathing Gas
-    </div>
-    <div class="subtitle">
-      Ambient pressure model: P<sub>amb</sub>(z) = P<sub>surface</sub> + z / 10 &nbsp;·&nbsp; PpO₂(z) = P<sub>amb</sub>(z) &times; FO₂ &nbsp;·&nbsp; 1 bar at surface
-    </div>
-    <div class="legend-row">
-      <div class="legend-item">
-        <div class="line-swatch" style="background:#38bdf8"></div>
-        Air (FO₂ = 0.21)
-      </div>
-      <div class="legend-item">
-        <div class="line-swatch" style="background:#fbbf24"></div>
-        Nitrox 32 (FO₂ = 0.32)
-      </div>
-      <div class="legend-item">
-        <div class="line-swatch" style="background:#22c55e"></div>
-        Variable gas (FO₂ adjustable)
-      </div>
-      <div class="legend-item">
-        <div class="line-swatch" style="background:#8b0000"></div>
-        PpO₂ exposure limits (1.2 / 1.4 / 1.6 bar)
-      </div>
-      <div class="control">
-        <label for="fo2">FO₂</label>
-        <input id="fo2" type="number" min="0" max="100" step="1" value="40">
-        <span class="unit">%</span>
-      </div>
-    </div>
+<header class="site-header">
+  <a class="site-name" href="index.html">Antoine <i>Barthelemy</i></a>
+  <nav class="site-nav">
+    <a href="index.html">Home</a>
+    <a href="dive.html">Diving</a>
+    <a href="index.html#figures" aria-current="page">Figures</a>
+    <button id="theme-toggle" type="button" aria-label="Switch to dark mode"><span class="theme-icon" aria-hidden="true"></span></button>
+  </nav>
+</header>
+<main class="page">
+  <h1 class="paper-title">Oxygen Partial Pressure (PpO<sub>2</sub>) as a Function of Depth</h1>
+  <div class="byline">Air, Nitrox 32 and a variable-FO<sub>2</sub> breathing gas</div>
+  <div class="eq"><span><i>P</i><sub>amb</sub>(<i>z</i>) = <i>P</i><sub>surface</sub> + <i>z</i> / 10</span><span class="tag">(1)</span>
+    <span>PpO<sub>2</sub>(<i>z</i>) = <i>P</i><sub>amb</sub>(<i>z</i>) &times; <i>F</i><sub>O<sub>2</sub></sub></span><span class="tag">(2)</span>
+    <span class="param"><i>P</i><sub>surface</sub> = 1 bar</span></div>
+  <div class="legend-row">
+    <div class="legend-item"><span class="line-swatch" style="background:var(--c-blue)"></span>Air <span class="limits">F<sub>O₂</sub> = 0.21</span></div>
+    <div class="legend-item"><span class="line-swatch" style="background:var(--c-amber)"></span>Nitrox 32 <span class="limits">F<sub>O₂</sub> = 0.32</span></div>
+    <div class="legend-item"><span class="line-swatch" style="background:var(--c-green)"></span>Variable gas</div>
+    <div class="legend-item"><span class="line-swatch" style="background:var(--c-red)"></span>PpO₂ limits <span class="limits">1.2 / 1.4 / 1.6 bar</span></div>
   </div>
-  <canvas id="chart"></canvas>
-</div>
+  <div class="controls">
+    <label class="field"><span>Variable gas <i>F</i><sub>O₂</sub> (%)</span>
+      <input id="fo2" type="number" min="0" max="100" step="1" value="40"></label>
+  </div>
+  <figure class="fig">
+    <canvas id="chart" role="img" aria-label="Oxygen partial pressure versus depth"></canvas>
+    <figcaption><b>Figure 2.1.</b> Oxygen partial pressure against depth. Dots mark where each gas reaches a limit; the depth there is its maximum operating depth (MOD) for that PpO<sub>2</sub>. Change the variable gas to see how its MOD moves.</figcaption>
+  </figure>
+  <div class="pager"><a href="dive.html">&larr; Diving</a><a href="volumes.html">Figure 2.2 &rarr;</a></div>
+</main>
 <script>
 (function() {
   const canvas = document.getElementById('chart');
-  const ctx = canvas.getContext('2d', { alpha: false });
+  const ctx = canvas.getContext('2d');
+  let C = themeColors();
 
   // ---------- CONSTANTS ----------
   const FO2_AIR = 0.21;
@@ -233,21 +94,14 @@
 
   // ---------- RESIZE ----------
   function resize() {
-    const rect = canvas.parentElement.getBoundingClientRect();
-    const headerHeight = document.querySelector('.header').offsetHeight;
-    const containerStyle = getComputedStyle(document.getElementById('container'));
-    const padX = parseFloat(containerStyle.paddingLeft) + parseFloat(containerStyle.paddingRight);
-    const padY = parseFloat(containerStyle.paddingTop) + parseFloat(containerStyle.paddingBottom);
-
-    W = rect.width - padX;
-    H = rect.height - headerHeight - padY;
+    const rect = canvas.getBoundingClientRect();
+    W = rect.width;
+    H = rect.height;
     if (W <= 0 || H <= 0) return;
 
     const dpr = window.devicePixelRatio || 1;
     canvas.width = W * dpr;
     canvas.height = H * dpr;
-    canvas.style.width = W + 'px';
-    canvas.style.height = H + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     M.left = W < 600 ? 54 : 66;
@@ -288,7 +142,7 @@
   function drawLimitLine(ppo2Limit) {
     if (ppo2Limit > PPO2_MAX) return;
     const y = yScale(ppo2Limit);
-    ctx.strokeStyle = '#8b0000';
+    ctx.strokeStyle = C.red;
     ctx.lineWidth = 1.6;
     ctx.beginPath();
     ctx.moveTo(M.left, y);
@@ -300,7 +154,8 @@
   function draw() {
     if (W <= 0 || H <= 0) return;
 
-    ctx.fillStyle = '#000000';
+    C = themeColors();
+    ctx.fillStyle = C.bg;
     ctx.fillRect(0, 0, W, H);
 
     const steps = 400;
@@ -323,7 +178,7 @@
     }
     ctx.lineTo(xScale(DEPTH_MAX), yScale(PPO2_MIN));
     ctx.closePath();
-    ctx.fillStyle = 'rgba(56, 189, 248, 0.06)';
+    ctx.fillStyle = withAlpha(C.blue, 0.08);
     ctx.fill();
 
     // ---- horizontal grid lines ----
@@ -335,10 +190,10 @@
       const isMajor = Math.abs(p - Math.round(p)) < 0.001;
 
       ctx.strokeStyle = isLimit
-        ? 'rgba(139, 0, 0, 0.55)'
+        ? withAlpha(C.red, 0.6)
         : isMajor
-          ? 'rgba(148, 163, 184, 0.30)'
-          : 'rgba(148, 163, 184, 0.10)';
+          ? C.gridStrong
+          : C.grid;
       ctx.lineWidth = isLimit ? 1.5 : 1;
       ctx.beginPath();
       ctx.moveTo(M.left, y);
@@ -354,7 +209,7 @@
     // ---- vertical grid lines ----
     for (let d = DEPTH_MIN; d <= DEPTH_MAX; d += 10) {
       const x = xScale(d);
-      ctx.strokeStyle = (d === 0) ? 'rgba(148, 163, 184, 0.35)' : 'rgba(148, 163, 184, 0.15)';
+      ctx.strokeStyle = (d === 0) ? C.gridStrong : C.grid;
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(x, M.top);
@@ -363,15 +218,15 @@
     }
 
     // ---- curves (naturally clipped at plot border) ----
-    drawCurve(ppo2Custom, '#22c55e', 'rgba(34, 197, 94, 0.4)');
-    drawCurve(ppo2Air,    '#38bdf8', 'rgba(56, 189, 248, 0.4)');
-    drawCurve(ppo2Nx32,   '#fbbf24', 'rgba(251, 191, 36, 0.4)');
+    drawCurve(ppo2Custom, C.green);
+    drawCurve(ppo2Air,    C.blue, 'rgba(56, 189, 248, 0.4)');
+    drawCurve(ppo2Nx32,   C.amber, 'rgba(251, 191, 36, 0.4)');
 
     // ---- crossing dots (clipped) ----
     const gases = [
-      { fo2: FO2_AIR,    color: '#38bdf8' },
-      { fo2: FO2_NX32,   color: '#fbbf24' },
-      { fo2: FO2_CUSTOM, color: '#22c55e' },
+      { fo2: FO2_AIR,    color: C.blue },
+      { fo2: FO2_NX32,   color: C.amber },
+      { fo2: FO2_CUSTOM, color: C.green },
     ];
     const limits = [PPO2_LIMIT_16, PPO2_LIMIT_14, PPO2_LIMIT_12];
 
@@ -384,9 +239,9 @@
 
         ctx.beginPath();
         ctx.arc(px, py, 5.5, 0, Math.PI * 2);
-        ctx.fillStyle = '#8b0000';
+        ctx.fillStyle = C.red;
         ctx.fill();
-        ctx.strokeStyle = '#ff6666';
+        ctx.strokeStyle = C.bg;
         ctx.lineWidth = 2;
         ctx.stroke();
       });
@@ -410,8 +265,8 @@
       const y = yScale(p);
       ctx.textAlign = 'right';
       ctx.textBaseline = 'middle';
-      ctx.fillStyle = isLimit ? '#ff6666' : '#ffffff';
-      ctx.font = (isLimit ? '600 ' : '') + '11px Inter, system-ui, sans-serif';
+      ctx.fillStyle = isLimit ? C.red : C.ink;
+      ctx.font = (isLimit ? '600 ' : '') + '13px "Latin Modern Roman", "Computer Modern", "Times New Roman", serif';
       ctx.fillText(p.toFixed(1), M.left - 10, y);
     }
 
@@ -420,8 +275,8 @@
       const x = xScale(d);
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '11px Inter, system-ui, sans-serif';
+      ctx.fillStyle = C.ink;
+      ctx.font = '13px "Latin Modern Roman", "Computer Modern", "Times New Roman", serif';
       ctx.fillText(d + ' m', x, M.top + plotH + 12);
     }
 
@@ -430,8 +285,8 @@
       const y = yScale(limit);
       ctx.textAlign = 'left';
       ctx.textBaseline = 'bottom';
-      ctx.font = '10px Inter, system-ui, sans-serif';
-      ctx.fillStyle = 'rgba(255, 102, 102, 0.85)';
+      ctx.font = '12px "Latin Modern Roman", "Computer Modern", "Times New Roman", serif';
+      ctx.fillStyle = C.red;
       ctx.fillText(`PpO₂ limit = ${limit.toFixed(1)} bar`, M.left + 8, y - 4);
     });
 
@@ -441,30 +296,30 @@
     ctx.rotate(-Math.PI / 2);
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillStyle = '#e2e8f0';
-    ctx.font = '600 12px Inter, system-ui, sans-serif';
+    ctx.fillStyle = C.ink;
+    ctx.font = '600 14px "Latin Modern Roman", "Computer Modern", "Times New Roman", serif';
     ctx.fillText('Oxygen Partial Pressure  PpO₂ (bar)', 0, 0);
     ctx.restore();
 
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
-    ctx.fillStyle = '#e2e8f0';
-    ctx.font = '600 12px Inter, system-ui, sans-serif';
+    ctx.fillStyle = C.ink;
+    ctx.font = '600 14px "Latin Modern Roman", "Computer Modern", "Times New Roman", serif';
     ctx.fillText('Depth  z (m)', M.left + plotW / 2, M.top + plotH + 28);
 
     // End-of-curve labels
     const endX = xScale(DEPTH_MAX) - 6;
     function endLabel(text, p, color) {
       if (p > PPO2_MAX) return;
-      ctx.font = '600 11px Inter, system-ui, sans-serif';
+      ctx.font = '600 13px "Latin Modern Roman", "Computer Modern", "Times New Roman", serif';
       ctx.textAlign = 'right';
       ctx.textBaseline = 'bottom';
       ctx.fillStyle = color;
       ctx.fillText(text, endX, yScale(p) - 6);
     }
-    endLabel('Air',    ppo2Air(DEPTH_MAX),    '#38bdf8');
-    endLabel('Nitrox 32', ppo2Nx32(DEPTH_MAX), '#fbbf24');
-    endLabel(`FO₂ = ${(FO2_CUSTOM*100).toFixed(0)}%`, ppo2Custom(DEPTH_MAX), '#22c55e');
+    endLabel('Air',    ppo2Air(DEPTH_MAX),    C.blue);
+    endLabel('Nitrox 32', ppo2Nx32(DEPTH_MAX), C.amber);
+    endLabel(`FO₂ = ${(FO2_CUSTOM*100).toFixed(0)}%`, ppo2Custom(DEPTH_MAX), C.green);
 
     // Crossing labels (MOD annotations)
     limits.forEach((limit) => {
@@ -476,7 +331,7 @@
         const px = xScale(dLimit);
         const py = yScale(limit);
         const label = `MOD = ${dLimit.toFixed(1)} m`;
-        ctx.font = '600 10px Inter, system-ui, sans-serif';
+        ctx.font = '600 12px "Latin Modern Roman", "Computer Modern", "Times New Roman", serif';
         ctx.textBaseline = 'bottom';
         const textWidth = ctx.measureText(label).width;
 
@@ -487,7 +342,7 @@
         if (ty < M.top + 2) ty = M.top + 13;
 
         ctx.textAlign = 'left';
-        ctx.fillStyle = 'rgba(0,0,0,0.85)';
+        ctx.fillStyle = withAlpha(C.bg, 0.9);
         ctx.fillRect(tx - 3, ty - 11, textWidth + 6, 15);
         ctx.fillStyle = c.color;
         ctx.fillText(label, tx, ty + 1);
@@ -495,10 +350,10 @@
     });
 
     // Top-left annotation
-    ctx.font = '10px Inter, system-ui, sans-serif';
+    ctx.font = '12px "Latin Modern Roman", "Computer Modern", "Times New Roman", serif';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
-    ctx.fillStyle = '#64748b';
+    ctx.fillStyle = C.muted;
     ctx.fillText(`PpO₂(z) = (z / 10 + 1) × FO₂`, M.left + 8, M.top + 14);
   }
 
@@ -526,8 +381,12 @@
 
   // ---------- INIT ----------
   window.addEventListener('resize', resize);
-  setTimeout(resize, 50);
+  window.addEventListener('themechange', () => draw());
+  resize();
+  window.addEventListener('load', resize);
 })();
 </script>
-</body>
-</html>
+<footer class="site-footer">
+  <span>&copy; 2026 Antoine Barthelemy</span>
+  <span>Figures are computed in your browser &middot; nothing is sent anywhere.</span>
+</footer>

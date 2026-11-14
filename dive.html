@@ -2,56 +2,66 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>Dive</title>
-  <link rel="preconnect" href="https://api.fontshare.com">
-  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="dive.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Diving — Antoine Barthelemy</title>
+  <meta name="description" content="Diving certifications and licences.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <script>(function(){var t=null;try{t=localStorage.getItem('theme')}catch(e){}if(!t){var m=/(?:^|;)theme=(dark|light)/.exec(window.name);if(m)t=m[1]}if(!t&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)t='dark';document.documentElement.setAttribute('data-theme',t||'light')})()</script>
+  <link rel="stylesheet" href="site.css">
+  <script src="site.js"></script>
 </head>
 <body>
-  <div class="layout-container">
-    <main class="diving-content">
-      <section class="diving-section">
+<header class="site-header">
+  <a class="site-name" href="index.html">Antoine <i>Barthelemy</i></a>
+  <nav class="site-nav">
+    <a href="index.html">Home</a>
+    <a href="dive.html" aria-current="page">Diving</a>
+    <a href="index.html#figures">Figures</a>
+    <button id="theme-toggle" type="button" aria-label="Switch to dark mode"><span class="theme-icon" aria-hidden="true"></span></button>
+  </nav>
+</header>
+<main class="page narrow">
+  <h1 class="paper-title">Diving</h1>
+  <div class="byline">Qualifications and licences</div>
 
-        <div class="certifications">
-          <h2>Certifications</h2>
-          <ul class="cert-list">
-            <li>SSI Open Water Diver<span class="cert-date">2023</span></li>
-            <li>SSI Night Diving &amp; Limited Visibility<span class="cert-date">2024</span></li>
-            <li>SSI Deep Diving<span class="cert-date">2024</span></li>
-            <li>SSI Perfect Buoyancy<span class="cert-date">2024</span></li>
-            <li>SSI Navigation<span class="cert-date">2025</span></li>
-            <li>SSI Enriched Air Nitrox Level 2<span class="cert-date">2025</span></li>
-            <li>SSI Dry Suit<span class="cert-date">2025</span></li>
-            <li>SSI React Right<span class="cert-date">2025</span></li>
-            <li>SSI Diver Stress &amp; Rescue<span class="cert-date">2025</span></li>
-            <li>SSI Decompression Dive<span class="cert-date">2025</span></li>
-            <li>CMAS One Star Diver<span class="cert-date">2026</span></li>
-	    <li>RIFA Plongée Sous-marine<span class="cert-date">2026</span></li>
-            <li>CMAS Two Star Diver<span class="cert-date">2026</span></li>
-            <li>GUE Doubles Primer<span class="cert-date">2026</span></li>
-            <li>CMAS Three Star Diver<span class="cert-date">2026</span></li>
-            <li>CMAS Advanced Nitrox Diver<span class="cert-date">2026</span></li>
-            <li class="planned-cert">GUE Basic Fundamentals<span class="cert-date">2026</span></li>
-            <li class="planned-cert">GUE Technical Fundamentals<span class="cert-date">2026</span></li>
-            <li class="planned-cert">GUE Technical Diver 1<span class="cert-date">2027</span></li>
-            <li class="planned-cert">GUE DPV<span class="cert-date">2027</span></li>
-            <li class="planned-cert">GUE Cave Diver 1<span class="cert-date">2027</span></li>
-            <li class="planned-cert">FFESSM Guide de Palanquée<span class="cert-date">2027</span></li>
-          </ul>
-        </div>
+  <h2 class="section">Certifications</h2>
+  <ul class="cert-list">
+      <li><span class="t">SSI Open Water Diver</span><span class="cert-date">2023</span></li>
+      <li><span class="t">SSI Night Diving &amp; Limited Visibility</span><span class="cert-date">2024</span></li>
+      <li><span class="t">SSI Deep Diving</span><span class="cert-date">2024</span></li>
+      <li><span class="t">SSI Perfect Buoyancy</span><span class="cert-date">2024</span></li>
+      <li><span class="t">SSI Navigation</span><span class="cert-date">2025</span></li>
+      <li><span class="t">SSI Enriched Air Nitrox Level 2</span><span class="cert-date">2025</span></li>
+      <li><span class="t">SSI Dry Suit</span><span class="cert-date">2025</span></li>
+      <li><span class="t">SSI React Right</span><span class="cert-date">2025</span></li>
+      <li><span class="t">SSI Diver Stress &amp; Rescue</span><span class="cert-date">2025</span></li>
+      <li><span class="t">SSI Decompression Dive</span><span class="cert-date">2025</span></li>
+      <li><span class="t">CMAS One Star Diver</span><span class="cert-date">2026</span></li>
+      <li><span class="t">RIFA Plongée Sous-marine</span><span class="cert-date">2026</span></li>
+      <li><span class="t">CMAS Two Star Diver</span><span class="cert-date">2026</span></li>
+      <li><span class="t">GUE Doubles Primer</span><span class="cert-date">2026</span></li>
+      <li><span class="t">CMAS Three Star Diver</span><span class="cert-date">2026</span></li>
+      <li><span class="t">CMAS Advanced Nitrox Diver</span><span class="cert-date">2026</span></li>
+      <li><span class="t">GUE Basic Fundamentals</span><span class="cert-date">2026</span></li>
+      <li class="planned-cert"><span class="t">GUE Technical Fundamentals</span><span class="cert-date">2026</span></li>
+      <li class="planned-cert"><span class="t">GUE Technical Diver 1</span><span class="cert-date">2027</span></li>
+      <li class="planned-cert"><span class="t">GUE DPV</span><span class="cert-date">2027</span></li>
+      <li class="planned-cert"><span class="t">GUE Cave Diver 1</span><span class="cert-date">2027</span></li>
+      <li class="planned-cert"><span class="t">FFESSM Guide de Palanquée</span><span class="cert-date">2027</span></li>
+  </ul>
 
-        <div class="dive-log">
-          <h2>Licences</h2>
-          <ul class="cert-list">
-            <li>Permis Côtier<span class="cert-date">2023</span></li>
-            <li>Permis Fluvial<span class="cert-date">2023</span></li>
-            <li class="planned-cert">Permis Hauturier<span class="cert-date">2026</span></li>
-          </ul>
-        </div>
+  <h2 class="section">Licences</h2>
+  <ul class="cert-list">
+      <li><span class="t">Permis Côtier</span><span class="cert-date">2023</span></li>
+      <li><span class="t">Permis Fluvial</span><span class="cert-date">2023</span></li>
+      <li class="planned-cert"><span class="t">Permis Hauturier</span><span class="cert-date">2026</span></li>
+  </ul>
+  <p style="color:var(--muted);font-size:.9rem;margin-top:1.5rem">Italic entries in parentheses are planned.</p>
 
-      </section>
-    </main>
-  </div>
-</body>
-</html>
+  <div class="pager"><a href="index.html">&larr; Contents</a><a href="ppo2.html">Figure 2.1 &rarr;</a></div>
+</main>
+<footer class="site-footer">
+  <span>&copy; 2026 Antoine Barthelemy</span>
+  <span>Figures are computed in your browser &middot; nothing is sent anywhere.</span>
+</footer>
