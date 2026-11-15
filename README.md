@@ -1,3 +1,12 @@
+Sections:
+- minimum deco de 30m a 0 facon GUE, dessine le profil suivant la profondeur indiquee. Proposer l'arrondie superieur dans le palier a choisir.
+- un calculateur des prix de tous les gazs standards GUE, possibilite de faire l'input du prix au m3 de l'helium, de l'air et du nitrox ou oxygen. Mais utilise les chiffres moyens en ligne pour ces tarifs.
+- ajoute une section avec des articles: comment faire un liquide de rincage HCL, ou trouver de la bonne doc de plongee, les bonnes refs
+- ajouter mon bookmark (suggestions de sites)
+- ajouter le modelisateur de coquilles que le gars a fait en math
+- ajoute une section cheatcheet informatiques
+
+
 
 Bookmarks:
 https://www.openstreetmap.org/
