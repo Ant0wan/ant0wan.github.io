@@ -156,6 +156,19 @@ figcaption b { font-weight: bold; }
 
 .site-footer { max-width: 960px; margin: 0 auto; padding: 1rem 1.5rem 2rem; font-size: .85rem; color: var(--muted); border-top: 1px solid var(--grid-strong); display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
 
+/* ---------- cheatsheets (gists) ---------- */
+.gist { margin-top: 2.5rem; }
+.gist h3 { font-weight: normal; font-size: 1.15rem; border-bottom: 1px solid var(--grid-strong); padding-bottom: .25rem; margin: 0 0 1rem; display: flex; gap: .5rem; align-items: baseline; flex-wrap: wrap; }
+.gist h3 .num { color: var(--muted); font-style: italic; }
+.gist-date { margin-left: auto; font-size: .85rem; font-style: italic; color: var(--muted); }
+.gist-code { background: var(--panel); border: 1px solid var(--grid-strong); padding: .8rem 1rem; overflow-x: auto; font-size: .85rem; line-height: 1.45; margin: 0; }
+.gist-md pre { background: var(--panel); border: 1px solid var(--grid-strong); padding: .8rem 1rem; overflow-x: auto; font-size: .85rem; }
+.gist-md code { font-size: .88em; }
+.gist-md table { border-collapse: collapse; display: block; overflow-x: auto; }
+.gist-md th, .gist-md td { border: 1px solid var(--grid-strong); padding: .25rem .6rem; }
+.gist-md img, .gist-img { max-width: 100%; }
+.gist-err { color: var(--c-red); }
+
 @media (max-width: 640px) {
   body { font-size: 1rem; }
   .page { padding: 1.4rem 1rem 2rem; }
