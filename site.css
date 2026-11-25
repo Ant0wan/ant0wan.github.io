@@ -68,29 +68,13 @@ a { color: var(--link); text-underline-offset: 2px; }
 a:hover { text-decoration-thickness: 2px; }
 
 /* ---------- header / nav ---------- */
-.site-header {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 1.1rem 1.5rem 0.6rem;
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
-  border-bottom: 1px solid var(--rule);
-  box-shadow: 0 3px 0 -2px var(--bg), 0 4px 0 -2px var(--grid-strong);
-}
-.site-name { font-size: 1.2rem; font-variant: small-caps; letter-spacing: .04em; color: var(--ink); text-decoration: none; letter-spacing: .02em; }
-.site-name i { font-style: inherit; color: inherit; }
-.site-nav { display: flex; gap: 1.4rem; align-items: baseline; flex-wrap: wrap; font-size: .95rem; }
-.site-nav a { color: var(--ink); text-decoration: none; font-variant: small-caps; text-transform: lowercase; letter-spacing: .08em; font-size: 1rem; padding-bottom: 2px; border-bottom: 1px solid transparent; }
-.site-nav a:hover, .site-nav a[aria-current="page"] { border-bottom-color: var(--ink); }
 #theme-toggle {
-  background: none; color: var(--ink); border: 1px solid var(--ink);
+  background: none; color: var(--ink); border: 0;
   width: 2rem; height: 2rem; padding: 0; cursor: pointer; border-radius: 0;
   display: inline-flex; align-items: center; justify-content: center;
+  position: fixed; top: 1rem; right: 1rem; z-index: 10;
 }
-#theme-toggle:hover { background: var(--ink); color: var(--bg); }
+#theme-toggle:hover { opacity: .6; }
 /* CSS-drawn icon: sun in light mode, moon in dark mode */
 .theme-icon { position: relative; display: block; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
 .theme-icon::after {
@@ -205,14 +189,11 @@ figcaption b { font-weight: bold; font-variant-numeric: lining-nums; }
 @media (max-width: 640px) {
   body { font-size: 1rem; }
   .page { padding: 1.4rem 1rem 2rem; }
-  .site-header { padding: .9rem 1rem .5rem; }
-  .site-nav { gap: .9rem; }
   .cert-list li { flex-wrap: wrap; font-size: .95rem; }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } body { transition: none; } }
 @media print {
   a { color: inherit; text-decoration: none; }
-  .site-header { box-shadow: none; }
   :root, :root[data-theme="dark"] { --bg: #fff; --ink: #000; --muted: #333; --rule: #000; }
   #theme-toggle, .site-nav, .controls { display: none; }
   body { font-size: 11pt; }
