@@ -23,14 +23,14 @@
   color-scheme: light;
 }
 :root[data-theme="dark"] {
-  --bg: #14140f;
+  --bg: #0a0a07;
   --ink: #e8e6dd;
   --muted: #a9a79d;
   --faint: #7d7b72;
   --rule: #e8e6dd;
   --grid: rgba(232, 230, 221, 0.12);
   --grid-strong: rgba(232, 230, 221, 0.35);
-  --panel: #1d1d17;
+  --panel: #13130e;
   --link: #8ab8f0;
   --c-blue: #6cb6ff;
   --c-amber: #e5b44b;
