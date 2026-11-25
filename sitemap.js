@@ -32,11 +32,6 @@
   N.forEach(function (n) { n.x -= c[0] / N.length; n.y -= c[1] / N.length; n.z -= c[2] / N.length; });
   var edges = N.filter(function (n) { return n.p; }).map(function (n) { return [by[n.p], n]; });
 
-  // faint starfield
-  var stars = [];
-  for (var i = 0; i < 140; i++) stars.push([(Math.random() - .5) * 900, (Math.random() - .5) * 600, (Math.random() - .5) * 900]);
-
-
   // ---- icons (drawn centred on 0,0, half-size S) -----------------------
   function soft(rgb, fog, a) { return 'rgba(' + rgb + ',' + a * fog + ')'; }
   function circ(x, y, r, fill) { ctx.beginPath(); ctx.arc(x, y, r, 0, 6.283); fill ? ctx.fill() : ctx.stroke(); }
@@ -128,15 +123,6 @@
     var C = col(), t = (now - t0) / 1000;
     ctx.clearRect(0, 0, W, H);
 
-    // background
-    
-    // stars
-    stars.forEach(function (s) {
-      var p = project(s[0], s[1], s[2]), a = Math.max(0, Math.min(1, .5 - p.z / 1400));
-      ctx.fillStyle = 'rgba(' + C.node + ',' + a * .5 + ')';
-      ctx.fillRect(p.x, p.y, 1.4, 1.4);
-    });
-
     // project nodes
     N.forEach(function (n) { n.q = project(n.x, n.y, n.z); });
 
@@ -164,20 +150,20 @@
       icons[n.id](S, t, rgb, fog);
       ctx.restore();
       // label
-      ctx.font = (hot ? '600 ' : '') + Math.round(11 + 3 * Math.min(q.s, 1.4)) + 'px ' + getComputedStyle(document.body).getPropertyValue('--mono');
+      ctx.font = (hot ? '600 ' : '') + Math.round(11 + 3 * Math.min(q.s, 1.4)) + 'px ' + getComputedStyle(document.body).getPropertyValue('--font');
       ctx.textAlign = 'center'; ctx.fillStyle = hot ? 'rgb(' + C.hot + ')' : C.ink;
       ctx.globalAlpha = hot ? 1 : Math.max(.5, fog);
-      var lab = n.label.toUpperCase(), hw = ctx.measureText(lab).width / 2 + 8;
+      var lab = n.label, hw = ctx.measureText(lab).width / 2 + 8;
       ctx.fillText(lab, Math.max(hw, Math.min(W - hw, q.x)), q.y - R * 2.2 - 6);
       ctx.globalAlpha = 1;
     });
 
     // HUD
-    ctx.font = '11px ' + getComputedStyle(document.body).getPropertyValue('--mono');
+    ctx.font = '11px ' + getComputedStyle(document.body).getPropertyValue('--font');
     ctx.textAlign = 'left'; ctx.fillStyle = 'rgba(' + C.node + ',.75)';
-    ctx.fillText('SITE//MAP  ' + N.length + ' NODES  YAW ' + ((yaw * 57.3) % 360).toFixed(0).padStart(4, ' ') + '°', 12, H - 12);
+    ctx.fillText('Site map  ' + N.length + ' nodes  yaw ' + ((yaw * 57.3) % 360).toFixed(0).padStart(4, ' ') + '°', 12, H - 12);
     ctx.textAlign = 'right';
-    ctx.fillText(hover ? '▶ ' + hover.href : 'DRAG · SCROLL · CLICK', W - 12, H - 12);
+    ctx.fillText(hover ? '▶ ' + hover.href : 'Drag · scroll · click', W - 12, H - 12);
   }
 
   function frame(now) {
