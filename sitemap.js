@@ -68,10 +68,7 @@
     ctx.clearRect(0, 0, W, H);
 
     // background
-    var g = ctx.createRadialGradient(W / 2, H / 2, 20, W / 2, H / 2, Math.max(W, H) * .7);
-    g.addColorStop(0, C.bg + '0.0)'); g.addColorStop(1, C.bg + '0.9)');
-    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-
+    
     // floor grid
     ctx.lineWidth = 1;
     var gy = 150, step = 100, ext = 500;

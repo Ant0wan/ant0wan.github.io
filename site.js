@@ -22,6 +22,11 @@
     label();
   });
 
+  // keep other open tabs/pages in sync when the theme is toggled
+  window.addEventListener('storage', function (e) {
+    if (e.key === 'theme' && (e.newValue === 'dark' || e.newValue === 'light')) apply(e.newValue, false);
+  });
+
   // follow the OS if the visitor never chose explicitly
   var mq = window.matchMedia('(prefers-color-scheme: dark)');
   mq.addEventListener && mq.addEventListener('change', function (e) {
