@@ -28,14 +28,36 @@
     return page(1);
   }
 
+  var EXT = { sh: 'bash', bash: 'bash', zsh: 'bash', py: 'python', js: 'javascript', ts: 'typescript', json: 'json',
+    yml: 'yaml', yaml: 'yaml', go: 'go', rs: 'rust', c: 'c', h: 'c', cpp: 'cpp', java: 'java', rb: 'ruby', php: 'php',
+    html: 'xml', xml: 'xml', css: 'css', sql: 'sql', toml: 'ini', ini: 'ini', conf: 'ini', md: 'markdown',
+    dockerfile: 'dockerfile', tf: 'hcl', hcl: 'hcl', lua: 'lua', pl: 'perl', diff: 'diff' };
+
+  function highlight(root, lang) {
+    if (!window.hljs) return;
+    root.querySelectorAll('pre code').forEach(function (el) {
+      var m = /language-([\w+-]+)/.exec(el.className);
+      var l = (m && m[1]) || lang;
+      if (l === 'sh' || l === 'shell' || l === 'console') l = 'bash';
+      try {
+        if (l && hljs.getLanguage(l)) el.className = 'language-' + l;
+        else el.className = '';
+        hljs.highlightElement(el);
+      } catch (e) {}
+    });
+  }
+
   function body(gist) {
     var f = Object.values(gist.files)[0];
     var name = f.filename.toLowerCase();
-    if (name.endsWith('.svg')) return Promise.resolve('<img class="gist-img" src="' + esc(f.raw_url) + '" alt="' + esc(f.filename) + '">');
+    var lang = (f.language && f.language.toLowerCase()) || EXT[name.split('.').pop()] || (name === 'dockerfile' ? 'dockerfile' : '');
+    if (lang === 'shell') lang = 'bash';
+    if (name.endsWith('.md') || lang === 'markdown') lang = '';
+    if (name.endsWith('.svg')) return Promise.resolve({ html: '<img class="gist-img" src="' + esc(f.raw_url) + '" alt="' + esc(f.filename) + '">' });
     return get(f.raw_url).then(function (text) {
       if (name.endsWith('.md') && window.marked) return '<div class="gist-md">' + marked.parse(text) + '</div>';
       return '<pre class="gist-code"><code>' + esc(text) + '</code></pre>';
-    }).catch(function () { return '<p class="gist-err">Could not load this file.</p>'; });
+    }).then(function (html) { return { html: html, lang: lang }; }).catch(function () { return { html: '<p class="gist-err">Could not load this file.</p>' }; });
   }
 
   document.addEventListener('DOMContentLoaded', function () {
@@ -59,7 +81,11 @@
         return sec;
       });
       gists.forEach(function (g, i) {
-        body(g).then(function (html) { sections[i].querySelector('.gist-body').innerHTML = html; });
+        body(g).then(function (r) {
+          var el = sections[i].querySelector('.gist-body');
+          el.innerHTML = r.html;
+          highlight(el, r.lang);
+        });
       });
     }).catch(function () {
       toc.innerHTML = '';

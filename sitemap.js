@@ -156,10 +156,10 @@
     var order = N.slice().sort(function (p, q) { return q.q.z - p.q.z; });
     order.forEach(function (n) {
       var q = n.q, hot = hover === n, fog = Math.max(.35, Math.min(1, 1 - q.z / 1000));
-      var R = n.r * q.s * (hot ? 1.35 : 1), rgb = hot ? C.hot : C.node;
+      var R = n.r * 0.3 * q.s * (hot ? 1.35 : 1), rgb = hot ? C.hot : C.node;
       var S = R * 2;
       ctx.save(); ctx.translate(q.x, q.y);
-      ctx.lineWidth = Math.max(1.2, S * .07); ctx.lineCap = ctx.lineJoin = 'round';
+      ctx.lineWidth = Math.max(1.1, S * .09); ctx.lineCap = ctx.lineJoin = 'round';
       ctx.strokeStyle = 'rgba(' + rgb + ',' + fog + ')'; ctx.fillStyle = 'rgba(' + rgb + ',' + fog + ')';
       icons[n.id](S, t, rgb, fog);
       ctx.restore();
@@ -193,7 +193,7 @@
     var r = cv.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top, best = null, bd = 1e9;
     N.forEach(function (n) {
       if (!n.q) return;
-      var d = Math.hypot(n.q.x - mx, n.q.y - my), lim = Math.max(20, n.r * n.q.s * 2.6);
+      var d = Math.hypot(n.q.x - mx, n.q.y - my), lim = Math.max(20, n.r * 0.3 * n.q.s * 2.6);
       if (d < lim && d < bd) { bd = d; best = n; }
     });
     return best;
