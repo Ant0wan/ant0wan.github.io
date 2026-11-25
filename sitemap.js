@@ -69,16 +69,6 @@
 
     // background
     
-    // floor grid
-    ctx.lineWidth = 1;
-    var gy = 150, step = 100, ext = 500;
-    for (var k = -ext; k <= ext; k += step) {
-      [[k, -ext, k, ext], [-ext, k, ext, k]].forEach(function (l) {
-        var a = project(l[0], gy, l[1]), b = project(l[2], gy, l[3]);
-        ctx.strokeStyle = 'rgba(' + C.grid + ',' + C.gA * .6 + ')';
-        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-      });
-    }
     // stars
     stars.forEach(function (s) {
       var p = project(s[0], s[1], s[2]), a = Math.max(0, Math.min(1, .5 - p.z / 1400));
