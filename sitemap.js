@@ -153,7 +153,7 @@
   });
   cv.addEventListener('pointerup', function (e) {
     var wasClick = moved < 6; drag = null;
-    if (wasClick) { var n = pick(e); if (n) location.href = n.href; }
+    if (wasClick) { var n = pick(e); if (n) location.href = window.themeUrl ? window.themeUrl(n.href) : n.href; }
   });
   cv.addEventListener('pointerleave', function () { hover = null; });
   cv.addEventListener('wheel', function (e) {

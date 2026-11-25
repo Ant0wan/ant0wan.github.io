@@ -22,6 +22,22 @@
     label();
   });
 
+  // carry the theme to the next page in the URL, so it survives even where
+  // localStorage / window.name are not shared between pages (e.g. file://)
+  window.themeUrl = function (href) {
+    try {
+      var u = new URL(href, location.href);
+      if (u.origin !== location.origin && u.protocol !== 'file:') return href;
+      u.searchParams.set('theme', current());
+      return u.href;
+    } catch (e) { return href; }
+  };
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[href]');
+    if (!a || a.target === '_blank' || /^(#|mailto:|javascript:)/.test(a.getAttribute('href'))) return;
+    a.href = window.themeUrl(a.href);
+  }, true);
+
   // keep other open tabs/pages in sync when the theme is toggled
   window.addEventListener('storage', function (e) {
     if (e.key === 'theme' && (e.newValue === 'dark' || e.newValue === 'light')) apply(e.newValue, false);
