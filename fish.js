@@ -46,6 +46,7 @@
     ball:   { sep: 1.6, ali: 1.0,  coh: 0.6,  anc: 0,   wan: 0.2,  thrust: 44, burst: [0.15, 0.3],  glide: [0.5, 1.2] },
     travel: { sep: 1.6, ali: 1.3,  coh: 0.5,  anc: 0.6, wan: 0.25, thrust: 58, burst: [0.2, 0.35],  glide: [0.4, 0.9] }
   };
+  var BOOT = 18;       // s after load during which the scattered fish gather quickly into a school
   var DRAG = 1.0;       // 1/s: a gliding fish loses ~63% of its speed per second
   var MAX_PITCH = 0.45; // rad: fish climb and dive gently
 
@@ -134,7 +135,7 @@
     var g = ZD / F, vol = W * H * ZD * (1 + g + g * g / 3);
     SP = Math.max(1.4 * L, 0.8 * Math.cbrt(vol / n));
     var p0 = unproject(W / 2, H / 2, 0.45 * ZD);
-    school = { x: p0[0], y: p0[1], z: p0[2], vx: 0, vy: 0, vz: 0, time: rand(0, 1000), tight: 0, alarm: 0, fear: 0,
+    school = { x: p0[0], y: p0[1], z: p0[2], vx: 0, vy: 0, vz: 0, time: rand(0, 1000), tight: 0, alarm: 0, fear: 0, boot: BOOT,
                p1: rand(0, 6.3), p2: rand(0, 6.3), p3: rand(0, 6.3) };
     setMode('hover');
     var yaw0 = rand(-Math.PI, Math.PI);
@@ -154,6 +155,7 @@
 
   function stepSchool(dt) {
     school.time += dt;
+    school.boot = Math.max(0, school.boot - dt);
     school.t -= dt;
     if (school.mode === 'hover') {
       // the resting spot drifts a little, like a school holding station in surge
@@ -183,6 +185,8 @@
 
   function stepFish(dt) {
     var P = MODES[school.mode], n = fish.length;
+    var bf = Math.pow(school.boot / BOOT, 2); // 1 at load, easing gently to 0: stronger schooling urge while gathering
+    var gAli = P.ali + 1.6 * bf, gCoh = P.coh + 1.2 * bf;
     var T = school.tight, spacing = lerp(SP, 1.5 * L, T), Rs = lerp(R0, RB, T);
     var R = Math.max(5 * L, 1.8 * spacing), R2 = R * R;
     var Ls = shark.active ? shark.len : 0, fear = school.fear;
@@ -216,9 +220,9 @@
       var wx = 0, wy = 0, wz = 0;
       if (cnt) {
         var al = Math.hypot(aliX, aliY, aliZ) || 1;
-        wx += aliX / al * P.ali; wy += aliY / al * P.ali; wz += aliZ / al * P.ali;
+        wx += aliX / al * gAli; wy += aliY / al * gAli; wz += aliZ / al * gAli;
         var tx = cx / cnt - f.x, ty = cy / cnt - f.y, tz = cz / cnt - f.z, tl = Math.hypot(tx, ty, tz) || 1;
-        var cw = (P.coh + T * 0.6) * clamp(tl / R, 0, 1);
+        var cw = (gCoh + T * 0.6) * clamp(tl / R, 0, 1);
         wx += tx / tl * cw; wy += ty / tl * cw; wz += tz / tl * cw;
       }
       wx += sepX * P.sep; wy += sepY * P.sep; wz += sepZ * P.sep;
@@ -286,7 +290,7 @@
       if (f.z < 0) wz += -f.z / L; else if (f.z > ZD) wz -= (f.z - ZD) / L;
 
       // turn towards the wanted direction, rate-limited; a startled fish whips round (C-start)
-      var wh = Math.hypot(wx, wz), rate = f.panic > 0 ? 7 : f.bt > 0 ? 2.6 : 0.9;
+      var wh = Math.hypot(wx, wz), rate = (f.panic > 0 ? 7 : f.bt > 0 ? 2.6 : 0.9) * (1 + 1.5 * bf);
       if (wh > 0.08) {
         var diff = wrapAngle(Math.atan2(wz, wx) - f.yaw);
         f.yaw = wrapAngle(f.yaw + clamp(diff * (f.panic > 0 ? 8 : 1.6) * dt, -rate * dt, rate * dt));
@@ -297,7 +301,7 @@
       // burst-and-glide
       if (f.bt > 0) {
         if (!f.burst) f.bt -= dt;
-        if (f.bt <= 0) f.gt = f.panic > 0 ? rand(0.1, 0.3) : rand(P.glide[0], P.glide[1]);
+        if (f.bt <= 0) f.gt = f.panic > 0 ? rand(0.1, 0.3) : rand(P.glide[0], P.glide[1]) * (1 - 0.7 * bf);
       } else {
         f.gt -= dt;
         if (f.gt <= 0) {
