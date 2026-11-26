@@ -32,6 +32,9 @@
 
   var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   var debug = /[?&]fish=debug/.test(location.search);
+  // seamounts and volcanic vents: built but switched off for now; set to true to bring them back
+  // (or add ?seamounts=1 to a page URL to preview them)
+  var SEAMOUNTS = false || /[?&]seamounts=1/.test(location.search);
   var cv, ctx, W = 0, H = 0, dpr = 1, fish = [], school, shark, hammer;
   var L = 18, R0 = 120, RB = 60, F = 1000, ZD = 900, SP = 30; // fish length, school radius loose/balled, focal length, depth, spacing
   var fishFill = '#4f6f8f', sharkFill = '#56636f', baseAlpha = 0.1;
@@ -454,6 +457,179 @@
     }
   }
 
+  /* ---------------- seamounts ---------------- */
+  // Two ranges of deep volcanic seamounts far behind everything: steep concave
+  // flanks, summit calderas, a rugged outline; the farther range paler, as if
+  // seen through more water. Hydrothermal vents in the calderas give off slow
+  // rising smoke and streams of bubbles, and now and then a vent has an
+  // eruptive pulse. Monochrome, like the rest. The ranges are drawn once to an
+  // offscreen canvas (rebuilt on resize or theme change); only the plumes move.
+  var seabed = null, seabedKey = '', vents = [], plume = [], seabedSeed = (Math.random() * 1e9) | 0;
+  var erupt = 0, eruptLevel = 0, eruptNext = rand(15, 40), eruptVent = 0, ventTime = 0;
+
+  function rng(a) { // small seeded generator, so the seamounts keep their shape across resizes
+    return function () {
+      a = (a + 0x6D2B79F5) | 0;
+      var t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function rgba(hex, a) {
+    var n = parseInt(hex.slice(1), 16);
+    return 'rgba(' + (n >> 16 & 255) + ',' + (n >> 8 & 255) + ',' + (n & 255) + ',' + a + ')';
+  }
+
+  function buildSeabed() {
+    var r = rng(seabedSeed);
+    var c = document.createElement('canvas');
+    c.width = cv.width; c.height = cv.height;
+    var g = c.getContext('2d');
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    vents = []; plume = [];
+    var layers = [
+      { color: fishFill,  fog: 0.45, hmin: 0.18, hmax: 0.28, n: 2 }, // far range
+      { color: sharkFill, fog: 0.8,  hmin: 0.11, hmax: 0.19, n: 2 }  // nearer range
+    ];
+    var span = Math.max(W, H * 1.2);
+    // keep the group to one side of the screen, about a third of its width, fading out towards the middle
+    var left = r() < 0.5, bandW = 0.2 * W, fadeW = 0.06 * W;
+    var b0 = left ? -0.04 * W : W - bandW, b1 = left ? bandW : 1.04 * W;
+    function mask(x) {
+      var d = left ? x - b1 : b0 - x; // distance past the inner edge of the band
+      return d <= 0 ? 1 : d >= fadeW ? 0 : 1 - d / fadeW;
+    }
+    layers.forEach(function (ly, li) {
+      var peaks = [], np = ly.n + (r() < 0.5 ? 1 : 0);
+      for (var k = 0; k < np; k++) {
+        peaks.push({
+          x: b0 + ((k + 0.15 + r() * 0.7) / np) * (b1 - b0),
+          h: (ly.hmin + r() * (ly.hmax - ly.hmin)) * H,
+          w: (0.025 + r() * 0.025) * span,              // narrow: steep, near-vertical spires
+          sharp: 0.75 + r() * 0.45,                   // flank profile, < 1 is convex and steeper near the top
+          crater: r() < 0.6, cw: (0.003 + r() * 0.004) * span
+        });
+      }
+      var ph = [r() * 6.3, r() * 6.3, r() * 6.3, r() * 6.3], pts = [], top = H;
+      for (var x = -8; x <= W + 8; x += 3) {
+        var y = 0;
+        for (var q = 0; q < peaks.length; q++) {
+          var p = peaks[q], d = Math.abs(x - p.x) / p.w;
+          var h = d < 1 ? p.h * Math.pow(1 - d, p.sharp) : 0;
+          if (p.crater) { var cd = Math.abs(x - p.x) / p.cw; if (cd < 1) h -= p.h * 0.04 * (1 - cd * cd); } // small summit crater
+          if (h > y) y = h;
+        }
+        // jagged rock: ridged noise (sharp crests), rougher higher up
+        var ridge = (1 - Math.abs(Math.sin(x * 0.019 + ph[0]))) * 0.45 + (1 - Math.abs(Math.sin(x * 0.047 + ph[1]))) * 0.35 +
+                    (1 - Math.abs(Math.sin(x * 0.11 + ph[2]))) * 0.2 + Math.sin(x * 0.006 + ph[3]) * 0.3;
+        y += ridge * H * 0.01 * (0.3 + y / H);
+        y += H * 0.015; // the abyssal floor
+        y *= mask(x);
+        var sy = H - y;
+        pts.push([x, sy]);
+        if (sy < top) top = sy;
+      }
+      var grad = g.createLinearGradient(0, top, 0, H);
+      grad.addColorStop(0, rgba(ly.color, ly.fog));
+      grad.addColorStop(1, rgba(ly.color, ly.fog * 0.55)); // the deep floor fades into the dark
+      g.fillStyle = grad;
+      g.beginPath();
+      g.moveTo(-8, H + 2);
+      pts.forEach(function (pt) { g.lineTo(pt[0], pt[1]); });
+      g.lineTo(W + 8, H + 2);
+      g.closePath();
+      g.fill();
+      // vents: at the summits, plus small fumaroles on the flanks of the nearer range;
+      // the far range's vents are fainter and smaller (farther away)
+      var far = li === 0, sc = far ? 0.6 : 1;
+      function surface(x) { var i = clamp(Math.round((x + 8) / 3), 0, pts.length - 1); return pts[i][1]; }
+      peaks.forEach(function (p) {
+        if (p.x < 0.03 * W || p.x > 0.97 * W) return;
+        if (!far || r() < 0.6) vents.push({ x: p.x, y: surface(p.x) + 2, rate: (1.6 + r() * 1.6) * sc, scale: sc, alpha: far ? 0.55 : 1, acc: 0, bub: 0 });
+        if (!far) {
+          var nf = Math.floor(r() * 3);
+          for (var f = 0; f < nf; f++) {
+            var fx = p.x + (r() < 0.5 ? -1 : 1) * p.w * (0.15 + r() * 0.35);
+            if (fx > 0.02 * W && fx < 0.98 * W) vents.push({ x: fx, y: surface(fx) + 2, rate: 0.5 + r() * 0.6, scale: 0.6, alpha: 0.8, acc: 0, bub: 0 });
+          }
+        }
+      });
+    });
+    seabed = c;
+  }
+
+  function ensureSeabed() {
+    var key = cv.width + 'x' + cv.height + fishFill + sharkFill;
+    if (key !== seabedKey) { seabedKey = key; buildSeabed(); }
+  }
+
+  function stepVents(dt) {
+    if (!vents.length) return;
+    var k = H / 900, i, v, p;
+    ventTime += dt;
+    // eruptive pulses: a vent's plume thickens and speeds up for a few seconds
+    eruptNext -= dt;
+    if (eruptNext <= 0) { erupt = rand(6, 12); eruptNext = rand(10, 25); eruptVent = Math.floor(rand(0, vents.length)); }
+    if (erupt > 0) erupt -= dt;
+    eruptLevel += ((erupt > 0 ? 1 : 0) - eruptLevel) * Math.min(1, dt * (erupt > 0 ? 1.2 : 0.3));
+    for (i = 0; i < vents.length; i++) {
+      v = vents[i];
+      var boost = i === eruptVent ? eruptLevel : 0;
+      var ks = k * v.scale * 0.55;
+      v.acc += dt * v.rate * (1 + 4 * boost);
+      while (v.acc >= 1 && plume.length < 600) {
+        v.acc -= 1;
+        plume.push({ smoke: true, x: v.x + rand(-3, 3) * ks, y: v.y, vx: rand(-2, 2) * ks, vy: -rand(16, 30) * ks * (1 + boost),
+                     r0: rand(2, 4) * ks, grow: rand(1.4, 2.6) * ks * (1 + boost * 0.6), age: 0, life: rand(12, 20), a: v.alpha });
+      }
+      v.bub += dt * (1 + 6 * boost) * v.scale * 0.7;
+      while (v.bub >= 1 && plume.length < 600) {
+        v.bub -= 1;
+        plume.push({ smoke: false, x: v.x + rand(-4, 4) * ks, y: v.y, vy: -rand(30, 55) * ks, r0: rand(0.8, 1.8) * ks,
+                     age: 0, life: rand(6, 10), wob: rand(0, 6.3), a: v.alpha });
+      }
+    }
+    for (i = plume.length - 1; i >= 0; i--) {
+      p = plume[i];
+      p.age += dt;
+      if (p.age > p.life) { plume.splice(i, 1); continue; }
+      if (p.smoke) {
+        // a buoyant plume slows as it rises, sways and spreads in the current
+        p.vx += (Math.sin(ventTime * 0.25 + p.y * 0.01) * 6 * k + 3 * k - p.vx) * dt * 0.4;
+        p.vy *= 1 - 0.04 * dt;
+        p.x += p.vx * dt; p.y += p.vy * dt;
+      } else {
+        p.x += Math.sin(p.age * 5 + p.wob) * 10 * k * dt;
+        p.y += p.vy * dt;
+      }
+    }
+  }
+
+  function drawSeabed() {
+    ensureSeabed();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalAlpha = Math.min(1, baseAlpha * 0.9);
+    ctx.drawImage(seabed, 0, 0);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var i, v, p, k = H / 900;
+    // smoke and bubbles
+    for (i = 0; i < plume.length; i++) {
+      p = plume[i];
+      var fade = Math.min(1, p.age / 1.5) * (1 - p.age / p.life);
+      if (p.smoke) {
+        ctx.fillStyle = sharkFill;
+        ctx.globalAlpha = Math.min(1, baseAlpha * 0.6 * fade * p.a);
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r0 + p.age * p.grow, 0, 2 * Math.PI); ctx.fill();
+      } else {
+        ctx.fillStyle = fishFill;
+        ctx.globalAlpha = Math.min(1, baseAlpha * 1.2 * fade * p.a);
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r0, 0, 2 * Math.PI); ctx.fill();
+      }
+    }
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalAlpha = 1;
+  }
+
   /* ---------------- hammerhead ---------------- */
   // A great hammerhead cruising past far behind the school. It always stays
   // deeper than the deepest fish, so it is never close, and it ignores the
@@ -649,6 +825,7 @@
   function draw() {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, cv.width, cv.height);
+    if (SEAMOUNTS) drawSeabed(); // the farthest layer
     list.length = 0;
     for (var i = 0; i < fish.length; i++) if (!fish[i].dead) list.push(fish[i]);
     if (shark.active) list.push(shark);
@@ -670,7 +847,7 @@
     ctx.globalAlpha = 1;
   }
 
-  function step(dt) { stepSchool(dt); stepShark(dt); stepHammer(dt); stepFish(dt); }
+  function step(dt) { stepSchool(dt); stepShark(dt); stepHammer(dt); stepFish(dt); if (SEAMOUNTS) stepVents(dt); }
 
   var last = 0;
   function frame(t) {
@@ -692,7 +869,9 @@
     resize();
     init();
     // let the school settle before it is first seen
+    if (SEAMOUNTS) ensureSeabed();
     for (var k = 0; k < 150; k++) { stepSchool(1 / 30); stepFish(1 / 30); }
+    if (SEAMOUNTS) for (k = 0; k < 600; k++) stepVents(1 / 30); // plumes already rising when first seen
     window.addEventListener('resize', function () { resize(); if (reduce) draw(); });
     window.addEventListener('themechange', function () { readColor(); if (reduce) draw(); });
     document.addEventListener('visibilitychange', function () { last = 0; });
