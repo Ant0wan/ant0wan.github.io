@@ -32,7 +32,7 @@
 
   var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   var debug = /[?&]fish=debug/.test(location.search);
-  var cv, ctx, W = 0, H = 0, dpr = 1, fish = [], school, shark;
+  var cv, ctx, W = 0, H = 0, dpr = 1, fish = [], school, shark, hammer;
   var L = 18, R0 = 120, RB = 60, F = 1000, ZD = 900, SP = 30; // fish length, school radius loose/balled, focal length, depth, spacing
   var fishFill = '#4f6f8f', sharkFill = '#56636f', baseAlpha = 0.1;
 
@@ -70,6 +70,7 @@
       school.x *= sx; school.y *= sy; school.hx *= sx; school.hy *= sy;
       if (school.tx !== undefined) { school.tx *= sx; school.ty *= sy; }
       if (shark.active) { shark.x *= sx; shark.y *= sy; }
+      if (hammer.active) { hammer.x *= sx; hammer.y *= sy; }
     }
     W = w; H = h;
     dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -145,6 +146,7 @@
       });
     }
     shark = { active: false, next: 5, ph: 0 };
+    hammer = { active: false, next: debug ? 20 : rand(30, 55), ph: 0 };
   }
 
   function stepSchool(dt) {
@@ -330,7 +332,7 @@
     shark.s = 0.3 * shark.len; shark.age = 0; shark.lunge = 0; shark.cool = 2; shark.lunges = 0; shark.hunting = true;
     // some passes are cruises with an opportunistic snap or two; others are a real hunt:
     // the shark circles the school, then makes repeated high-speed charges at single fish
-    shark.aggressive = Math.random() < 0.5;
+    shark.aggressive = Math.random() < 0.5; shark.fleeing = false;
     shark.maxLunges = shark.aggressive ? 3 + Math.floor(rand(0, 3)) : 2;
     shark.phase = 'approach'; shark.phaseT = 0; shark.dir = Math.random() < 0.5 ? 1 : -1; shark.prey = null;
   }
@@ -338,6 +340,8 @@
   function stepShark(dt) {
     if (!shark.active) {
       shark.next -= dt;
+      // great hammerheads eat other sharks: none comes in while one is about
+      if (hammer.active) shark.next = Math.max(shark.next, 5);
       if (shark.next <= 0) spawnShark();
       school.fear = Math.max(0, school.fear - dt * 0.25);
       return;
@@ -345,6 +349,11 @@
     var S = shark, Ls = S.len, i, f;
     S.age += dt; S.cool -= dt;
     if (S.age > (S.aggressive ? 55 : 30) || (S.lunges >= S.maxLunges && S.lunge <= 0)) S.hunting = false;
+    // a hammerhead has appeared: drop the hunt and get away, ahead of it towards the far side
+    if (hammer.active && !S.fleeing) {
+      S.fleeing = true; S.hunting = false; S.lunge = 0;
+      S.side = hammer.side; // leave on the side the hammerhead is heading to, staying ahead of it
+    }
 
     var cp = Math.cos(S.pitch);
     S.fx = cp * Math.cos(S.yaw); S.fy = Math.sin(S.pitch); S.fz = cp * Math.sin(S.yaw);
@@ -369,7 +378,8 @@
     if (!S.hunting || !cnt) {
       // leave past the far side
       var e = unproject(S.side < 0 ? 1.6 * W : -0.6 * W, H / 2, S.z);
-      tx = e[0]; ty = S.y; tz = S.z; speed = 0.35; rate = 0.5; tailRate = 3.2;
+      tx = e[0]; ty = S.y; tz = S.z;
+      if (S.fleeing) { speed = 0.95; rate = 1.1; tailRate = 11; } else { speed = 0.35; rate = 0.5; tailRate = 3.2; }
     } else if (!S.aggressive) {
       // cruise: drift towards the school, snap at a fish that comes close ahead
       if (bd < 2.5 * Ls) { tx = best.x; ty = best.y; tz = best.z; } else { tx = cx; ty = cy; tz = cz; }
@@ -419,7 +429,7 @@
     S.s += (speed * Ls - S.s) * Math.min(1, dt * (S.lunge > 0 ? 3.5 : 0.8));
     S.x += S.fx * S.s * dt; S.y += S.fy * S.s * dt; S.z += S.fz * S.s * dt;
     S.ph += dt * tailRate;
-    S.amp = S.lunge > 0 ? 0.55 : S.aggressive && S.hunting ? 0.4 : 0.3;
+    S.amp = S.lunge > 0 || S.fleeing ? 0.55 : S.aggressive && S.hunting ? 0.4 : 0.3;
 
     if (S.lunge > 0) {
       S.lunge -= dt;
@@ -444,6 +454,65 @@
     }
   }
 
+  /* ---------------- hammerhead ---------------- */
+  // A great hammerhead cruising past far behind the school. It always stays
+  // deeper than the deepest fish, so it is never close, and it ignores the
+  // school. It crosses on a gentle horizontal arc at a constant height, so the
+  // curve shows only as it comes a little nearer and goes away again, and it
+  // sweeps its head from side to side, as hammerheads do when scanning.
+  function spawnHammer() {
+    var H0 = hammer, side = Math.random() < 0.5 ? -1 : 1;
+    H0.len = 9 * L;
+    H0.zMin = 1.35 * ZD; H0.zMax = 2.1 * ZD;
+    H0.s = 0.9 * H0.len;
+    // the arc: heading starts at a0 off the crossing line and turns steadily to -a0,
+    // so the chord across the view (D) is spanned with a sagitta of R(1 - cos a0)
+    var a0 = rand(0.3, 0.45), zMid = (H0.zMin + H0.zMax) / 2;
+    var D = 1.7 * W / scaleAt(zMid), R = D / (2 * Math.sin(a0)), sag = R * (1 - Math.cos(a0));
+    var nearFirst = Math.random() < 0.5; // curve towards us then away, or the reverse
+    var z = nearFirst ? H0.zMin + sag + 0.05 * ZD : H0.zMax - sag - 0.05 * ZD;
+    z = clamp(z, H0.zMin, H0.zMax);
+    // above or below the middle of the view, so the hammer is seen a little from above or below
+    var sy = Math.random() < 0.5 ? rand(0.2, 0.38) : rand(0.62, 0.8);
+    var p = unproject(side < 0 ? -0.35 * W : 1.35 * W, sy * H, z);
+    H0.active = true; H0.side = side;
+    H0.x = p[0]; H0.y = p[1]; H0.z = p[2];
+    var s0 = nearFirst ? -1 : 1; // sign of the initial drift in depth
+    H0.course = side < 0 ? s0 * a0 : Math.PI - s0 * a0;
+    H0.turn = (side < 0 ? -s0 : s0) * H0.s / R; // rad/s, constant: a circular arc
+    H0.yaw = H0.course; H0.pitch = 0; H0.age = 0; H0.sweep = rand(0, 6.3);
+    // great hammerheads often cruise rolled 50-75 degrees onto one side, using the tall dorsal
+    // fin for lift (Payne et al. 2016); it also turns the hammer-shaped head towards the viewer
+    H0.rollSide = Math.random() < 0.5 ? 1 : -1; H0.roll = 0; H0.rollT = rand(4, 10);
+  }
+
+  function stepHammer(dt) {
+    var h = hammer;
+    if (!h.active) {
+      h.next -= dt;
+      if (h.next <= 0) spawnHammer();
+      return;
+    }
+    h.age += dt;
+    // follow the arc in the horizontal plane (no climbing or diving); the head sweeps around it
+    h.course = wrapAngle(h.course + h.turn * dt);
+    h.yaw = wrapAngle(h.course + 0.1 * Math.sin(h.age * 1.6 + h.sweep));
+    h.x += Math.cos(h.course) * h.s * dt;
+    h.z += Math.sin(h.course) * h.s * dt;
+    h.z = Math.max(h.z, 1.2 * ZD); // never closer than this, whatever happens
+    h.ph += dt * 6;
+    // spend most of the time rolled on one side, now and then level out and roll over
+    h.rollT -= dt;
+    if (h.rollT <= 0) { h.rollSide = h.rollSide ? 0 : (Math.random() < 0.5 ? 1 : -1); h.rollT = h.rollSide ? rand(12, 25) : rand(3, 6); }
+    var wantRoll = h.rollSide * 1.05;
+    h.roll += clamp(wantRoll - h.roll, -0.3 * dt, 0.3 * dt);
+    var p = project(h.x, h.y, h.z);
+    if (h.age > 5 && (p[0] < -0.4 * W || p[0] > 1.4 * W || h.age > 240)) {
+      h.active = false;
+      h.next = debug ? rand(20, 30) : rand(20, 35); // with a ~20 s crossing: one at least every minute
+    }
+  }
+
   /* ---------------- drawing ---------------- */
 
   // body profile along its length, t = 0 at the snout, 1 at the tail base
@@ -462,6 +531,23 @@
     profile: makeProfile(9, 0.35, 0.12, 0.02, 0.45, 0.7),
     caudal: [[0.2, 0.15], [0.12, 0], [0.2, -0.15], [0, -0.03], [0, 0.03]], // forked tail: [back, up]
     fins: []
+  };
+  // a great hammerhead: the wide flat head (cephalofoil), a very tall sickle-shaped first dorsal,
+  // a long upper tail lobe, small pectorals
+  var HAMMER = {
+    profile: makeProfile(12, 0.38, 0.07, 0.012, 0.8, 0.75),
+    caudal: [[0, 0.03], [0.22, 0.2], [0.26, 0.18], [0.1, 0.01], [0.12, -0.08], [0.09, -0.09], [0, -0.03]],
+    fins: [ // [along, up, side] in body lengths
+      [[0.12, 0.05, 0], [0.04, 0.26, 0], [-0.02, 0.27, 0], [-0.01, 0.23, 0], [-0.03, 0.05, 0]], // first dorsal
+      [[-0.17, 0.03, 0], [-0.2, 0.07, 0], [-0.23, 0.025, 0]],                                 // second dorsal
+      [[0.25, -0.04, 0.03], [0.1, -0.1, 0.13], [0.14, -0.045, 0.035]],                        // pectoral fins
+      [[0.25, -0.04, -0.03], [0.1, -0.1, -0.13], [0.14, -0.045, -0.035]],
+      [[-0.14, -0.04, 0], [-0.18, -0.085, 0], [-0.2, -0.035, 0]],                             // anal fin
+      // cephalofoil: a flat blade across the front of the head, and its front edge
+      [[0.51, 0, -0.13], [0.515, 0, 0], [0.51, 0, 0.13], [0.47, 0, 0.135], [0.455, 0, 0.05], [0.44, 0, 0],
+       [0.455, 0, -0.05], [0.47, 0, -0.135]],
+      [[0.51, 0.02, -0.135], [0.515, 0.02, 0.135], [0.5, -0.022, 0.135], [0.495, -0.022, -0.135]]
+    ]
   };
   // a slender requiem shark: round body, pointed snout, tall first dorsal, long upper tail lobe
   var SHARK = {
@@ -497,6 +583,12 @@
     var ux = fx * fy, uy = -1 + fy * fy, uz = fz * fy;
     var ul = Math.hypot(ux, uy, uz) || 1; ux /= ul; uy /= ul; uz /= ul;
     var sx = fy * uz - fz * uy, sy = fz * ux - fx * uz, sz = fx * uy - fy * ux;
+    if (e.roll) { // rotate the dorsal and side axes about the body axis
+      var cr = Math.cos(e.roll), sr = Math.sin(e.roll);
+      var ux2 = ux * cr + sx * sr, uy2 = uy * cr + sy * sr, uz2 = uz * cr + sz * sr;
+      sx = sx * cr - ux * sr; sy = sy * cr - uy * sr; sz = sz * cr - uz * sr;
+      ux = ux2; uy = uy2; uz = uz2;
+    }
     // normal to the projected body axis
     var an = Math.hypot(fx, fy);
     var nx = an > 1e-4 ? -fy / an : 0, ny = an > 1e-4 ? fx / an : 1;
@@ -560,10 +652,14 @@
     list.length = 0;
     for (var i = 0; i < fish.length; i++) if (!fish[i].dead) list.push(fish[i]);
     if (shark.active) list.push(shark);
+    if (hammer.active) list.push(hammer);
     list.sort(function (a, b) { return b.z - a.z; }); // far first
     for (i = 0; i < list.length; i++) {
       var e = list[i];
-      if (e === shark) {
+      if (e === hammer) {
+        ctx.fillStyle = sharkFill;
+        drawBody(e, e.len, HAMMER, 0.25, baseAlpha);
+      } else if (e === shark) {
         ctx.fillStyle = sharkFill;
         drawBody(e, e.len, SHARK, e.amp || 0.3, baseAlpha * 1.15);
       } else {
@@ -574,7 +670,7 @@
     ctx.globalAlpha = 1;
   }
 
-  function step(dt) { stepSchool(dt); stepShark(dt); stepFish(dt); }
+  function step(dt) { stepSchool(dt); stepShark(dt); stepHammer(dt); stepFish(dt); }
 
   var last = 0;
   function frame(t) {
