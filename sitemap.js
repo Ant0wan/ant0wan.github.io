@@ -22,10 +22,10 @@
     { id: 'ox', label: 'pO₂ isopleths', href: 'oxygen-chart.html', r: 6, p: 'ph' },
     { id: 'pd', label: 'Plan a Dive', href: 'plan-a-dive.html', r: 7, p: 'dv' },
     { id: 'gc', label: 'Gas cost', href: 'gas-cost.html', r: 6.5, p: 'pd' },
-    { id: 'pf', label: 'Diver profile', href: 'diver-profile.html', r: 6.5, p: 'pd' },
     { id: 'ms', label: 'Raup morphospace', href: 'morphospace.html', r: 7, p: 'pa' },
     { id: 'ch', label: 'Cheatsheets', href: 'cheatsheets.html', r: 6.5, p: 'cs' },
-    { id: 'ab', label: 'About Me', href: 'about-me.html', r: 6.5, p: 'cs' }
+    { id: 'lt', label: 'Literature', href: 'literature.html', r: 7, p: 'home' },
+    { id: 'bk', label: 'Books', href: 'books.html', r: 6.5, p: 'lt' }
   ];
   var by = {}; N.forEach(function (n) { by[n.id] = n; });
   var pos = {
@@ -37,7 +37,8 @@
     pd: [-20, -85, 240], gc: [-125, -125, 300], pf: [20, -195, 320],
     ms: [-105, -45, -235],
     ch: [-275, -40, 90],
-    ab: [-235, -150, 30]
+    ab: [-235, -150, 30],
+    lt: [215, -185, 40], bk: [285, -225, 20]
   };
   // centre the cloud on the origin
   var c = [0, 0, 0]; N.forEach(function (n) { n.x = pos[n.id][0]; n.y = pos[n.id][1]; n.z = pos[n.id][2]; c[0] += n.x; c[1] += n.y; c[2] += n.z; });
@@ -119,6 +120,24 @@
       ctx.save(); ctx.beginPath(); ctx.arc(0, 0, S, 0, 6.283); ctx.clip();
       ctx.fillStyle = soft(rgb, fog, .5); circ(0, -.25 * S, .36 * S, true);
       ctx.beginPath(); ctx.ellipse(0, .85 * S, .72 * S, .55 * S, 0, 0, 6.283); ctx.fill(); ctx.restore();
+    },
+    lt: function (S, t, rgb, fog) { // open book, a page turning
+      ctx.fillStyle = soft(rgb, fog, .14);
+      ctx.beginPath(); ctx.moveTo(0, -.55 * S); ctx.quadraticCurveTo(-.5 * S, -.8 * S, -S, -.6 * S); ctx.lineTo(-S, .6 * S);
+      ctx.quadraticCurveTo(-.5 * S, .4 * S, 0, .65 * S); ctx.quadraticCurveTo(.5 * S, .4 * S, S, .6 * S); ctx.lineTo(S, -.6 * S);
+      ctx.quadraticCurveTo(.5 * S, -.8 * S, 0, -.55 * S); ctx.closePath(); ctx.fill(); ctx.stroke();
+      poly([[0, -.55 * S], [0, .65 * S]]);
+      for (var i = 0; i < 3; i++) { var y = -.3 * S + i * .25 * S; poly([[-.8 * S, y], [-.2 * S, y + .04 * S]]); poly([[.2 * S, y + .04 * S], [.8 * S, y]]); }
+      var k = Math.max(0, Math.sin(t * .8)), x = S * .9 * Math.cos(k * Math.PI); // the page lifts and falls back
+      ctx.beginPath(); ctx.moveTo(0, -.55 * S); ctx.quadraticCurveTo(x * .5, -.75 * S - k * .2 * S, x, -.6 * S); ctx.lineTo(x, .6 * S);
+      ctx.quadraticCurveTo(x * .5, .4 * S - k * .2 * S, 0, .65 * S); ctx.stroke();
+    },
+    bk: function (S, t, rgb, fog) { // a stack of books
+      var b = [[-.8, .45, 1.55, .3], [-.65, .15, 1.35, .28], [-.9, -.12, 1.5, .25]];
+      b.forEach(function (r, i) { ctx.fillStyle = soft(rgb, fog, .12 + i * .1); ctx.fillRect(r[0] * S, r[1] * S, r[2] * S, r[3] * S); ctx.strokeRect(r[0] * S, r[1] * S, r[2] * S, r[3] * S);
+        poly([[(r[0] + .12) * S, r[1] * S], [(r[0] + .12) * S, (r[1] + r[3]) * S]]); });
+      ctx.save(); ctx.translate(.35 * S, -.42 * S); ctx.rotate(-.35); ctx.fillStyle = soft(rgb, fog, .3);
+      ctx.fillRect(-.15 * S, -.5 * S, .3 * S, .8 * S); ctx.strokeRect(-.15 * S, -.5 * S, .3 * S, .8 * S); ctx.restore();
     },
     py: function (S, t, rgb, fog) { // pendulum
       var a = Math.sin(t * 1.8) * .5, L = S * 1.3, bx = Math.sin(a) * L, by = -.7 * S + Math.cos(a) * L;
