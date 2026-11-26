@@ -211,3 +211,24 @@ figcaption b { font-weight: bold; font-variant-numeric: lining-nums; }
 #sitemap:active { cursor: grabbing; }
 .sitemap-hint { font-size: .8rem; color: var(--muted); text-align: center; margin: .4rem 0 1.5rem; }
 @media (max-width: 640px) { #sitemap { height: 340px; } }
+
+/* gas cost table (gas-cost.html) */
+.table-wrap { overflow-x: auto; margin: 1rem 0 0; }
+.gas-table { width: 100%; border-collapse: collapse; border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink); font-size: .92rem; font-variant-numeric: lining-nums tabular-nums; }
+.gas-table th { border-bottom: 1px solid var(--ink); font-weight: bold; text-align: left; white-space: nowrap; }
+.gas-table th, .gas-table td { padding: .3rem .35rem; }
+.gas-table .n { text-align: right; white-space: nowrap; }
+.gas-table td:first-child { white-space: nowrap; }
+.gas-table .role { font-size: .75rem; font-style: italic; color: var(--muted); }
+.gas-table tr.first-deco td { border-top: 1px solid var(--grid-strong); }
+.gas-table tr.sel td:first-child { font-weight: bold; }
+.gas-table .best { color: var(--c-green); font-weight: bold; }
+.gas-table tfoot td { border-top: 1px solid var(--ink); font-weight: bold; }
+.gas-table input { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--grid-strong); padding: .1rem .3rem; width: 3.6rem; -moz-appearance: textfield; appearance: textfield; text-align: right; border-radius: 0; font-variant-numeric: tabular-nums; }
+.gas-table input.qty { width: 2.6rem; }
+.gas-table input::-webkit-inner-spin-button, .gas-table input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.btn { font: inherit; font-size: .95rem; color: var(--ink); background: var(--bg); border: 1px solid var(--grid-strong); padding: .2rem .8rem; cursor: pointer; border-radius: 0; }
+.btn:hover { border-color: var(--ink); }
+.refs { font-size: .92rem; padding-left: 1.5rem; }
+.refs li { margin-bottom: .5rem; }
+.refs a { word-break: break-word; }

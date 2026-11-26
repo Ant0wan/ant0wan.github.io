@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GUE Standard Gas Cost Calculator — Antoine Barthelemy</title>
+  <meta name="description" content="Interactive calculator for the cost of GUE standard gas mixes, from local prices of air, oxygen and helium.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <script>(function(){var t=null,q=/[?&]theme=(dark|light)/.exec(location.search);if(q)t=q[1];try{if(!t)t=localStorage.getItem('theme')}catch(e){}if(!t){var m=/(?:^|;)theme=(dark|light)/.exec(window.name);if(m)t=m[1]}if(!t&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)t='dark';document.documentElement.setAttribute('data-theme',t||'light')})()</script>
+  <link rel="stylesheet" href="site.css">
+  <script src="site.js"></script>
+</head>
+<body>
+<button id="theme-toggle" type="button" aria-label="Switch to dark mode"><span class="theme-icon" aria-hidden="true"></span></button>
+<main class="page">
+  <h1 class="paper-title">The Cost of GUE Standard Gas Mixes</h1>
+  <div class="byline">An interactive calculator from local component prices</div>
+  <div class="abstract"><strong>Abstract</strong>
+    Global Underwater Explorers (GUE) dive a short list of standard mixes. This calculator prices each mix from the cost of its components: helium, oxygen and air top-up, plus a fill fee for each cylinder. Where a shop sells a premix (Nitrox 32, Trimix 18/45), that price is shown as well. The default prices come from a Swiss fill station (see the sources). Change any value to match your local prices. Your values are saved in this browser.
+  </div>
+
+  <div class="eq">
+    <span><i>F</i><sub>air</sub> = <i>F</i><sub>N₂</sub> / 0.79, &nbsp; <i>F</i><sub>O₂,add</sub> = <i>F</i><sub>O₂</sub> &minus; 0.21&thinsp;<i>F</i><sub>air</sub></span><span class="tag">(1)</span>
+    <span>cost = <i>V</i>&thinsp;<i>P</i> (<i>F</i><sub>He</sub>&thinsp;<i>c</i><sub>He</sub> + <i>F</i><sub>O₂,add</sub>&thinsp;<i>c</i><sub>O₂</sub> + <i>F</i><sub>air</sub>&thinsp;<i>c</i><sub>air</sub>) + fee</span><span class="tag">(2)</span>
+    <span class="param"><i>V</i> = cylinder water volume (L), <i>P</i> = fill pressure (bar), <i>c</i> = price per litre of surface gas; ideal gas assumed</span>
+  </div>
+
+  <h2 class="section">Prices</h2>
+  <div class="controls" id="prices">
+    <label class="field"><span>Currency</span><input id="cur" type="text" value="CHF" style="width:4.5rem;text-align:left"></label>
+    <label class="field"><span>Air <span class="unit">/ m³</span></span><input data-k="air" type="number" min="0" step="0.1"></label>
+    <label class="field"><span>Oxygen <span class="unit">/ m³</span></span><input data-k="o2" type="number" min="0" step="0.5"></label>
+    <label class="field"><span>Helium <span class="unit">/ m³</span></span><input data-k="he" type="number" min="0" step="1"></label>
+    <label class="field"><span>Nitrox 32 premix <span class="unit">/ m³</span></span><input data-k="ean32" type="number" min="0" step="0.1"></label>
+    <label class="field"><span>Trimix 18/45 premix <span class="unit">/ m³</span></span><input data-k="tx1845" type="number" min="0" step="1"></label>
+    <label class="field"><span>Fill fee <span class="unit">/ cylinder</span></span><input data-k="fee" type="number" min="0" step="0.5"></label>
+  </div>
+  <div class="controls">
+    <label class="field"><span>Bottom PpO₂ <span class="unit">(bar)</span></span><input data-k="ppBottom" type="number" min="0.5" max="1.6" step="0.1"></label>
+    <label class="field"><span>Deco PpO₂ <span class="unit">(bar)</span></span><input data-k="ppDeco" type="number" min="0.5" max="1.6" step="0.1"></label>
+    <label class="field"><span>Preset</span><select id="preset">
+      <option value="custom">Custom</option>
+      <option value="tiefenstein">Tauchcenter Tiefenstein</option>
+      <option value="divefactory">Divefactory (air &amp; nitrox)</option>
+    </select></label>
+    <button type="button" id="reset" class="btn">Reset all</button>
+  </div>
+  <p class="tips">A blank or zero premix price means the shop does not sell that premix, so only the blended cost is shown.</p>
+
+  <h2 class="section">GUE standard mixes</h2>
+  <div class="table-wrap">
+    <table class="gas-table">
+      <thead>
+        <tr>
+          <th>Mix</th><th class="n">O₂ / He</th><th class="n">MOD</th><th class="n">END</th>
+          <th class="n">Cyl. (L)</th><th class="n">Fill (bar)</th>
+          <th class="n">He / O₂ / air (L)</th>
+          <th class="n">Blended</th><th class="n">Premix</th><th class="n">Qty</th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+      <tfoot><tr><td colspan="9" class="n">Total for selected cylinders (cheaper option per mix)</td><td class="n" id="total"></td></tr></tfoot>
+    </table>
+  </div>
+  <figcaption><b>Table 2.2.</b> Cost of one fill of each GUE standard mix. The litres are gas at the surface: He and O₂ are what the blender decants, and air is the top-up. MOD uses the bottom or deco PpO₂ above. END counts oxygen as narcotic, as GUE does. Mixes with less than 18% O₂ are hypoxic and cannot be breathed at the surface. Set <i>Qty</i> to price a whole dive, for example a twinset of 21/35 with one EAN50 and one O₂ stage.</figcaption>
+
+  <h2 class="section">Sources</h2>
+  <ol class="refs">
+    <li>Tauchcenter Tiefenstein, <i>Füllanlage: Luft, Nitrox, Trimix, Sauerstoff, Helium, Argon</i>. Single-purchase prices at the 24 h fill station: air CHF 5/m³, EANx32 CHF 6/m³, Trimix 18/45 CHF 60/m³, oxygen CHF 20/m³, helium CHF 80/m³; staffed fills add CHF 4 per cylinder. No date given; read November 2026. <a href="https://tauchcenter-tiefenstein.ch/fuellanlage-luft-nitrox-trimix-sauerstoff-helium-argon/" rel="noopener">tauchcenter-tiefenstein.ch</a> (default prices).</li>
+    <li>Dein Tauchcenter / Divefactory, Gretzenbach, <i>Air und Nitrox</i>: air and Nitrox 30–32 at CHF 3.50/m³. Read November 2026. <a href="https://divefactory.ch/tauchcenter/air-und-nitrox/" rel="noopener">divefactory.ch</a>.</li>
+    <li>Blue World dive &amp; more, <i>Füllstation</i>: air CHF 7 per fill, oxygen CHF 2 per 100 L plus CHF 10 per cylinder. Prices are per fill, so this shop is not offered as a preset. Read November 2026. <a href="https://www.blue-world.ch/tauchen/fuellstation.php" rel="noopener">blue-world.ch</a>.</li>
+    <li>GUE standard mixes (EAN32, 30/30, 21/35, 18/45, 15/55, 12/65, 10/70; deco EAN50 and O₂): GUE Tech 1 student notes, <a href="https://s3.amazonaws.com/kajabi-storefronts-production/file-uploads/sites/59705/themes/2155304654/downloads/d0b5b48-cef3-ffce-a0f-00fe2270a08_38ab33-2020-d130-7510-d82acaa01a_T1-Wet-Notes-V1.7-for-reading.pdf" rel="noopener">T1 Wet Notes v1.7</a>, and the discussion on <a href="https://scubaboard.com/community/threads/standard-gasses.629214/" rel="noopener">ScubaBoard</a>. Check the current list with your GUE instructor.</li>
+  </ol>
+  <p class="tips">Shop prices change. Check with your fill station before you rely on them.</p>
+
+  <div class="pager"><a href="diving.html">&larr; Diving</a><span></span></div>
+</main>
+<script>
+(function () {
+  var PRESETS = {
+    tiefenstein: { air: 5, o2: 20, he: 80, ean32: 6, tx1845: 60, fee: 4 },
+    divefactory: { air: 3.5, o2: 20, he: 80, ean32: 3.5, tx1845: 0, fee: 0 }
+  };
+  var DEFAULTS = Object.assign({ cur: 'CHF', ppBottom: 1.2, ppDeco: 1.6 }, PRESETS.tiefenstein);
+
+  // GUE standard mixes. V, P = default cylinder (L water volume, bar).
+  var MIXES = [
+    { id: 'ean32', name: 'EAN32',      o2: .32, he: 0,   role: 'bottom', V: 24,   P: 232, premix: 'ean32', qty: 1 },
+    { id: 'tx3030', name: 'Trimix 30/30', o2: .30, he: .30, role: 'bottom', V: 24, P: 232 },
+    { id: 'tx2135', name: 'Trimix 21/35', o2: .21, he: .35, role: 'bottom', V: 24, P: 232 },
+    { id: 'tx1845', name: 'Trimix 18/45', o2: .18, he: .45, role: 'bottom', V: 24, P: 232, premix: 'tx1845' },
+    { id: 'tx1555', name: 'Trimix 15/55', o2: .15, he: .55, role: 'bottom', V: 24, P: 232 },
+    { id: 'tx1265', name: 'Trimix 12/65', o2: .12, he: .65, role: 'bottom', V: 24, P: 232 },
+    { id: 'tx1070', name: 'Trimix 10/70', o2: .10, he: .70, role: 'bottom', V: 24, P: 232 },
+    { id: 'ean50', name: 'EAN50',      o2: .50, he: 0,   role: 'deco',   V: 11.1, P: 207 },
+    { id: 'o2',    name: 'Oxygen',     o2: 1,   he: 0,   role: 'deco',   V: 11.1, P: 207 }
+  ];
+  var KEY = 'gue-gas-cost-v1';
+  var S;
+  function fresh() {
+    var s = Object.assign({}, DEFAULTS, { rows: {} });
+    MIXES.forEach(function (m) { s.rows[m.id] = { V: m.V, P: m.P, qty: m.qty || 0 }; });
+    return s;
+  }
+  try { S = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+  if (!S || !S.rows) S = fresh();
+  MIXES.forEach(function (m) { if (!S.rows[m.id]) S.rows[m.id] = { V: m.V, P: m.P, qty: 0 }; });
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+
+  function num(v) { v = parseFloat(v); return isFinite(v) && v >= 0 ? v : 0; }
+  function money(x) { return S.cur + ' ' + x.toFixed(2); }
+  function L(x) { return Math.round(x).toLocaleString('en').replace(/,/g, ' '); }
+
+  var tbody = document.getElementById('rows');
+  MIXES.forEach(function (m) {
+    var tr = document.createElement('tr'); tr.id = 'r-' + m.id;
+    if (m.role === 'deco' && !tbody.querySelector('.deco')) tr.className = 'deco first-deco';
+    tr.innerHTML =
+      '<td>' + m.name + ' <span class="role">' + m.role + '</span></td>' +
+      '<td class="n">' + Math.round(m.o2 * 100) + '/' + Math.round(m.he * 100) + '</td>' +
+      '<td class="n mod"></td><td class="n end"></td>' +
+      '<td class="n"><input data-r="V" type="number" min="0" step="0.1"></td>' +
+      '<td class="n"><input data-r="P" type="number" min="0" step="1"></td>' +
+      '<td class="n lit"></td>' +
+      '<td class="n blend"></td><td class="n pre"></td>' +
+      '<td class="n"><input data-r="qty" type="number" min="0" step="1" class="qty"></td>';
+    tbody.appendChild(tr);
+    tr.querySelectorAll('input').forEach(function (inp) {
+      inp.value = S.rows[m.id][inp.dataset.r];
+      inp.addEventListener('input', function () { S.rows[m.id][inp.dataset.r] = num(inp.value); update(); });
+    });
+  });
+
+  var priceInputs = document.querySelectorAll('[data-k]');
+  var PRICE_KEYS = Object.keys(PRESETS.tiefenstein);
+  function snapshot() { var o = {}; PRICE_KEYS.forEach(function (k) { o[k] = S[k]; }); return o; }
+  if (!S.custom) S.custom = snapshot();
+  function syncPreset() {
+    var sel = '';
+    Object.keys(PRESETS).forEach(function (k) {
+      if (Object.keys(PRESETS[k]).every(function (f) { return S[f] === PRESETS[k][f]; })) sel = sel || k;
+    });
+    document.getElementById('preset').value = sel || 'custom';
+  }
+  function fillControls() {
+    syncPreset();
+    priceInputs.forEach(function (inp) { inp.value = S[inp.dataset.k]; });
+    document.getElementById('cur').value = S.cur;
+    MIXES.forEach(function (m) {
+      document.querySelectorAll('#r-' + m.id + ' input').forEach(function (inp) { inp.value = S.rows[m.id][inp.dataset.r]; });
+    });
+  }
+  priceInputs.forEach(function (inp) {
+    inp.addEventListener('input', function () { S[inp.dataset.k] = num(inp.value);
+      // a price typed by the user becomes the Custom preset
+      if (PRICE_KEYS.indexOf(inp.dataset.k) >= 0) { S.custom = snapshot(); S.customTyped = true; }
+      syncPreset(); update(); });
+  });
+  document.getElementById('cur').addEventListener('input', function (e) { S.cur = e.target.value || ''; update(); });
+  document.getElementById('preset').addEventListener('change', function (e) {
+    var v = e.target.value, p;
+    if (v === 'custom') p = S.custom;
+    else {
+      // until the user types a price, Custom remembers the last values they had selected
+      if (!S.customTyped) S.custom = snapshot();
+      p = PRESETS[v];
+    }
+    if (!p) return;
+    Object.assign(S, p); fillControls(); e.target.value = v; update();
+  });
+  document.getElementById('reset').addEventListener('click', function () {
+    S = fresh(); S.custom = snapshot(); fillControls(); update();
+  });
+
+  function update() {
+    var total = 0, any = false;
+    MIXES.forEach(function (m) {
+      var r = S.rows[m.id], tr = document.getElementById('r-' + m.id);
+      var gas = r.V * r.P;                               // surface litres
+      var fN2 = Math.max(0, 1 - m.o2 - m.he);
+      var fAir = fN2 / 0.79;
+      var fO2add = Math.max(0, m.o2 - 0.21 * fAir);
+      var he = gas * m.he, ox = gas * fO2add, air = gas * fAir;
+      var blend = (he * S.he + ox * S.o2 + air * S.air) / 1000 + (gas > 0 ? S.fee : 0);
+      var pre = m.premix && S[m.premix] > 0 ? gas * S[m.premix] / 1000 + (gas > 0 ? S.fee : 0) : null;
+      var pp = m.role === 'deco' ? S.ppDeco : S.ppBottom;
+      var mod = Math.max(0, (pp / m.o2 - 1) * 10);
+      var end = Math.max(0, (mod + 10) * (1 - m.he) - 10);
+      tr.querySelector('.mod').textContent = mod.toFixed(0) + ' m';
+      tr.querySelector('.end').textContent = end.toFixed(0) + ' m';
+      tr.querySelector('.lit').textContent = L(he) + ' / ' + L(ox) + ' / ' + L(air);
+      var b = tr.querySelector('.blend'), p = tr.querySelector('.pre');
+      b.textContent = money(blend);
+      p.textContent = pre == null ? '—' : money(pre);
+      var best = pre != null && pre < blend ? pre : blend;
+      b.classList.toggle('best', pre != null && blend <= pre);
+      p.classList.toggle('best', pre != null && pre < blend);
+      if (r.qty > 0) { total += best * r.qty; any = true; }
+      tr.classList.toggle('sel', r.qty > 0);
+    });
+    document.getElementById('total').textContent = any ? money(total) : '—';
+    save();
+  }
+
+  fillControls();
+  update();
+})();
+</script>
+<footer class="site-footer">
+  <span>&copy; 2026 Antoine Barthelemy</span>
+  <span>Figures are computed in your browser &middot; nothing is sent anywhere.</span>
+</footer>
+</body>
+</html>

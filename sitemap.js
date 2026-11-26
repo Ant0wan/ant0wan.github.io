@@ -9,21 +9,22 @@
   var N = [
     { id: 'home', label: 'Home', href: 'index.html', r: 9 },
     { id: 'cs', label: 'Computer Science', href: 'computer-science.html', r: 7, p: 'home' },
-    { id: 'ph', label: 'Physics', href: 'physics.html', r: 7, p: 'home' },
+    { id: 'dv', label: 'Diving', href: 'diving.html', r: 7, p: 'home' },
     { id: 'bi', label: 'Biology', href: 'biology.html', r: 7, p: 'home' },
     { id: 'ch', label: 'Cheatsheets', href: 'cheatsheets.html', r: 6.5, p: 'cs' },
-    { id: 'dv', label: 'Physics of Diving', href: 'diving.html', r: 7, p: 'ph' },
-    { id: 'pp', label: 'pO₂ vs depth', href: 'ppo2.html', r: 6, p: 'dv' },
-    { id: 'vo', label: 'Boyle volumes', href: 'volumes.html', r: 6, p: 'dv' },
-    { id: 'ox', label: 'pO₂ isopleths', href: 'oxygen-chart.html', r: 6, p: 'dv' },
+    { id: 'ph', label: 'Physics of Diving', href: 'diving-physics.html', r: 7, p: 'dv' },
+    { id: 'pp', label: 'pO₂ vs depth', href: 'ppo2.html', r: 6, p: 'ph' },
+    { id: 'vo', label: 'Boyle volumes', href: 'volumes.html', r: 6, p: 'ph' },
+    { id: 'ox', label: 'pO₂ isopleths', href: 'oxygen-chart.html', r: 6, p: 'ph' },
+    { id: 'gc', label: 'Gas cost', href: 'gas-cost.html', r: 6.5, p: 'dv' },
     { id: 'ms', label: 'Raup morphospace', href: 'morphospace.html', r: 7, p: 'bi' }
   ];
   var by = {}; N.forEach(function (n) { by[n.id] = n; });
   var pos = {
     home: [0, 0, 0],
-    cs: [-150, 0, 0], ph: [75, 0, 130], bi: [75, 0, -130],
+    cs: [-150, 0, 0], dv: [75, 0, 130], bi: [75, 0, -130],
     ch: [-250, -70, 20],
-    dv: [150, 40, 250],
+    ph: [150, 40, 250], gc: [-30, 90, 230],
     pp: [60, 130, 340], vo: [230, 120, 360], ox: [250, -30, 330],
     ms: [160, -60, -250]
   };
@@ -72,6 +73,12 @@
       for (var k = 1; k <= 3; k++) { var r = S * (1.05 - k * .27); ctx.beginPath();
         for (var i = 0; i <= 40; i++) { var a = i / 40 * 6.283, w = 1 + .22 * Math.sin(a * 3 + k) ; ctx[i ? 'lineTo' : 'moveTo'](Math.cos(a) * r * w * 1.1, Math.sin(a) * r * w * .85); }
         ctx.closePath(); ctx.stroke(); }
+    },
+    gc: function (S) { // cylinder with a price tag
+      ctx.beginPath(); ctx.moveTo(-.4 * S, -.55 * S); ctx.quadraticCurveTo(-.4 * S, -.85 * S, 0, -.85 * S); ctx.quadraticCurveTo(.4 * S, -.85 * S, .4 * S, -.55 * S);
+      ctx.lineTo(.4 * S, S); ctx.lineTo(-.4 * S, S); ctx.closePath(); ctx.stroke();
+      ctx.strokeRect(-.12 * S, -1.1 * S, .24 * S, .25 * S);
+      ctx.font = 'bold ' + (.8 * S) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('¤', 0, .15 * S);
     },
     bi: function (S, t, rgb, fog) { // living cell
       ctx.fillStyle = soft(rgb, fog, .14); ctx.beginPath();

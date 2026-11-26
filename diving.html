@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Physics of Diving — Antoine Barthelemy</title>
-  <meta name="description" content="Interactive figures on the physics of breathing gas at depth.">
+  <title>Diving — Antoine Barthelemy</title>
+  <meta name="description" content="Notes on diving and interactive figures.">
   <meta name="color-scheme" content="light dark">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <script>(function(){var t=null,q=/[?&]theme=(dark|light)/.exec(location.search);if(q)t=q[1];try{if(!t)t=localStorage.getItem('theme')}catch(e){}if(!t){var m=/(?:^|;)theme=(dark|light)/.exec(window.name);if(m)t=m[1]}if(!t&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)t='dark';document.documentElement.setAttribute('data-theme',t||'light')})()</script>
@@ -14,19 +14,18 @@
 <body>
 <button id="theme-toggle" type="button" aria-label="Switch to dark mode"><span class="theme-icon" aria-hidden="true"></span></button>
 <main class="page narrow">
-  <h1 class="paper-title">Physics of Diving</h1>
-  <div class="byline">Interactive figures on breathing-gas physics</div>
+  <h1 class="paper-title">Diving</h1>
+  <div class="byline">Notes on diving</div>
   <div class="abstract"><strong>Abstract</strong>
-    Three interactive figures on the physics of breathing gas at depth: oxygen partial pressure and its exposure limits, the effect of pressure on gas volume, and a map of oxygen partial pressure over depth and oxygen fraction.
+    Diving explored through interactive figures computed in your browser.
   </div>
 
-  <h2 class="section">Figures</h2>
+  <h2 class="section">Contents</h2>
   <ul class="toc">
-    <li><span class="num">2.1</span><span><a href="ppo2.html">Oxygen partial pressure vs. depth</a><span class="desc">PpO₂ for air, Nitrox 32 and a user-defined FO₂, with the 1.2 / 1.4 / 1.6 bar limits and resulting maximum operating depths.</span></span></li>
-    <li><span class="num">2.2</span><span><a href="volumes.html">Volume fraction vs. depth</a><span class="desc">How a gas volume shrinks with depth under Boyle’s law, with reference points at common training depths.</span></span></li>
-    <li><span class="num">2.3</span><span><a href="oxygen-chart.html">Isopleths of oxygen partial pressure</a><span class="desc">Interactive map of pO₂ over depth and oxygen fraction, adjustable for altitude, temperature and surface pressure.</span></span></li>
+    <li><span class="num">2.1</span><span><a href="diving-physics.html">Physics of Diving</a><span class="desc">Interactive figures on oxygen partial pressure, exposure limits and gas volume at depth.</span></span></li>
+    <li><span class="num">2.2</span><span><a href="gas-cost.html">The Cost of GUE Standard Gas Mixes</a><span class="desc">Interactive calculator pricing each GUE standard mix from local prices of air, oxygen and helium, with Swiss defaults.</span></span></li>
   </ul>
-  <div class="pager"><a href="physics.html">&larr; Physics</a><span></span></div>
+  <div class="pager"><a href="index.html">&larr; Home</a><span></span></div>
 </main>
 <footer class="site-footer">
   <span>&copy; 2026 Antoine Barthelemy</span>
