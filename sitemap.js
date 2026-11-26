@@ -17,6 +17,7 @@
     { id: 'vo', label: 'Boyle volumes', href: 'volumes.html', r: 6, p: 'ph' },
     { id: 'ox', label: 'pO₂ isopleths', href: 'oxygen-chart.html', r: 6, p: 'ph' },
     { id: 'gc', label: 'Gas cost', href: 'gas-cost.html', r: 6.5, p: 'dv' },
+    { id: 'pf', label: 'Diver profile', href: 'diver-profile.html', r: 6.5, p: 'dv' },
     { id: 'ms', label: 'Raup morphospace', href: 'morphospace.html', r: 7, p: 'bi' }
   ];
   var by = {}; N.forEach(function (n) { by[n.id] = n; });
@@ -24,7 +25,7 @@
     home: [0, 0, 0],
     cs: [-150, 0, 0], dv: [75, 0, 130], bi: [75, 0, -130],
     ch: [-250, -70, 20],
-    ph: [150, 40, 250], gc: [-30, 90, 230],
+    ph: [150, 40, 250], gc: [-30, 90, 230], pf: [60, -110, 230],
     pp: [60, 130, 340], vo: [230, 120, 360], ox: [250, -30, 330],
     ms: [160, -60, -250]
   };
@@ -79,6 +80,12 @@
       ctx.lineTo(.4 * S, S); ctx.lineTo(-.4 * S, S); ctx.closePath(); ctx.stroke();
       ctx.strokeRect(-.12 * S, -1.1 * S, .24 * S, .25 * S);
       ctx.font = 'bold ' + (.8 * S) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('¤', 0, .15 * S);
+    },
+    pf: function (S, t, rgb, fog) { // certification card
+      ctx.fillStyle = soft(rgb, fog, .14); ctx.fillRect(-S, -.65 * S, 2 * S, 1.3 * S); ctx.strokeRect(-S, -.65 * S, 2 * S, 1.3 * S);
+      ctx.fillStyle = 'rgba(' + rgb + ',' + fog + ')'; circ(-.5 * S, -.12 * S, .2 * S, true);
+      ctx.beginPath(); ctx.arc(-.5 * S, .35 * S, .32 * S, Math.PI, 0); ctx.stroke();
+      poly([[-.05 * S, -.25 * S], [.75 * S, -.25 * S]]); poly([[-.05 * S, .05 * S], [.75 * S, .05 * S]]); poly([[-.05 * S, .35 * S], [.5 * S, .35 * S]]);
     },
     bi: function (S, t, rgb, fog) { // living cell
       ctx.fillStyle = soft(rgb, fog, .14); ctx.beginPath();

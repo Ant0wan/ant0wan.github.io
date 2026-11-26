@@ -109,8 +109,7 @@ sub, sup { line-height: 0; }
 
 /* ---------- lists (certifications, contents) ---------- */
 .cert-list { list-style: none; padding: 0; margin: 0; counter-reset: item; }
-.cert-list li { display: flex; justify-content: space-between; align-items: baseline; padding: .35rem 0; border-bottom: 1px dotted var(--grid-strong); }
-.cert-list li:last-child { border-bottom: 0; }
+.cert-list li { display: flex; justify-content: space-between; align-items: baseline; padding: .35rem 0; }
 .cert-list li::before { content: counter(item) ". "; counter-increment: item; font-style: italic; color: var(--muted); min-width: 2rem; display: inline-block; }
 .cert-list li .t { flex: 1; }
 .cert-date { font-style: italic; font-size: .92rem; margin-left: 1.5rem; white-space: nowrap; }
