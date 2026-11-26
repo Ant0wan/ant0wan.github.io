@@ -8,26 +8,34 @@
   // ---- graph ----------------------------------------------------------
   var N = [
     { id: 'home', label: 'Home', href: 'index.html', r: 9 },
-    { id: 'cs', label: 'Computer Science', href: 'computer-science.html', r: 7, p: 'home' },
     { id: 'dv', label: 'Diving', href: 'diving.html', r: 7, p: 'home' },
+    { id: 'mt', label: 'Mathematics', href: 'mathematics.html', r: 7, p: 'home' },
+    { id: 'py', label: 'Physics', href: 'physics.html', r: 7, p: 'home' },
+    { id: 'cm', label: 'Chemistry', href: 'chemistry.html', r: 7, p: 'home' },
     { id: 'bi', label: 'Biology', href: 'biology.html', r: 7, p: 'home' },
-    { id: 'ch', label: 'Cheatsheets', href: 'cheatsheets.html', r: 6.5, p: 'cs' },
+    { id: 'ge', label: 'Geology', href: 'geology.html', r: 7, p: 'home' },
+    { id: 'pa', label: 'Paleontology', href: 'paleontology.html', r: 7, p: 'home' },
+    { id: 'cs', label: 'Computer Science', href: 'computer-science.html', r: 7, p: 'home' },
     { id: 'ph', label: 'Physics of Diving', href: 'diving-physics.html', r: 7, p: 'dv' },
     { id: 'pp', label: 'pO₂ vs depth', href: 'ppo2.html', r: 6, p: 'ph' },
     { id: 'vo', label: 'Boyle volumes', href: 'volumes.html', r: 6, p: 'ph' },
     { id: 'ox', label: 'pO₂ isopleths', href: 'oxygen-chart.html', r: 6, p: 'ph' },
-    { id: 'gc', label: 'Gas cost', href: 'gas-cost.html', r: 6.5, p: 'dv' },
-    { id: 'pf', label: 'Diver profile', href: 'diver-profile.html', r: 6.5, p: 'dv' },
-    { id: 'ms', label: 'Raup morphospace', href: 'morphospace.html', r: 7, p: 'bi' }
+    { id: 'pd', label: 'Plan a Dive', href: 'plan-a-dive.html', r: 7, p: 'dv' },
+    { id: 'gc', label: 'Gas cost', href: 'gas-cost.html', r: 6.5, p: 'pd' },
+    { id: 'pf', label: 'Diver profile', href: 'diver-profile.html', r: 6.5, p: 'pd' },
+    { id: 'ms', label: 'Raup morphospace', href: 'morphospace.html', r: 7, p: 'pa' },
+    { id: 'ch', label: 'Cheatsheets', href: 'cheatsheets.html', r: 6.5, p: 'cs' }
   ];
   var by = {}; N.forEach(function (n) { by[n.id] = n; });
   var pos = {
     home: [0, 0, 0],
-    cs: [-150, 0, 0], dv: [75, 0, 130], bi: [75, 0, -130],
-    ch: [-250, -70, 20],
-    ph: [150, 40, 250], gc: [-30, 90, 230], pf: [60, -110, 230],
-    pp: [60, 130, 340], vo: [230, 120, 360], ox: [250, -30, 330],
-    ms: [160, -60, -250]
+    mt: [175, 115, -25],
+    dv: [75, 0, 130], py: [-40, -150, -120], cm: [150, -115, -45], bi: [100, 35, -150],
+    ge: [-175, 95, 95], pa: [-80, 30, -150], cs: [-170, -20, 10],
+    ph: [150, 40, 250], pp: [60, 130, 340], vo: [230, 120, 360], ox: [250, -30, 330],
+    pd: [-20, -85, 240], gc: [-125, -125, 300], pf: [20, -195, 320],
+    ms: [-105, -45, -235],
+    ch: [-275, -40, 90]
   };
   // centre the cloud on the origin
   var c = [0, 0, 0]; N.forEach(function (n) { n.x = pos[n.id][0]; n.y = pos[n.id][1]; n.z = pos[n.id][2]; c[0] += n.x; c[1] += n.y; c[2] += n.z; });
@@ -96,6 +104,52 @@
       circ(.5 * S, -.35 * S, .1 * S, true); circ(.45 * S, .4 * S, .12 * S); circ(-.6 * S, .4 * S, .08 * S, true);
       ctx.beginPath(); ctx.ellipse(.45 * S, .05 * S, .2 * S, .08 * S, .6, 0, 6.283); ctx.stroke();
     },
+    mt: function (S, t, rgb, fog) { // unit circle: a point going round, its sine projected on the diameter
+      var a = t * 1.2, px = Math.cos(a) * S * .85, py = -Math.sin(a) * S * .85;
+      ctx.fillStyle = soft(rgb, fog, .12); circ(0, 0, S * .85, true); circ(0, 0, S * .85);
+      poly([[-S, 0], [S, 0]]); poly([[0, -S], [0, S]]);
+      poly([[0, 0], [px, py]]);
+      ctx.save(); ctx.setLineDash([2, 2]); poly([[px, py], [px, 0]]); ctx.restore();
+      ctx.fillStyle = 'rgba(' + rgb + ',' + fog + ')'; circ(px, py, .1 * S, true); circ(px, 0, .06 * S, true);
+    },
+    py: function (S, t, rgb, fog) { // pendulum
+      var a = Math.sin(t * 1.8) * .5, L = S * 1.3, bx = Math.sin(a) * L, by = -.7 * S + Math.cos(a) * L;
+      poly([[-.6 * S, -.7 * S], [.6 * S, -.7 * S]]); poly([[0, -.7 * S], [bx, by]]);
+      ctx.save(); ctx.setLineDash([2, 3]); ctx.beginPath(); ctx.arc(0, -.7 * S, L, Math.PI / 2 - .55, Math.PI / 2 + .55); ctx.stroke(); ctx.restore();
+      ctx.fillStyle = soft(rgb, fog, .2); circ(bx, by, .28 * S, true); circ(bx, by, .28 * S);
+    },
+    cm: function (S, t, rgb, fog) { // Erlenmeyer flask with rising bubbles
+      ctx.fillStyle = soft(rgb, fog, .2); ctx.beginPath();
+      ctx.moveTo(-.56 * S, .35 * S); ctx.lineTo(.56 * S, .35 * S); ctx.lineTo(.8 * S, .85 * S); ctx.lineTo(-.8 * S, .85 * S); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(-.22 * S, -S); ctx.lineTo(-.22 * S, -.35 * S); ctx.lineTo(-.8 * S, .85 * S); ctx.lineTo(.8 * S, .85 * S);
+      ctx.lineTo(.22 * S, -.35 * S); ctx.lineTo(.22 * S, -S); ctx.stroke();
+      poly([[-.34 * S, -S], [.34 * S, -S]]);
+      ctx.fillStyle = 'rgba(' + rgb + ',' + fog + ')';
+      for (var i = 0; i < 3; i++) { var u = ((t * .5 + i / 3) % 1 + 1) % 1; circ((i - 1) * .16 * S + Math.sin(t * 3 + i * 2) * .04 * S, .7 * S - u * 1.5 * S, .08 * S * (1 - u * .5), true); }
+    },
+    ge: function (S, t, rgb, fog) { // rock strata offset by a fault
+      ctx.fillStyle = soft(rgb, fog, .14); ctx.fillRect(-S, -.75 * S, 2 * S, 1.5 * S); ctx.strokeRect(-S, -.75 * S, 2 * S, 1.5 * S);
+      for (var k = 1; k < 4; k++) {
+        var y = -.75 * S + k * .375 * S, xf = (-.15 + k * .375 / 1.5 * .4) * S;
+        poly([[-S, y], [xf, y + .05 * S]]); poly([[xf, y + .2 * S], [S, y + .25 * S]]);
+      }
+      poly([[-.15 * S, -.75 * S], [.25 * S, .75 * S]]);
+    },
+    pa: function (S, t, rgb, fog) { // trilobite
+      ctx.fillStyle = soft(rgb, fog, .16); ctx.beginPath(); ctx.ellipse(0, 0, .62 * S, .95 * S, 0, 0, 6.283); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(-.58 * S, -.42 * S); ctx.quadraticCurveTo(0, -.22 * S, .58 * S, -.42 * S); ctx.stroke(); // head shield
+      poly([[-.17 * S, -.38 * S], [-.1 * S, .8 * S]]); poly([[.17 * S, -.38 * S], [.1 * S, .8 * S]]);            // axial lobe
+      for (var i = 0; i < 6; i++) { var y = -.2 * S + i * .17 * S, w = Math.sqrt(Math.max(0, 1 - Math.pow(y / (.95 * S), 2))) * .62 * S;
+        poly([[-w, y], [-.16 * S, y]]); poly([[.16 * S, y], [w, y]]); }
+      ctx.fillStyle = 'rgba(' + rgb + ',' + fog + ')'; circ(-.3 * S, -.62 * S, .07 * S, true); circ(.3 * S, -.62 * S, .07 * S, true);
+    },
+    pd: function (S, t, rgb, fog) { // dive slate with a dive profile and the diver on it
+      ctx.fillStyle = soft(rgb, fog, .14); ctx.fillRect(-S, -.75 * S, 2 * S, 1.5 * S); ctx.strokeRect(-S, -.75 * S, 2 * S, 1.5 * S);
+      var pr = [[-.8, -.5], [-.5, .45], [.05, .45], [.3, .05], [.45, .05], [.5, -.2], [.65, -.2], [.8, -.5]];
+      poly(pr.map(function (p) { return [p[0] * S, p[1] * S]; }));
+      var u = ((t * .15) % 1 + 1) % 1 * (pr.length - 1), k = Math.min(Math.floor(u), pr.length - 2), f = u - k, a = pr[k], b = pr[k + 1];
+      ctx.fillStyle = 'rgba(' + rgb + ',' + fog + ')'; circ((a[0] + (b[0] - a[0]) * f) * S, (a[1] + (b[1] - a[1]) * f) * S, .1 * S, true);
+    },
     ms: function (S) { // shell: logarithmic spiral in a coiled outline
       ctx.beginPath(); ctx.fillStyle = soft(arguments[2], arguments[3], .16);
       ctx.moveTo(-S, S * .6); ctx.quadraticCurveTo(-S * .9, -S * .9, S * .3, -S * .85); ctx.quadraticCurveTo(S * 1.05, -S * .5, S * .85, S * .35); ctx.quadraticCurveTo(S * .5, S * .8, -S, S * .6);
@@ -134,7 +188,7 @@
   }
 
   function draw(now) {
-    var C = col(), t = (now - t0) / 1000;
+    var C = col(), t = Math.max(0, (now - t0) / 1000); // the first frame's timestamp can precede t0
     ctx.clearRect(0, 0, W, H);
 
     // project nodes
