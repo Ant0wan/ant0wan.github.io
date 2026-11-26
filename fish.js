@@ -142,10 +142,14 @@
     fish = [];
     for (var i = 0; i < n; i++) {
       var p = unproject(rand(-0.05, 1.05) * W, rand(-0.05, 1.05) * H, rand(0, 1) * ZD); // fill the whole view
+      // already swimming at load, with momentum: a shared heading blended with a pull towards
+      // the school's centre, so they carry themselves together instead of starting from a standstill
+      var cx = school.x - p[0], cz = school.z - p[2], cl = Math.hypot(cx, cz) || 1;
+      var hx = Math.cos(yaw0) * 0.6 + cx / cl * 0.4, hz = Math.sin(yaw0) * 0.6 + cz / cl * 0.4;
       fish.push({
         x: p[0], y: p[1], z: p[2],
-        yaw: yaw0 + rand(-0.5, 0.5), pitch: rand(-0.1, 0.1), s: rand(0, 6), size: rand(0.85, 1.15),
-        bt: 0, gt: rand(0, 3), thrust: 0, burst: false, panic: 0, panicAge: 9, calm: 0, dead: false, respawn: 0,
+        yaw: Math.atan2(hz, hx) + rand(-0.3, 0.3), pitch: rand(-0.1, 0.1), s: rand(2, 3) * L, size: rand(0.85, 1.15),
+        bt: 0, gt: rand(0, 0.8), thrust: 0, burst: false, panic: 0, panicAge: 9, calm: 0, dead: false, respawn: 0,
         wa: rand(0, 6.3), wp: rand(0, 6.3), ph: rand(0, 6.3)
       });
     }
@@ -185,7 +189,7 @@
 
   function stepFish(dt) {
     var P = MODES[school.mode], n = fish.length;
-    var bf = Math.pow(school.boot / BOOT, 2); // 1 at load, easing gently to 0: stronger schooling urge while gathering
+    var b = school.boot / BOOT, bf = 1 - (1 - b) * (1 - b); // 1 at load, holding then easing to 0: gathering urge
     var gAli = P.ali + 1.6 * bf, gCoh = P.coh + 1.2 * bf;
     var T = school.tight, spacing = lerp(SP, 1.5 * L, T), Rs = lerp(R0, RB, T);
     var R = Math.max(5 * L, 1.8 * spacing), R2 = R * R;
@@ -301,23 +305,24 @@
       // burst-and-glide
       if (f.bt > 0) {
         if (!f.burst) f.bt -= dt;
-        if (f.bt <= 0) f.gt = f.panic > 0 ? rand(0.1, 0.3) : rand(P.glide[0], P.glide[1]) * (1 - 0.7 * bf);
+        if (f.bt <= 0) f.gt = f.panic > 0 ? rand(0.1, 0.3) : lerp(rand(P.glide[0], P.glide[1]), rand(MODES.travel.glide[0], MODES.travel.glide[1]), bf);
       } else {
         f.gt -= dt;
         if (f.gt <= 0) {
           var lag = clamp(od / Rs - 1.1, 0, 1.5); // stragglers swim harder to catch up
-          f.bt = rand(P.burst[0], P.burst[1]);
-          f.thrust = (f.panic > 0 ? MODES.travel.thrust * 2.2 : P.thrust * (1 + lag)) * rand(0.7, 1.3) * (L / 18) * f.size;
+          f.bt = lerp(rand(P.burst[0], P.burst[1]), rand(MODES.travel.burst[0], MODES.travel.burst[1]), bf); // swim like travelling while gathering
+          f.thrust = (f.panic > 0 ? MODES.travel.thrust * 2.2 : (P.thrust + (1.3 * MODES.travel.thrust - P.thrust) * bf) * (1 + lag)) * rand(0.7, 1.3) * (L / 18) * f.size;
           f.burst = true;
         }
       }
     }
     // second pass: move (bursts flagged this step have already spread to neighbours above)
+    var drag = DRAG * (1 - 0.5 * bf); // coasting further while gathering
     for (i = 0; i < n; i++) {
       f = fish[i];
       if (f.dead) continue;
       if (f.burst) { f.burst = false; f.bt -= dt; }
-      f.s += ((f.bt > 0 ? f.thrust : 0) - DRAG * f.s) * dt;
+      f.s += ((f.bt > 0 ? f.thrust : 0) - drag * f.s) * dt;
       if (f.s < 0) f.s = 0;
       var c = Math.cos(f.pitch);
       f.x += c * Math.cos(f.yaw) * f.s * dt;
