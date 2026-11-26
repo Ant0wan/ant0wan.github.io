@@ -24,7 +24,8 @@
     { id: 'gc', label: 'Gas cost', href: 'gas-cost.html', r: 6.5, p: 'pd' },
     { id: 'pf', label: 'Diver profile', href: 'diver-profile.html', r: 6.5, p: 'pd' },
     { id: 'ms', label: 'Raup morphospace', href: 'morphospace.html', r: 7, p: 'pa' },
-    { id: 'ch', label: 'Cheatsheets', href: 'cheatsheets.html', r: 6.5, p: 'cs' }
+    { id: 'ch', label: 'Cheatsheets', href: 'cheatsheets.html', r: 6.5, p: 'cs' },
+    { id: 'ab', label: 'About Me', href: 'about-me.html', r: 6.5, p: 'cs' }
   ];
   var by = {}; N.forEach(function (n) { by[n.id] = n; });
   var pos = {
@@ -35,7 +36,8 @@
     ph: [150, 40, 250], pp: [60, 130, 340], vo: [230, 120, 360], ox: [250, -30, 330],
     pd: [-20, -85, 240], gc: [-125, -125, 300], pf: [20, -195, 320],
     ms: [-105, -45, -235],
-    ch: [-275, -40, 90]
+    ch: [-275, -40, 90],
+    ab: [-235, -150, 30]
   };
   // centre the cloud on the origin
   var c = [0, 0, 0]; N.forEach(function (n) { n.x = pos[n.id][0]; n.y = pos[n.id][1]; n.z = pos[n.id][2]; c[0] += n.x; c[1] += n.y; c[2] += n.z; });
@@ -111,6 +113,12 @@
       poly([[0, 0], [px, py]]);
       ctx.save(); ctx.setLineDash([2, 2]); poly([[px, py], [px, 0]]); ctx.restore();
       ctx.fillStyle = 'rgba(' + rgb + ',' + fog + ')'; circ(px, py, .1 * S, true); circ(px, 0, .06 * S, true);
+    },
+    ab: function (S, t, rgb, fog) { // portrait: head and shoulders in a frame
+      ctx.fillStyle = soft(rgb, fog, .14); ctx.beginPath(); ctx.arc(0, 0, S, 0, 6.283); ctx.fill(); ctx.stroke();
+      ctx.save(); ctx.beginPath(); ctx.arc(0, 0, S, 0, 6.283); ctx.clip();
+      ctx.fillStyle = soft(rgb, fog, .5); circ(0, -.25 * S, .36 * S, true);
+      ctx.beginPath(); ctx.ellipse(0, .85 * S, .72 * S, .55 * S, 0, 0, 6.283); ctx.fill(); ctx.restore();
     },
     py: function (S, t, rgb, fog) { // pendulum
       var a = Math.sin(t * 1.8) * .5, L = S * 1.3, bx = Math.sin(a) * L, by = -.7 * S + Math.cos(a) * L;

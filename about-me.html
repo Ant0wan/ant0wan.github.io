@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>About Me — Antoine Barthelemy</title>
+  <meta name="description" content="Antoine Barthelemy, Platform &amp; Site Reliability Engineer: resume.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <script>(function(){var t=null,q=/[?&]theme=(dark|light)/.exec(location.search);if(q)t=q[1];try{if(!t)t=localStorage.getItem('theme')}catch(e){}if(!t){var m=/(?:^|;)theme=(dark|light)/.exec(window.name);if(m)t=m[1]}if(!t&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)t='dark';document.documentElement.setAttribute('data-theme',t||'light')})()</script>
+  <link rel="stylesheet" href="site.css">
+  <script src="site.js"></script>
+  <script src="fish.js" defer></script>
+</head>
+<body>
+<button id="theme-toggle" type="button" aria-label="Switch to dark mode"><span class="theme-icon" aria-hidden="true"></span></button>
+<main class="page narrow">
+  <h1 class="paper-title">About Me</h1>
+  <div class="byline">Antoine Barthelemy &middot; Platform &amp; Site Reliability Engineer</div>
+
+  <div class="cv-head">
+    <img class="cv-photo" src="about-me.jpg" alt="Portrait of Antoine Barthelemy" width="160" height="160">
+    <ul class="cv-contact">
+      <li>Zürich, Switzerland</li>
+      <li><a href="mailto:antoine@linux.com">antoine@linux.com</a></li>
+      <li><a href="https://antoinebarthelemy.com/">antoinebarthelemy.com</a></li>
+      <li><a href="https://github.com/Ant0wan">github.com/Ant0wan</a></li>
+      <li>English, French, Spanish</li>
+    </ul>
+  </div>
+
+  <div class="abstract"><strong>Summary</strong>
+    Platform engineer with 7+ years of experience running Kubernetes in production on AWS, GCP, Azure and bare metal.
+    I build secure, cost-efficient infrastructure as code, harden software supply chains, and write the Go, Rust and
+    Python tooling that makes platform teams faster. Holder of all five CNCF Kubernetes certifications (Kubestronaut)
+    and open-source contributor (OpenTofu, Netflix Dispatch, Mattermost).
+  </div>
+
+  <h2 class="section">Skills</h2>
+  <dl class="cv-skills">
+    <dt>Kubernetes</dt><dd>EKS, GKE, AKS, bare metal, Helm, Kustomize, ArgoCD, FluxCD, Istio</dd>
+    <dt>Infrastructure as Code</dt><dd>Terraform/OpenTofu, Terragrunt, Pulumi, Ansible</dd>
+    <dt>Cloud</dt><dd>AWS, GCP, Azure, VMware vSphere, KVM</dd>
+    <dt>Security</dt><dd>Vault, SOPS, Wiz, Trivy, Falco, distroless images, IAM</dd>
+    <dt>CI/CD &amp; Observability</dt><dd>GitHub Actions, GitLab CI, Jenkins, OpenTelemetry, Prometheus, Grafana, Datadog</dd>
+    <dt>Languages &amp; Data</dt><dd>Go, Rust, Python, C, Bash, PostgreSQL, ClickHouse</dd>
+  </dl>
+
+  <h2 class="section">Experience</h2>
+
+  <div class="cv-entry">
+    <div class="cv-when">Apr 2026 &ndash; Present</div>
+    <div class="cv-what">
+      <h3><a href="https://www.epam.com/">EPAM Systems</a></h3>
+      <div class="cv-role">Platform Engineer <span class="cv-where">&middot; Zürich, Switzerland</span></div>
+      <ul>
+        <li>Member of the ~15-engineer platform team running a bank&rsquo;s on-premise global data platform.</li>
+        <li>Contributed to the data ingestion pipeline and the components that move data through the platform.</li>
+        <li>Created and refined Kubernetes deployments for platform services.</li>
+        <li>Helped migrate workloads to the bank&rsquo;s new internal developer platform.</li>
+        <li>Worked on task scheduling and on platform security.</li>
+      </ul>
+      <div class="cv-tech">Bash, Claude, GitLab CI, Helm, Kubernetes, On-premise, Python</div>
+    </div>
+  </div>
+
+  <div class="cv-entry">
+    <div class="cv-when">Sep 2025 &ndash; Dec 2025</div>
+    <div class="cv-what">
+      <h3><a href="https://www.swan.io/">Swan</a></h3>
+      <div class="cv-role">Platform Engineer <span class="cv-where">&middot; Remote</span></div>
+      <ul>
+        <li>Rebuilt base container images with distroless techniques: all CVEs removed, size cut from ~1.5&nbsp;GB to ~200&nbsp;MB.</li>
+        <li>Reduced Kubernetes node disk usage by ~60%.</li>
+        <li>Migrated CI pipelines from GitLab CI to GitHub Actions.</li>
+        <li>Refactored critical Terraform modules (GitHub, Vault, IAM) to eliminate drift.</li>
+        <li>Built an internal CLI that automates environment setup and speeds up developer onboarding.</li>
+      </ul>
+      <div class="cv-tech">AWS, Kubernetes, Terraform, Terragrunt, GitHub Actions, Wiz</div>
+    </div>
+  </div>
+
+  <div class="cv-entry">
+    <div class="cv-when">Dec 2024 &ndash; Sep 2025</div>
+    <div class="cv-what">
+      <h3><a href="https://www.prestashop.com/">PrestaShop</a></h3>
+      <div class="cv-role">Site Reliability Engineer <span class="cv-where">&middot; Remote</span></div>
+      <ul>
+        <li>Owned the infrastructure security roadmap, from planning through execution.</li>
+        <li>Led the migration of applications to a new GCP platform, improving scalability and security while lowering cost.</li>
+        <li>Migrated Terraform to Terragrunt, modularizing the IaC codebase.</li>
+        <li>Wrote <a href="https://github.com/Ant0wan/tfau">tfau</a>, an open-source Go CLI for Terraform/Terragrunt lock and module upgrades.</li>
+        <li>Improved monitoring with OpenTelemetry and promoted secure deployment practices.</li>
+      </ul>
+      <div class="cv-tech">GCP, Go, Kubernetes, Terraform, Terragrunt, GitHub Actions, OpenTelemetry, Falco, Trivy, Wiz</div>
+    </div>
+  </div>
+
+  <div class="cv-entry">
+    <div class="cv-when">Apr 2024 &ndash; Sep 2024</div>
+    <div class="cv-what">
+      <h3><a href="https://www.hublo.com/">Hublo</a></h3>
+      <div class="cv-role">Site Reliability Engineer <span class="cv-where">&middot; Remote</span></div>
+      <ul>
+        <li>Built and scaled staging and production Kubernetes clusters on AWS with Pulumi; migrated workloads off ECS.</li>
+        <li>Hardened AWS networking (security groups, peerings, TLS), reducing cost and operational complexity.</li>
+        <li>Deployed SFTP, CRM, web and data applications with Pulumi and Helm; added CDNs for frontends.</li>
+        <li>Automated Snowflake and Metabase with Terraform and built the data team&rsquo;s Helm charts and CI/CD.</li>
+        <li>Contributed upstream to the sftpgo Helm chart.</li>
+      </ul>
+      <div class="cv-tech">AWS, ArgoCD, Datadog, GitHub Actions, Helm, Kubernetes, Pulumi, PostgreSQL</div>
+    </div>
+  </div>
+
+  <div class="cv-entry">
+    <div class="cv-when">Jul 2023 &ndash; Nov 2023</div>
+    <div class="cv-what">
+      <h3><a href="https://craftedengineers.cloud/">Freelance</a></h3>
+      <div class="cv-role">Platform Engineer <span class="cv-where">&middot; Remote</span></div>
+      <ul>
+        <li><b>6WIND</b> (router OS vendor): extended a Python/C load and functional test framework; ran 8-hour on-prem campaigns with Ansible and KVM.</li>
+        <li><b>Lengow</b> (e-commerce SaaS): co-designed a scalable AWS infrastructure, CI/CD and automated releases.</li>
+        <li>Contributed to OpenTofu: automated release workflow for <code>setup-opentofu</code> and script hardening.</li>
+      </ul>
+      <div class="cv-tech">AWS, Ansible, C, GitHub Actions, Kubernetes, KVM, OpenTofu, Python, Terraform</div>
+    </div>
+  </div>
+
+  <div class="cv-entry">
+    <div class="cv-when">Apr 2022 &ndash; Jun 2023</div>
+    <div class="cv-what">
+      <h3><a href="https://contentsquare.com/">Contentsquare</a></h3>
+      <div class="cv-role">Platform Engineer <span class="cv-where">&middot; Remote</span></div>
+      <ul>
+        <li>Member of a 20+ engineer platform team serving a 300+ person R&amp;D organization across AWS and Azure.</li>
+        <li>Led the ClickHouse Ansible refactor from Python 2.7 to 3.8 and packaged it as Ansible collections.</li>
+        <li>Migrated Jenkins pipelines to GitHub Actions and wrote a Terraform provider for Pritunl VPN.</li>
+        <li>Built proofs of concept for Spinnaker managed delivery and Netflix Dispatch as a PagerDuty replacement.</li>
+      </ul>
+      <div class="cv-tech">Ansible, AWS, Azure, Datadog, GitHub Actions, Go, Grafana, Helm, Jenkins, Kubernetes, Prometheus, Python, Terraform, Vault</div>
+    </div>
+  </div>
+
+  <div class="cv-entry">
+    <div class="cv-when">Jun 2021 &ndash; Jan 2022</div>
+    <div class="cv-what">
+      <h3><a href="https://sii-group.com/">SII</a></h3>
+      <div class="cv-role">DevOps Engineer <span class="cv-where">&middot; Rennes, France</span></div>
+      <ul>
+        <li>Sole DevOps engineer for 12 developers: ran four GKE clusters serving ~300 concurrent users (Brittany Ferries).</li>
+        <li>Led their migration to a GitOps platform with FluxCD, Config Connector, Istio, Google KMS and SOPS.</li>
+      </ul>
+      <div class="cv-tech">FluxCD, GCP, GitLab CI, Istio, Kubernetes, Kustomize, SOPS, Terraform</div>
+    </div>
+  </div>
+
+  <div class="cv-entry">
+    <div class="cv-when">Jul 2020 &ndash; May 2021</div>
+    <div class="cv-what">
+      <h3><a href="https://www.cil-lamballe.com/">CIL</a></h3>
+      <div class="cv-role">DevOps Engineer <span class="cv-where">&middot; Lamballe, France</span></div>
+      <ul>
+        <li>Deployed a bare-metal Kubernetes cluster (HAProxy, Heartbeat, MetalLB) with Ansible in an on-prem data center.</li>
+        <li>Upgraded VMware vSphere to enable Kubernetes storage via the CNS API and CSI driver.</li>
+        <li>Containerized OSRM map builds on Kubernetes; wrote Randetect, a Rust security daemon.</li>
+        <li>Contributed fixes to Mattermost&rsquo;s upgrade documentation and Rustlings.</li>
+      </ul>
+      <div class="cv-tech">Ansible, Bash, Docker, Kubernetes, Linux, Rust, VMware</div>
+    </div>
+  </div>
+
+  <div class="cv-entry">
+    <div class="cv-when">2016 &ndash; 2018</div>
+    <div class="cv-what">
+      <h3>Wavestone, Crédit Agricole CIB, BrickVest</h3>
+      <div class="cv-role">Previously: Consulting &amp; Finance <span class="cv-where">&middot; Paris, London</span></div>
+      <p class="cv-note">Before moving into engineering, I worked in consulting and finance:</p>
+      <ul>
+        <li>Financial services consultant (UAT lead for La Banque Postale&rsquo;s mobile app; IT infrastructure RFP for Vallourec).</li>
+        <li>Structured finance analyst, Oil &amp; Gas: built cash-flow models simulating Brent price volatility in Python/VBA.</li>
+      </ul>
+      <div class="cv-tech">Agile, Python, VBA</div>
+    </div>
+  </div>
+
+  <h2 class="section">Open Source</h2>
+  <ul class="cv-list">
+    <li><a href="https://github.com/Ant0wan/tfam"><b>tfam</b></a> (Rust): concurrent Terraform apply across multiple deployments.</li>
+    <li><a href="https://github.com/Ant0wan/openai-pr"><b>openai-pr</b></a> (Python): generates pull request descriptions with OpenAI.</li>
+    <li><a href="https://github.com/Ant0wan/tfau"><b>tfau</b></a> (Go) and <a href="https://github.com/Ant0wan/tfexe"><b>tfexe</b></a>: Terraform module upgrade and version management tooling.</li>
+    <li>Merged contributions to <b>OpenTofu</b>, <b>Netflix Dispatch</b>, <b>ContentSquare chproxy</b>, <b>sftpgo Helm chart</b>, <b>Mattermost</b> and <b>Rustlings</b>.</li>
+  </ul>
+
+  <h2 class="section">Certifications</h2>
+  <ul class="cert-list">
+    <li><span class="t"><a href="https://www.credly.com/badges/d28177f5-4d72-43d1-9ec9-0c6de9fd7c11">CNCF Kubestronaut</a>: CKA, CKAD, CKS, KCNA, KCSA</span><span class="cert-date">2025</span></li>
+    <li><span class="t"><a href="https://www.credly.com/badges/eb45b68c-5d2f-4f42-a4eb-477693439983/linked_in_profile">NVIDIA-Certified Associate: AI Infrastructure and Operations</a></span><span class="cert-date">2025</span></li>
+    <li><span class="t"><a href="https://www.credly.com/badges/26d7c460-0653-4e86-a2b0-1d09eda518fb/linked_in_profile">HashiCorp Certified: Terraform Associate</a></span><span class="cert-date">2023</span></li>
+    <li><span class="t">Linux Foundation: Helm (LFS244, SC104), GitOps (LFS169), Continuous Delivery (LFS261), Containers (LFS253), OWASP Top 10 (SKF100), Cybersecurity Essentials (LFC108), Serverless on Kubernetes (LFS157)</span><span class="cert-date">2022&ndash;2025</span></li>
+  </ul>
+
+  <h2 class="section">Education</h2>
+  <div class="cv-entry">
+    <div class="cv-when">2018 &ndash; 2020</div>
+    <div class="cv-what">
+      <h3><a href="https://42.fr/">42</a></h3>
+      <div class="cv-role">Architect in Digital Technologies Certificate, Advanced level 18 <span class="cv-where">&middot; Paris, France</span></div>
+    </div>
+  </div>
+  <div class="cv-entry">
+    <div class="cv-when">2014 &ndash; 2017</div>
+    <div class="cv-what">
+      <h3><a href="https://www.essec.edu">ESSEC</a></h3>
+      <div class="cv-role">Bachelor of Business Administration <span class="cv-where">&middot; Cergy, France</span></div>
+    </div>
+  </div>
+
+  <div class="pager"><a href="computer-science.html">&larr; Computer Science</a><span></span></div>
+</main>
+<footer class="site-footer">
+  <span>&copy; 2026 Antoine Barthelemy</span>
+  <span>Figures are computed in your browser &middot; nothing is sent anywhere.</span>
+</footer>
+</body>
+</html>
