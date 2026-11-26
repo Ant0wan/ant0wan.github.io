@@ -49,16 +49,16 @@
 
   function scheduleGust() {
     // after a calm, a gust; gusts come in bursts of one to a few, then another calm
-    var strong = Math.random() < 0.25;
-    gusts.push({ t0: time + (calm ? rand(3, 10) : rand(0.3, 2.5)), rise: rand(0.2, 1.5), hold: rand(0.5, 4), fall: rand(0.8, 3),
-                 peak: strong ? rand(1.1, 1.6) : rand(0.4, 1) });
+    var strong = Math.random() < 0.4;
+    gusts.push({ t0: time + (calm ? rand(2, 6) : rand(0.2, 1.5)), rise: rand(0.2, 1.5), hold: rand(0.5, 4), fall: rand(0.8, 3),
+                 peak: strong ? rand(1.2, 1.7) : rand(0.6, 1.3) });
     calm = Math.random() < 0.4; // after this gust, a quieter spell with only the breeze
     nextGust = gusts[gusts.length - 1].t0 + 0.5;
     gusts = gusts.filter(function (g) { return g.t0 + g.rise + g.hold + g.fall + 30 > time; });
   }
   // gust strength at time t (each gust: smooth rise, hold, smooth fall)
   function gustAt(t) {
-    var s = 0.36 + 0.1 * Math.sin(t * 0.13) + 0.06 * Math.sin(t * 0.41 + 1); // the breeze never stops
+    var s = 0.55 + 0.15 * Math.sin(t * 0.13) + 0.08 * Math.sin(t * 0.41 + 1); // the breeze never stops
     for (var i = 0; i < gusts.length; i++) {
       var g = gusts[i], u = t - g.t0, e = 0;
       if (u <= 0) continue;
@@ -67,7 +67,7 @@
       else if (u < g.rise + g.hold + g.fall) e = 0.5 + 0.5 * Math.cos(Math.PI * (u - g.rise - g.hold) / g.fall);
       s += g.peak * e;
     }
-    return 1.7 * Math.tanh(s / 1.7); // overlapping gusts saturate rather than add up
+    return 1.9 * Math.tanh(s / 1.9); // overlapping gusts saturate rather than add up
   }
   // the gust as felt at screen x: fronts move left to right, with turbulence on top
   function gustHere(x, y) {
@@ -80,18 +80,18 @@
     var a1 = 0.006, b1 = 0.005, a2 = 0.013, b2 = 0.011;
     var s1 = a1 * x + 0.7 * t + ph[0], c1 = b1 * y - 0.45 * t + ph[1];
     var s2 = a2 * x - 1.1 * t + ph[2], c2 = b2 * y + 0.9 * t + ph[3];
-    // psi = A1 sin(s1) cos(c1) + A2 sin(s2) sin(c2);  u = dpsi/dy, v = -dpsi/dx  (peak speeds ~230 and ~120 px/s)
-    var A1 = 230 / b1, A2 = 120 / b2;
+    // psi = A1 sin(s1) cos(c1) + A2 sin(s2) sin(c2);  u = dpsi/dy, v = -dpsi/dx  (peak speeds ~340 and ~180 px/s)
+    var A1 = 340 / b1, A2 = 180 / b2;
     var u = -A1 * b1 * Math.sin(s1) * Math.sin(c1) + A2 * b2 * Math.sin(s2) * Math.cos(c2);
     var v = -(A1 * a1 * Math.cos(s1) * Math.cos(c1) + A2 * a2 * Math.cos(s2) * Math.sin(c2));
     return [u, v];
   }
   function wind(x, y, z) {
     var k = scaleAt(z), sx = W / 2 + (x - W / 2) * k, sy = H / 2 + (y - H / 2) * k, g = gustHere(sx, sy);
-    var e = eddies(sx, sy, time), m = Math.min(2, g * 1.6);
+    var e = eddies(sx, sy, time), m = Math.min(2.2, g * 1.6);
     // the gusts carry everything right and a little up; the eddies throw the pages about
     // the general drift is always to the right: the eddies swirl it, but sideways only gently
-    var ux = 90 + 210 * g + 0.55 * e[0] * m, uy = -60 * g + e[1] * m, uz = 40 * Math.sin(x * 0.004 + y * 0.003 - time * 0.4) * m;
+    var ux = 160 + 380 * g + 0.55 * e[0] * m, uy = -90 * g + e[1] * m, uz = 40 * Math.sin(x * 0.004 + y * 0.003 - time * 0.4) * m;
     // whirlwinds: each spins the air around its core and lifts it there, a rising spiral
     for (var i = 0; i < vortices.length; i++) {
       var V = vortices[i], dx = x - V.x, dy = y - V.y, dz = (z - V.z) / (2 * V.R), r = Math.hypot(dx, dy) || 1;
@@ -109,8 +109,8 @@
     var b = book, x, y, z;
     if (atBook) { x = b.bx + rand(-1, 1.5) * b.Wp; y = b.Yb - rand(0.5, 3) * b.Wp; z = (b.z0 + b.z1) / 2 + rand(-40, 40); }
     else { var q = unproject(rand(0.05, 0.75) * W, rand(0.2, 0.95) * H, rand(0, 0.7) * ZD); x = q[0]; y = q[1]; z = q[2]; }
-    vortices.push({ x: x, y: y, z: z, R: rand(50, 160), G: (Math.random() < 0.5 ? -1 : 1) * rand(220, 450) * (0.6 + g),
-                    up: rand(100, 220) * (0.6 + g), age: 0, life: rand(4, 9) });
+    vortices.push({ x: x, y: y, z: z, R: rand(50, 170), G: (Math.random() < 0.5 ? -1 : 1) * rand(380, 620) * (0.6 + Math.min(g, 1.3)),
+                    up: rand(180, 340) * (0.6 + Math.min(g, 1.3)), age: 0, life: rand(3, 8) });
   }
 
   /* ---------------- the book ---------------- */
@@ -221,7 +221,7 @@
   function release(p) {
     // the page tears free, keeping the hinge's swing as its first motion
     var ux = p.R[0], uy = p.R[1], sw = p.dth * p.w / 2; // speed of the page's centre as it swings about the spine
-    p.vx = sw * uy + 120; p.vy = -sw * ux - 80; p.vz = rand(-15, 15);
+    p.vx = sw * uy + 220; p.vy = -sw * ux - 140; p.vz = rand(-15, 15);
     lastRelease = time;
     leafInit(p);
     p.R0 = p.R.slice(); p.ease = 0; // ease from the torn-off pose into the glide
@@ -242,7 +242,7 @@
     var sp = Math.hypot(p.vx, p.vz);
     if (sp > 15) { var hd = Math.atan2(p.vz, p.vx), d = hd - p.yaw; d = Math.atan2(Math.sin(d), Math.cos(d)); p.yaw += d * Math.min(1, dt * 0.6); }
     p.yaw += Math.sin(p.fl * 0.31 + p.ph2) * 0.25 * dt;                       // a slow wandering turn
-    var rock = (0.35 + 0.3 * Math.min(1, g)) * Math.sin(p.fl);              // side-to-side rocking
+    var rock = (0.35 + 0.5 * Math.min(1.5, g) / 1.5) * Math.sin(p.fl);              // side-to-side rocking
     var roll = p.bank + rock, pitch = 0.3 * Math.sin(p.fl * 0.5 + p.ph2) + clamp(-p.vy / 400, -0.45, 0.45);
     p.roll += (roll - p.roll) * Math.min(1, dt * 4); p.pitch += (pitch - p.pitch) * Math.min(1, dt * 3);
     // flat page (U across, V along its height, N up), rolled about the flight axis x, pitched about z, turned about y
@@ -270,20 +270,20 @@
     if (time >= nextGust) scheduleGust();
     var b = book, i, p;
     var gb = gustHere(proj(b.bx, b.Yb, b.z0)[0], H); // the wind at the book
-    if (gb > 0.25 && vortices.length < 8 && Math.random() < dt * gb * 1.2) spawnVortex(Math.random() < 0.55, gb);
+    if (gb > 0.25 && vortices.length < 10 && Math.random() < dt * gb * 1.6) spawnVortex(Math.random() < 0.55, gb);
     for (i = vortices.length - 1; i >= 0; i--) {
       var V = vortices[i], gv = gustHere(proj(V.x, V.y, V.z)[0], H);
       V.age += dt;
-      V.x += (30 + 110 * gv) * dt; V.y -= 30 * dt; // carried along with the wind, rising slowly
+      V.x += (60 + 180 * gv) * dt; V.y -= 45 * dt; // carried along with the wind, rising slowly
       if (V.age > V.life) vortices.splice(i, 1);
     }
 
     // a gust lifts pages from the right-hand side, and riffles pages over from the left to the right
     var nTear = 0, nFlip = 0;
     for (i = 0; i < lifting.length; i++) if (lifting[i].flip) nFlip++; else nTear++;
-    if (nTear < (gb > 1 ? 3 : 2) && gb > 0.25 && Math.random() < dt * gb * 1.4) startLift(false);
+    if (nTear < (gb > 1 ? 4 : 2) && gb > 0.25 && Math.random() < dt * gb * 2) startLift(false);
     // never long without a page leaving: if a while has passed, the next lifting page is carried off
-    var overdue = time - lastRelease > 1.5 || loose.length < 2;
+    var overdue = time - lastRelease > 1 || loose.length < 3;
     if (overdue && nTear === 0) startLift(false);
     if (nFlip < Math.round(2 + gb * 4) && gb > 0.25 && Math.random() < dt * gb * 4) startLift(true);
     for (i = lifting.length - 1; i >= 0; i--) {
@@ -314,7 +314,7 @@
       p = loose[i];
       p.age += dt;
       var u = wind(p.x, p.y, p.z), g = u[3];
-      var follow = Math.min(1, dt * 2.5);
+      var follow = Math.min(1, dt * 3.5);
       p.vx += (u[0] - p.vx) * follow;
       p.vy += (u[1] + 22 - p.vy) * follow + Math.sin(p.fl) * 25 * dt;
       p.vz += (u[2] - p.vz) * follow;
