@@ -60,7 +60,9 @@
 <script>
 (function () {
   const canvas = document.getElementById('shell');
-  const ctx = canvas.getContext('2d');
+  // the shell is drawn with WebGL (depth buffer, no sorting, smooth shading); plain 2D canvas if WebGL is missing
+  const gl = canvas.getContext('webgl', { antialias: true, preserveDrawingBuffer: true }) || canvas.getContext('experimental-webgl', { antialias: true, preserveDrawingBuffer: true });   // kept for printing and screenshots
+  const ctx = gl ? null : canvas.getContext('2d');
   const TAU = Math.PI * 2;
   let C = themeColors(), W = 0, H = 0;
 
@@ -119,10 +121,89 @@
       for (let c = 0; c < 3; c++) col[q * 3 + c] = A[c] + (B[c] - A[c]) * f;
     }
     mesh.col = col;
+    if (gl) upload(turns);
   }
 
-    function draw() {
+  // ---------- WebGL ----------
+  let prog = null, buf = null, nIdx = 0;
+  function initGL() {
+    const sh = (type, src) => { const o = gl.createShader(type); gl.shaderSource(o, src); gl.compileShader(o); return o; };
+    prog = gl.createProgram();
+    gl.attachShader(prog, sh(gl.VERTEX_SHADER, `
+      attribute vec3 aPos; attribute vec3 aNor; attribute vec3 aCol;
+      uniform vec4 uRot;   // cos yaw, sin yaw, cos pitch, sin pitch
+      uniform vec3 uScale; // x and y scale to clip space, depth scale
+      varying vec3 vCol; varying vec3 vNor;
+      vec3 rot(vec3 p) {   // same view as before: x right, y depth (away from the viewer), z up
+        float x1 = p.x * uRot.x - p.y * uRot.y, y1 = p.x * uRot.y + p.y * uRot.x;
+        return vec3(x1, y1 * uRot.z - p.z * uRot.w, y1 * uRot.w + p.z * uRot.z);
+      }
+      void main() {
+        vec3 w = rot(aPos);
+        gl_Position = vec4(w.x * uScale.x, w.z * uScale.y, w.y * uScale.z, 1.0);
+        vNor = rot(aNor); vCol = aCol;
+      }`));
+    gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, `
+      precision mediump float;
+      varying vec3 vCol; varying vec3 vNor;
+      uniform float uDark;
+      void main() {
+        float d = abs(dot(normalize(vNor), normalize(vec3(-0.4, -0.77, 0.5))));   // light from upper left, in front
+        float t = 0.18 + 0.82 * min(1.0, d);
+        float f = uDark > 0.5 ? 0.15 + 0.85 * t : 0.5 + 0.5 * t;
+        gl_FragColor = vec4(vCol * f / 255.0, 1.0);
+      }`));
+    gl.linkProgram(prog);
+    buf = { pos: gl.createBuffer(), nor: gl.createBuffer(), col: gl.createBuffer(), idx: gl.createBuffer() };
+    gl.enable(gl.DEPTH_TEST);
+  }
+  function upload(turns) {
+    if (!prog) initGL();
+    const { v, nT, nP, ctr } = mesh, nV = (nT + 1) * nP;
+    const pos = new Float32Array(nV * 3), nor = new Float32Array(nV * 3), col = new Float32Array(nV * 3);
+    const A = hexToRgb(s.c1), B = hexToRgb(s.c2);
+    const at = (i, j, a) => v[((Math.max(0, Math.min(nT, i))) * nP + ((j + nP) % nP)) * 3 + a];
+    for (let i = 0; i <= nT; i++) for (let j = 0; j < nP; j++) {
+      const k = (i * nP + j) * 3;
+      for (let a = 0; a < 3; a++) pos[k + a] = v[k + a] - ctr[a];
+      const tx = at(i + 1, j, 0) - at(i - 1, j, 0), ty = at(i + 1, j, 1) - at(i - 1, j, 1), tz = at(i + 1, j, 2) - at(i - 1, j, 2);
+      const ux = at(i, j + 1, 0) - at(i, j - 1, 0), uy = at(i, j + 1, 1) - at(i, j - 1, 1), uz = at(i, j + 1, 2) - at(i, j - 1, 2);
+      nor[k] = ty * uz - tz * uy; nor[k + 1] = tz * ux - tx * uz; nor[k + 2] = tx * uy - ty * ux;
+      const stripe = s.sp ? Math.pow(0.5 + 0.5 * Math.cos(i / nT * turns * TAU * s.sp + j / nP * TAU), 3) : 0;
+      const fc = Math.min(1, 0.6 * stripe + 0.35 * (0.5 + 0.5 * Math.sin(j / nP * TAU)) + 0.25 * (1 - i / nT));
+      for (let c = 0; c < 3; c++) col[k + c] = A[c] + (B[c] - A[c]) * fc;
+    }
+    const idx = new Uint16Array(nT * nP * 6); let m = 0;
+    for (let i = 0; i < nT; i++) for (let j = 0; j < nP; j++) {
+      const a = i * nP + j, b = i * nP + (j + 1) % nP, c = (i + 1) * nP + (j + 1) % nP, d = (i + 1) * nP + j;
+      idx[m++] = a; idx[m++] = b; idx[m++] = c; idx[m++] = a; idx[m++] = c; idx[m++] = d;
+    }
+    nIdx = m;
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf.pos); gl.bufferData(gl.ARRAY_BUFFER, pos, gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf.nor); gl.bufferData(gl.ARRAY_BUFFER, nor, gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf.col); gl.bufferData(gl.ARRAY_BUFFER, col, gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buf.idx); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, idx, gl.STATIC_DRAW);
+  }
+  function drawGL() {
+    C = themeColors();
+    const bg = hexToRgb(C.bg);
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.clearColor(bg[0] / 255, bg[1] / 255, bg[2] / 255, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.useProgram(prog);
+    const sc = Math.min(W, H) * 0.46 / mesh.rad * view.zoom;
+    gl.uniform4f(gl.getUniformLocation(prog, 'uRot'), Math.cos(view.yaw), Math.sin(view.yaw), Math.cos(view.pitch), Math.sin(view.pitch));
+    gl.uniform3f(gl.getUniformLocation(prog, 'uScale'), sc * 2 / W, sc * 2 / H, 1 / (mesh.rad * 1.05));
+    gl.uniform1f(gl.getUniformLocation(prog, 'uDark'), C.dark ? 1 : 0);
+    [['aPos', buf.pos], ['aNor', buf.nor], ['aCol', buf.col]].forEach(([n, b]) => {
+      const loc = gl.getAttribLocation(prog, n); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 3, gl.FLOAT, false, 0, 0);
+    });
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buf.idx);
+    gl.drawElements(gl.TRIANGLES, nIdx, gl.UNSIGNED_SHORT, 0);
+  }
+
+  function draw() {
     if (!mesh || W <= 0) return;
+    if (gl) return drawGL();
     C = themeColors();
     ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
     const { v, w, nT, nP, ctr, rad, depth, order } = mesh;
@@ -164,6 +245,7 @@
   }
   let raf = 0;
   const redraw = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => { draw(); drawCube(); }); };
+  const redrawShell = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(draw); };   // turning or zooming the shell leaves the cube as it is
 
   // ---------- morphospace cube ----------
   const cc = el('cube'), cx2 = cc.getContext('2d');
@@ -306,18 +388,18 @@
     if (!drag) return;
     view.yaw += (e.clientX - drag.x) * 0.01;
     view.pitch = Math.max(0, Math.min(Math.PI, view.pitch - (e.clientY - drag.y) * 0.01));
-    drag = { x: e.clientX, y: e.clientY }; redraw();
+    drag = { x: e.clientX, y: e.clientY }; redrawShell();
   });
   const end = () => { drag = null; canvas.style.cursor = 'grab'; };
   canvas.addEventListener('pointerup', end); canvas.addEventListener('pointercancel', end);
-  canvas.addEventListener('wheel', e => { e.preventDefault(); view.zoom = Math.max(0.3, Math.min(5, view.zoom * Math.exp(-e.deltaY * 0.001))); redraw(); }, { passive: false });
-  canvas.addEventListener('dblclick', () => { view.yaw = -0.6; view.pitch = 1.05; view.zoom = 1; redraw(); });
+  canvas.addEventListener('wheel', e => { e.preventDefault(); view.zoom = Math.max(0.3, Math.min(5, view.zoom * Math.exp(-e.deltaY * 0.001))); redrawShell(); }, { passive: false });
+  canvas.addEventListener('dblclick', () => { view.yaw = -0.6; view.pitch = 1.05; view.zoom = 1; redrawShell(); });
 
   function resize() {
     const r = canvas.getBoundingClientRect(); W = r.width; H = r.height;
     if (W <= 0 || H <= 0) return;
     const dpr = window.devicePixelRatio || 1;
-    canvas.width = W * dpr; canvas.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    canvas.width = W * dpr; canvas.height = H * dpr; if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     draw();
     const r2 = cc.getBoundingClientRect(); CW = r2.width; CH = r2.height;
     if (CW > 0) { cc.width = CW * dpr; cc.height = CH * dpr; cx2.setTransform(dpr, 0, 0, dpr, 0, 0); drawCube(); }
