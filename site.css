@@ -68,7 +68,7 @@ a { color: var(--link); text-underline-offset: 2px; }
 a:hover { text-decoration-thickness: 2px; }
 
 /* ---------- background fish (fish.js) ---------- */
-#fish-bg, #pages-bg, #math-bg, #alps-bg, #section-bg { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+#fish-bg, #pages-bg, #math-bg, #alps-bg, #section-bg, #orbitals-bg { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
 
 /* ---------- header / nav ---------- */
 #theme-toggle {
@@ -199,7 +199,7 @@ figcaption b { font-weight: bold; font-variant-numeric: lining-nums; }
 @media print {
   a { color: inherit; text-decoration: none; }
   :root, :root[data-theme="dark"] { --bg: #fff; --ink: #000; --muted: #333; --rule: #000; }
-  #theme-toggle, .site-nav, .controls, #fish-bg, #pages-bg, #math-bg, #alps-bg, #section-bg { display: none; }
+  #theme-toggle, .site-nav, .controls, #fish-bg, #pages-bg, #math-bg, #alps-bg, #section-bg, #orbitals-bg { display: none; }
   body { font-size: 11pt; }
 }
 
