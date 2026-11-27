@@ -20,7 +20,7 @@
     { id: 'pp', label: 'pO₂ vs depth', href: 'ppo2.html', r: 6, p: 'ph' },
     { id: 'vo', label: 'Boyle volumes', href: 'volumes.html', r: 6, p: 'ph' },
     { id: 'ox', label: 'pO₂ isopleths', href: 'oxygen-chart.html', r: 6, p: 'ph' },
-    { id: 'pd', label: 'Plan a Dive', href: 'plan-a-dive.html', r: 7, p: 'dv' },
+    { id: 'pd', label: 'GUE', href: 'plan-a-dive.html', r: 7, p: 'dv' },
     { id: 'gc', label: 'Gas cost', href: 'gas-cost.html', r: 6.5, p: 'pd' },
     { id: 'ms', label: 'Raup morphospace', href: 'morphospace.html', r: 7, p: 'pa' },
     { id: 'ch', label: 'Cheatsheets', href: 'cheatsheets.html', r: 6.5, p: 'cs' },
