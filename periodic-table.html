@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Periodic Table — Antoine Barthelemy</title>
+  <meta name="description" content="The periodic table of the 118 elements in full: atomic weight, electron configuration, electronegativity, ionisation energy, oxidation states, melting and boiling points, density, and who discovered each element.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <script>(function(){var t=null,q=/[?&]theme=(dark|light)/.exec(location.search);if(q)t=q[1];try{if(!t)t=localStorage.getItem('theme')}catch(e){}if(!t){var m=/(?:^|;)theme=(dark|light)/.exec(window.name);if(m)t=m[1]}if(!t&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)t='dark';document.documentElement.setAttribute('data-theme',t||'light')})()</script>
+  <link rel="stylesheet" href="site.css">
+  <link rel="stylesheet" href="periodic.css">
+  <script src="site.js"></script>
+  <script src="elements.js" defer></script>
+  <script src="periodic-table.js" defer></script>
+  <style>
+    :root {
+      --k-alkali: #c0563b; --k-alkaline: #c98a2e; --k-transition: #8a7a5a; --k-post: #5f8a74; --k-metalloid: #3f8f8f;
+      --k-nonmetal: #3a6fa8; --k-halogen: #6a5aa8; --k-noble: #9a4f8f; --k-lanthanide: #a86f4f; --k-actinide: #a8504f;
+      --b-s: #c0563b; --b-p: #3a6fa8; --b-d: #8a7a5a; --b-f: #5f8a74;
+      --st-solid: #8a7a5a; --st-liquid: #3a6fa8; --st-gas: #c98a2e; --st-unknown: transparent;
+    }
+    :root[data-theme="dark"] {
+      --k-alkali: #ff8a6b; --k-alkaline: #f0b45a; --k-transition: #c9b58a; --k-post: #8fc9a8; --k-metalloid: #6cc9c9;
+      --k-nonmetal: #7aaef0; --k-halogen: #a99af0; --k-noble: #e08ad0; --k-lanthanide: #e0a580; --k-actinide: #f08a88;
+      --b-s: #ff8a6b; --b-p: #7aaef0; --b-d: #c9b58a; --b-f: #8fc9a8;
+      --st-solid: #c9b58a; --st-liquid: #7aaef0; --st-gas: #f0b45a;
+    }
+    figure.fig.pt-fig { width: min(1440px, calc(100vw - 2rem)); margin: 1.5rem 0 1rem calc(50% - min(720px, 50vw - 1rem)); }
+    .pt-scroll { overflow-x: auto; padding-bottom: .4rem; }
+    .pt { display: grid; grid-template-columns: 1.4rem repeat(18, minmax(0, 1fr)); grid-template-rows: 1.3rem repeat(7, auto) .9rem auto auto;
+          gap: 3px; min-width: 1080px; font-family: var(--font); color: var(--ink); }
+    .pt .gh, .pt .ph { color: var(--muted); font-size: .72rem; display: flex; align-items: flex-end; justify-content: center; font-variant-numeric: lining-nums; }
+    .pt .ph { align-items: center; }
+    .pt .fl { grid-column: 1 / 4; display: flex; align-items: center; justify-content: flex-end; padding-right: .5rem; font-style: italic; color: var(--muted); font-size: .8rem; }
+
+    .el { display: block; text-decoration: none; position: relative; aspect-ratio: 1 / 1.14; border: 1px solid var(--ink); background: var(--fill, transparent);
+          font: inherit; color: inherit; padding: 0; cursor: pointer; text-align: center; overflow: hidden;
+          transition: opacity .25s, background-color .25s, outline-color .15s; outline: 1.5px solid transparent; outline-offset: 1px; }
+    .el:hover, .el:focus-visible, .el.on { outline-color: var(--ink); z-index: 1; }
+    .el.pin { outline-width: 2.5px; }
+    .el.future { opacity: .14; }
+    .el.dim { opacity: .3; }
+    .el .z  { position: absolute; left: 7%; top: 4%; font-size: clamp(.5rem, .72vw, .72rem); font-variant-numeric: lining-nums; }
+    .el .en { position: absolute; right: 7%; top: 4%; font-size: clamp(.44rem, .6vw, .62rem); color: var(--muted); font-variant-numeric: lining-nums; }
+    .el .sym { position: absolute; left: 0; right: 0; top: 19%; font-size: clamp(.95rem, 1.75vw, 1.75rem); line-height: 1; }
+    .el .nm  { position: absolute; left: 1px; right: 1px; top: 52%; font-size: clamp(.42rem, .62vw, .66rem); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .el .ms  { position: absolute; left: 0; right: 0; top: 65%; font-size: clamp(.42rem, .58vw, .62rem); font-variant-numeric: lining-nums; }
+    .el .cf  { position: absolute; left: 1px; right: 1px; bottom: 4%; font-size: clamp(.38rem, .5vw, .54rem); color: var(--muted); white-space: nowrap; font-variant-numeric: lining-nums; }
+    .el sup, .pt-panel sup { font-size: .7em; line-height: 0; }
+    .ref { border: 1px dashed var(--grid-strong); display: flex; align-items: center; justify-content: center; font-size: .68rem; color: var(--muted); font-variant-numeric: lining-nums; }
+
+    .pt-panel { grid-column: 4 / 14; grid-row: 2 / 5; display: flex; gap: 1.4rem; align-items: flex-start; padding: .2rem .6rem 0; min-height: 0; }
+    .key .cell .sym { color: var(--ink); }
+    .key-notes { flex: 1; font-size: .8rem; color: var(--muted); line-height: 1.5; }
+    .key-notes b { color: var(--ink); font-weight: normal; font-style: italic; }
+
+    .pt-legend { display: flex; flex-wrap: wrap; gap: .35rem 1.2rem; justify-content: center; font-size: .85rem; color: var(--muted); margin: .9rem 0 .3rem; min-height: 1.4rem; align-items: center; }
+    .pt-legend .sw { display: inline-block; width: .9rem; height: .9rem; border: 1px solid var(--ink); vertical-align: -.12rem; margin-right: .35rem; }
+    .pt-legend .sw-cat { cursor: pointer; }
+    .pt-legend .ramp { display: inline-block; width: 14rem; height: .8rem; border: 1px solid var(--ink); vertical-align: -.1rem; margin: 0 .5rem;
+                       background: linear-gradient(to right, color-mix(in srgb, var(--ink) 3%, transparent), color-mix(in srgb, var(--ink) 48%, transparent)); }
+    .pt-legend button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+    .pt-legend button.off { opacity: .4; }
+    .controls .field select { width: auto; }
+    .controls .field input[type=range] { width: 16rem; }
+    #year-out { color: var(--ink); }
+  </style>
+</head>
+<body>
+<button id="theme-toggle" type="button" aria-label="Switch to dark mode"><span class="theme-icon" aria-hidden="true"></span></button>
+<main class="page">
+  <h1 class="paper-title">The Periodic Table</h1>
+  <div class="byline">The 118 elements, their properties and their discoverers</div>
+  <div class="abstract"><strong>Abstract</strong>
+    The elements arranged by atomic number <i>Z</i>, in eighteen groups and seven periods, with the lanthanides and actinides set below. Each cell gives the atomic number, the Pauling electronegativity, the symbol, the name, the standard atomic weight (or, in brackets, the mass number of the longest-lived isotope) and the outer electron configuration. Hover an element for everything else: its category, block, full configuration, first ionisation energy, oxidation states, melting and boiling points, density, state at 25&nbsp;°C, and who discovered it, and when; click it to open its own page, where its occupied orbitals can be turned and explored. The table can be shaded by any of these properties, and rolled back in time to show only the elements known in a given year.
+  </div>
+
+  <div class="controls">
+    <label class="field"><span>Shade by</span>
+      <select id="shade">
+        <option value="none">Nothing</option>
+        <option value="cat">Category</option>
+        <option value="block">Block</option>
+        <option value="state">State at 25 °C</option>
+        <option value="en">Electronegativity</option>
+        <option value="ie">First ionisation energy</option>
+        <option value="mp">Melting point</option>
+        <option value="bp">Boiling point</option>
+        <option value="rho">Density</option>
+        <option value="year">Year of discovery</option>
+      </select></label>
+    <label class="field"><span>Known in &nbsp;<b id="year-out"></b></span>
+      <input id="year" type="range" min="1200" max="2026" step="1" value="2026"></label>
+  </div>
+
+  <figure class="fig pt-fig">
+    <div class="pt-scroll"><div class="pt" id="pt" role="grid" aria-label="Periodic table of the elements"></div></div>
+    <div class="pt-legend" id="legend"></div>
+    <figcaption><b>Figure 4.1.</b> The periodic table in its eighteen-column form (IUPAC). Rows are periods: a new one begins each time an electron shell starts to fill. Columns are groups: elements in a group share the arrangement of their outer electrons, and so much of their chemistry. Blocks s, p, d and f are named after the subshell being filled. Atomic weights are IUPAC standard values, abridged; for elements with no stable isotope, the mass number of the longest-lived one is given in brackets. Electron configurations from <i>Z</i> = 109 onward, and all properties of the heaviest elements, are predictions; a blank means the value is not known. Temperatures are in kelvin; densities are in g/cm³, or in g/L at 0&nbsp;°C for gases.</figcaption>
+  </figure>
+  <div class="tips"><span><code>hover</code> an element for its details</span><span><code>click</code> to open its page and its orbitals</span><span><code>click</code> a category in the legend to isolate it</span></div>
+
+  <h2 class="section">References</h2>
+  <p style="font-size:.95rem">IUPAC Commission on Isotopic Abundances and Atomic Weights. (2021). Standard atomic weights of the elements 2021. <i>Pure and Applied Chemistry</i>, 94(5), 573&ndash;600.<br>
+  Haynes, W. M. (Ed.). (2016). <i>CRC Handbook of Chemistry and Physics</i> (97th ed.). CRC Press.<br>
+  Commissions romandes de mathématique, de physique et de chimie. (2025). <i>Formulaires et tables : Mathématiques, physique, chimie</i>. Éditions G d’Encre.</p>
+  <div class="pager"><a href="chemistry.html">&larr; Chemistry</a><span></span></div>
+</main>
+<footer class="site-footer">
+  <span>&copy; 2026 Antoine Barthelemy</span>
+  <span>Figures are computed in your browser &middot; nothing is sent anywhere.</span>
+</footer>
+</body>
+</html>

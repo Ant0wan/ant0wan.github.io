@@ -40,68 +40,14 @@
     baseAlpha = debug ? 1 : dark ? 0.2 : 0.22;
   }
 
-  /* ---------------- hydrogen orbitals (atomic units, unnormalised) ---------------- */
+  /* ---------------- hydrogen orbitals, from hydrogen.js ---------------- */
 
-  // every hydrogen orbital up to n = 5 (55 of them), real forms: ψ = R(n, l) · Y(l, m)
-  function laguerre(k, al, x) { // generalised Laguerre polynomial L_k^al(x)
-    if (k === 0) return 1;
-    var a = 1, b = 1 + al - x;
-    for (var j = 1; j < k; j++) { var c = ((2 * j + 1 + al - x) * b - (j + al) * a) / (j + 1); a = b; b = c; }
-    return b;
-  }
-  function legendre(l, m, x) { // associated Legendre P_l^m(x), m >= 0
-    var pmm = 1, sx = Math.sqrt(Math.max(0, 1 - x * x));
-    for (var i = 1; i <= m; i++) pmm *= (2 * i - 1) * sx;
-    if (l === m) return pmm;
-    var p1 = x * (2 * m + 1) * pmm;
-    if (l === m + 1) return p1;
-    for (var ll = m + 2; ll <= l; ll++) { var p2 = ((2 * ll - 1) * x * p1 - (ll + m - 1) * pmm) / (ll - m); pmm = p1; p1 = p2; }
-    return p1;
-  }
-  var NAMES = {
-    0: { 0: '' },
-    1: { 0: 'z', 1: 'x', '-1': 'y' },
-    2: { 0: 'z²', 1: 'xz', '-1': 'yz', 2: 'x²−y²', '-2': 'xy' },
-    3: { 0: 'z³', 1: 'xz²', '-1': 'yz²', 2: 'z(x²−y²)', '-2': 'xyz', 3: 'x(x²−3y²)', '-3': 'y(3x²−y²)' }
-  };
-  var ORBITALS = [];
-  for (var n = 1; n <= 5; n++) for (var l = 0; l < n; l++) for (var m = -l; m <= l; m++) (function (n, l, m) {
-    var sub = NAMES[l] ? NAMES[l][m] : 'm=' + (m > 0 ? '+' : m < 0 ? '−' : '') + Math.abs(m);
-    ORBITALS.push({ n: n, l: l, m: m, label: n + 'spdfg'[l], sub: sub, L: n * (2.2 * n + 2.5),
-      f: function (x, y, z, r) {
-        var rho = 2 * r / n, R = Math.pow(rho, l) * Math.exp(-rho / 2) * laguerre(n - l - 1, 2 * l + 1, rho);
-        var ct = r > 0 ? z / r : 1, ph = Math.atan2(y, x), am = Math.abs(m);
-        var Y = legendre(l, am, ct) * (m > 0 ? Math.cos(am * ph) : m < 0 ? Math.sin(am * ph) : 1);
-        return R * Y;
-      } });
-  })(n, l, m);
+  // every hydrogen orbital up to n = 5 (55 of them), real forms
+  var HY = window.Hydrogen, ORBITALS = [];
+  for (var n = 1; n <= 5; n++) for (var l = 0; l < n; l++) for (var m = -l; m <= l; m++) ORBITALS.push(HY.orbital(n, l, m));
   var N_POINTS = 4200, SHARP = 1.6;   // density raised to a power: the lobes stand out more clearly
-  // rejection sampling of |ψ|² in a cube of half-side L, done a little at each frame so that a new
-  // cloud condenses point by point and no frame is held up, even for the sparse n = 5 orbitals
-  function sampler(o) {
-    var L = o.L, max = 0, rw = [], i, x, y, z, r, v, d;
-    for (i = 0; i < 12000; i++) {
-      x = rnd(-L, L); y = rnd(-L, L); z = rnd(-L, L); r = Math.hypot(x, y, z); v = o.f(x, y, z, r);
-      d = Math.pow(v * v, o.l ? SHARP : 1); max = Math.max(max, d); rw.push([r, d]);
-    }
-    // scale on the dense part of the cloud: the radius holding 90 % of the (weighted) density
-    rw.sort(function (a, b) { return a[0] - b[0]; });
-    var tot = rw.reduce(function (s, q) { return s + q[1]; }, 0), acc = 0, scale = L;
-    for (i = 0; i < rw.length; i++) { acc += rw[i][1]; if (acc >= tot * .9) { scale = rw[i][0]; break; } }
-    return { o: o, max: max * 1.15, pts: [], scale: scale || L, tries: 0 };
-  }
-  // rejection sampling, a little at each frame: a new cloud condenses point by point, and no frame is
-  // held up, even for the sparse n = 5 orbitals
-  function grow(S, ms) {
-    var o = S.o, L = o.L, t0 = performance.now(), x, y, z, r, v;
-    while (S.pts.length < N_POINTS && S.tries < 4e6 && performance.now() - t0 < ms) {
-      for (var k = 0; k < 400; k++) {
-        S.tries++;
-        x = rnd(-L, L); y = rnd(-L, L); z = rnd(-L, L); r = Math.hypot(x, y, z); v = o.f(x, y, z, r);
-        if (Math.random() * S.max < Math.pow(v * v, o.l ? SHARP : 1)) S.pts.push([x / S.scale, y / S.scale, z / S.scale, v >= 0 ? 1 : 0]);
-      }
-    }
-  }
+  function sampler(o) { return HY.sampler(o, SHARP); }
+  function grow(S, ms) { HY.grow(S, ms, N_POINTS); }
 
   /* ---------------- one orbital and one formula, each with its own life ---------------- */
 
@@ -158,125 +104,8 @@
 
   /* ---------------- the elements of the periodic table ---------------- */
 
-  // Z | symbol | name | standard atomic weight, or [mass number of the longest-lived isotope] | discovered by (year)
-  var ELEMENTS = `1|H|Hydrogen|1.008|Henry Cavendish (1766)
-2|He|Helium|4.0026|Pierre Janssen, Norman Lockyer (1868)
-3|Li|Lithium|6.94|Johan August Arfwedson (1817)
-4|Be|Beryllium|9.0122|Louis-Nicolas Vauquelin (1798)
-5|B|Boron|10.81|Joseph Louis Gay-Lussac, Louis Jacques Thénard, Humphry Davy (1808)
-6|C|Carbon|12.011|known since antiquity
-7|N|Nitrogen|14.007|Daniel Rutherford (1772)
-8|O|Oxygen|15.999|Carl Wilhelm Scheele, Joseph Priestley (1771–1774)
-9|F|Fluorine|18.998|Henri Moissan (1886)
-10|Ne|Neon|20.180|William Ramsay, Morris Travers (1898)
-11|Na|Sodium|22.990|Humphry Davy (1807)
-12|Mg|Magnesium|24.305|Joseph Black (1755)
-13|Al|Aluminium|26.982|Hans Christian Ørsted (1825)
-14|Si|Silicon|28.085|Jöns Jacob Berzelius (1824)
-15|P|Phosphorus|30.974|Hennig Brand (1669)
-16|S|Sulfur|32.06|known since antiquity
-17|Cl|Chlorine|35.45|Carl Wilhelm Scheele (1774)
-18|Ar|Argon|39.95|Lord Rayleigh, William Ramsay (1894)
-19|K|Potassium|39.098|Humphry Davy (1807)
-20|Ca|Calcium|40.078|Humphry Davy (1808)
-21|Sc|Scandium|44.956|Lars Fredrik Nilson (1879)
-22|Ti|Titanium|47.867|William Gregor (1791)
-23|V|Vanadium|50.942|Andrés Manuel del Río (1801)
-24|Cr|Chromium|51.996|Louis-Nicolas Vauquelin (1797)
-25|Mn|Manganese|54.938|Johan Gottlieb Gahn (1774)
-26|Fe|Iron|55.845|known since antiquity
-27|Co|Cobalt|58.933|Georg Brandt (1735)
-28|Ni|Nickel|58.693|Axel Fredrik Cronstedt (1751)
-29|Cu|Copper|63.546|known since antiquity
-30|Zn|Zinc|65.38|Andreas Sigismund Marggraf (1746)
-31|Ga|Gallium|69.723|Paul-Émile Lecoq de Boisbaudran (1875)
-32|Ge|Germanium|72.630|Clemens Winkler (1886)
-33|As|Arsenic|74.922|Albertus Magnus (c. 1250)
-34|Se|Selenium|78.971|Jöns Jacob Berzelius (1817)
-35|Br|Bromine|79.904|Carl Löwig, Antoine Jérôme Balard (1825–1826)
-36|Kr|Krypton|83.798|William Ramsay, Morris Travers (1898)
-37|Rb|Rubidium|85.468|Robert Bunsen, Gustav Kirchhoff (1861)
-38|Sr|Strontium|87.62|Adair Crawford (1790)
-39|Y|Yttrium|88.906|Johan Gadolin (1794)
-40|Zr|Zirconium|91.224|Martin Heinrich Klaproth (1789)
-41|Nb|Niobium|92.906|Charles Hatchett (1801)
-42|Mo|Molybdenum|95.95|Carl Wilhelm Scheele (1778)
-43|Tc|Technetium|[98]|Carlo Perrier, Emilio Segrè (1937)
-44|Ru|Ruthenium|101.07|Karl Ernst Claus (1844)
-45|Rh|Rhodium|102.91|William Hyde Wollaston (1804)
-46|Pd|Palladium|106.42|William Hyde Wollaston (1802)
-47|Ag|Silver|107.87|known since antiquity
-48|Cd|Cadmium|112.41|Friedrich Stromeyer (1817)
-49|In|Indium|114.82|Ferdinand Reich, Hieronymus Theodor Richter (1863)
-50|Sn|Tin|118.71|known since antiquity
-51|Sb|Antimony|121.76|known since antiquity
-52|Te|Tellurium|127.60|Franz-Joseph Müller von Reichenstein (1782)
-53|I|Iodine|126.90|Bernard Courtois (1811)
-54|Xe|Xenon|131.29|William Ramsay, Morris Travers (1898)
-55|Cs|Caesium|132.91|Robert Bunsen, Gustav Kirchhoff (1860)
-56|Ba|Barium|137.33|Carl Wilhelm Scheele (1772)
-57|La|Lanthanum|138.91|Carl Gustaf Mosander (1839)
-58|Ce|Cerium|140.12|Jöns Jacob Berzelius, Wilhelm Hisinger, Martin Heinrich Klaproth (1803)
-59|Pr|Praseodymium|140.91|Carl Auer von Welsbach (1885)
-60|Nd|Neodymium|144.24|Carl Auer von Welsbach (1885)
-61|Pm|Promethium|[145]|Jacob Marinsky, Lawrence Glendenin, Charles Coryell (1945)
-62|Sm|Samarium|150.36|Paul-Émile Lecoq de Boisbaudran (1879)
-63|Eu|Europium|151.96|Eugène-Anatole Demarçay (1901)
-64|Gd|Gadolinium|157.25|Jean Charles Galissard de Marignac (1880)
-65|Tb|Terbium|158.93|Carl Gustaf Mosander (1843)
-66|Dy|Dysprosium|162.50|Paul-Émile Lecoq de Boisbaudran (1886)
-67|Ho|Holmium|164.93|Marc Delafontaine, Jacques-Louis Soret, Per Teodor Cleve (1878)
-68|Er|Erbium|167.26|Carl Gustaf Mosander (1843)
-69|Tm|Thulium|168.93|Per Teodor Cleve (1879)
-70|Yb|Ytterbium|173.05|Jean Charles Galissard de Marignac (1878)
-71|Lu|Lutetium|174.97|Georges Urbain, Carl Auer von Welsbach, Charles James (1907)
-72|Hf|Hafnium|178.49|Dirk Coster, George de Hevesy (1923)
-73|Ta|Tantalum|180.95|Anders Gustaf Ekeberg (1802)
-74|W|Tungsten|183.84|Juan José Elhuyar, Fausto Elhuyar (1783)
-75|Re|Rhenium|186.21|Walter Noddack, Ida Tacke, Otto Berg (1925)
-76|Os|Osmium|190.23|Smithson Tennant (1803)
-77|Ir|Iridium|192.22|Smithson Tennant (1803)
-78|Pt|Platinum|195.08|Antonio de Ulloa (1748)
-79|Au|Gold|196.97|known since antiquity
-80|Hg|Mercury|200.59|known since antiquity
-81|Tl|Thallium|204.38|William Crookes (1861)
-82|Pb|Lead|207.2|known since antiquity
-83|Bi|Bismuth|208.98|Claude François Geoffroy (1753)
-84|Po|Polonium|[209]|Marie Curie, Pierre Curie (1898)
-85|At|Astatine|[210]|Dale Corson, Kenneth MacKenzie, Emilio Segrè (1940)
-86|Rn|Radon|[222]|Friedrich Ernst Dorn (1900)
-87|Fr|Francium|[223]|Marguerite Perey (1939)
-88|Ra|Radium|[226]|Marie Curie, Pierre Curie (1898)
-89|Ac|Actinium|[227]|André-Louis Debierne (1899)
-90|Th|Thorium|232.04|Jöns Jacob Berzelius (1829)
-91|Pa|Protactinium|231.04|Kasimir Fajans, Oswald Göhring (1913)
-92|U|Uranium|238.03|Martin Heinrich Klaproth (1789)
-93|Np|Neptunium|[237]|Edwin McMillan, Philip Abelson (1940)
-94|Pu|Plutonium|[244]|Glenn T. Seaborg, Edwin McMillan, Joseph Kennedy, Arthur Wahl (1940)
-95|Am|Americium|[243]|Glenn T. Seaborg, Ralph James, Leon Morgan, Albert Ghiorso (1944)
-96|Cm|Curium|[247]|Glenn T. Seaborg, Ralph James, Albert Ghiorso (1944)
-97|Bk|Berkelium|[247]|Stanley Thompson, Albert Ghiorso, Glenn T. Seaborg (1949)
-98|Cf|Californium|[251]|Stanley Thompson, Kenneth Street, Albert Ghiorso, Glenn T. Seaborg (1950)
-99|Es|Einsteinium|[252]|Albert Ghiorso and colleagues, Berkeley (1952)
-100|Fm|Fermium|[257]|Albert Ghiorso and colleagues, Berkeley (1952)
-101|Md|Mendelevium|[258]|Albert Ghiorso, Bernard Harvey, Gregory Choppin, Stanley Thompson, Glenn T. Seaborg (1955)
-102|No|Nobelium|[259]|Joint Institute for Nuclear Research, Dubna (1966)
-103|Lr|Lawrencium|[266]|Berkeley and Dubna laboratories (1961–1971)
-104|Rf|Rutherfordium|[267]|Dubna and Berkeley laboratories (1964–1969)
-105|Db|Dubnium|[268]|Dubna and Berkeley laboratories (1968–1970)
-106|Sg|Seaborgium|[269]|Albert Ghiorso and colleagues, Berkeley (1974)
-107|Bh|Bohrium|[270]|Peter Armbruster, Gottfried Münzenberg, GSI Darmstadt (1981)
-108|Hs|Hassium|[269]|Peter Armbruster, Gottfried Münzenberg, GSI Darmstadt (1984)
-109|Mt|Meitnerium|[278]|Peter Armbruster, Gottfried Münzenberg, GSI Darmstadt (1982)
-110|Ds|Darmstadtium|[281]|Sigurd Hofmann and colleagues, GSI Darmstadt (1994)
-111|Rg|Roentgenium|[282]|Sigurd Hofmann and colleagues, GSI Darmstadt (1994)
-112|Cn|Copernicium|[285]|Sigurd Hofmann and colleagues, GSI Darmstadt (1996)
-113|Nh|Nihonium|[286]|Kosuke Morita and colleagues, RIKEN (2004)
-114|Fl|Flerovium|[289]|Yuri Oganessian and colleagues, Dubna (1999)
-115|Mc|Moscovium|[290]|Dubna and Livermore laboratories (2003)
-116|Lv|Livermorium|[293]|Dubna and Livermore laboratories (2000)
-117|Ts|Tennessine|[294]|Dubna, Oak Ridge, Vanderbilt and Livermore (2010)
-118|Og|Oganesson|[294]|Yuri Oganessian and colleagues, Dubna and Livermore (2002)`.split('\n').map(function (l) { var f = l.split('|'); return { z: +f[0], sym: f[1], name: f[2], mass: f[3], by: f[4] }; });
+  // the 118 elements (Z, symbol, name, atomic weight, discoverer…), from elements.js
+  var ELEMENTS = window.PERIODIC_ELEMENTS || [];
   function wrap(text, maxW) { // lines no wider than maxW at the current font
     var words = text.split(' '), lines = [], line = '';
     words.forEach(function (w) { var t = line ? line + ' ' + w : w; if (line && ctx.measureText(t).width > maxW) { lines.push(line); line = w; } else line = t; });

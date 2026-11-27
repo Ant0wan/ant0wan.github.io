@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Element — Antoine Barthelemy</title>
+  <meta name="description" content="An element of the periodic table: its properties, its discoverer, its electron configuration and its occupied orbitals in 3D.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <script>(function(){var t=null,q=/[?&]theme=(dark|light)/.exec(location.search);if(q)t=q[1];try{if(!t)t=localStorage.getItem('theme')}catch(e){}if(!t){var m=/(?:^|;)theme=(dark|light)/.exec(window.name);if(m)t=m[1]}if(!t&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)t='dark';document.documentElement.setAttribute('data-theme',t||'light')})()</script>
+  <link rel="stylesheet" href="site.css">
+  <link rel="stylesheet" href="periodic.css">
+  <script src="site.js"></script>
+  <script src="elements.js" defer></script>
+  <script src="hydrogen.js" defer></script>
+  <script src="element.js" defer></script>
+  <style>
+    .el-head { display: flex; gap: 2rem; align-items: flex-start; margin: .5rem 0 1rem; }
+    .el-head .big { width: 10rem; }
+    .el-head .big .cell { width: 10rem; height: 10rem; }
+    .el-head .big .cell .z { font-size: 1.1rem; }
+    .el-head .big .cell .sym { top: 1.8rem; font-size: 3.9rem; }
+    .el-head .big .cell .nm { top: 6.2rem; font-size: 1.05rem; }
+    .el-head .big .cell .ms { top: 7.75rem; font-size: .95rem; }
+    .el-head .big .by { font-size: .9rem; }
+    .el-head .props { font-size: .95rem; gap: .25rem 1rem; }
+    @media (max-width: 640px) { .el-head { flex-direction: column; align-items: center; } }
+
+    .conf-line { text-align: center; font-size: 1.15rem; margin: .6rem 0 .2rem; font-variant-numeric: lining-nums; }
+    .conf-line sup { font-size: .7em; }
+    .boxes { display: flex; flex-wrap: wrap; gap: .9rem 1.6rem; justify-content: center; margin: 1rem 0 .4rem; }
+    .sub { display: flex; flex-direction: column; align-items: center; gap: .25rem; }
+    .sub .lab { font: inherit; background: none; border: 0; color: var(--ink); cursor: pointer; padding: 0 .3rem; font-size: 1rem; border-bottom: 1px solid transparent; }
+    .sub .lab:hover, .sub .lab.sel { border-bottom-color: var(--ink); }
+    .sub .row { display: flex; }
+    .box { width: 1.9rem; height: 1.9rem; border: 1px solid var(--ink); margin-left: -1px; background: none; color: var(--ink); font: inherit; font-size: 1rem;
+           cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; letter-spacing: -.12em; }
+    .box:first-child { margin-left: 0; }
+    .box:hover { background: var(--grid); }
+    .box.sel { background: color-mix(in srgb, var(--ink) 16%, transparent); }
+    .box.empty { color: var(--faint); }
+    .sub .names { display: flex; }
+    .sub .names span { width: 1.9rem; margin-left: -1px; text-align: center; font-size: .58rem; font-style: italic; color: var(--muted); white-space: nowrap; overflow: visible; }
+    .sub .names span:first-child { margin-left: 0; }
+    .sub .zeff { font-size: .7rem; color: var(--muted); font-style: italic; }
+
+    .viewer { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 1rem; align-items: stretch; }
+    @media (max-width: 760px) { .viewer { grid-template-columns: 1fr; } }
+    #cloud { display: block; width: 100%; height: clamp(380px, 64vh, 620px); cursor: grab; touch-action: none;
+             border-top: 1px solid var(--grid-strong); border-bottom: 1px solid var(--grid-strong); }
+    #cloud:active { cursor: grabbing; }
+    .side { display: flex; flex-direction: column; gap: .8rem; }
+    #radial { display: block; width: 100%; height: 260px; border-top: 1px solid var(--grid-strong); border-bottom: 1px solid var(--grid-strong); }
+    .readout { font-size: .92rem; line-height: 1.55; }
+    .readout .nm { font-size: 1.5rem; }
+    .readout .nm sub { font-style: italic; font-size: .62em; }
+    .readout dl { display: grid; grid-template-columns: auto 1fr; gap: .05rem .8rem; margin: .4rem 0 0; }
+    .readout dt { color: var(--muted); font-style: italic; }
+    .readout dd { margin: 0; font-variant-numeric: lining-nums; }
+    .seg { display: inline-flex; border: 1px solid var(--grid-strong); }
+    .seg button { font: inherit; font-size: .95rem; background: none; border: 0; color: var(--ink); padding: .25rem .7rem; cursor: pointer; }
+    .seg button + button { border-left: 1px solid var(--grid-strong); }
+    .seg button.on { background: color-mix(in srgb, var(--ink) 14%, transparent); }
+    .checks { display: flex; flex-wrap: wrap; gap: .3rem 1.2rem; font-size: .9rem; }
+    .checks label { display: inline-flex; gap: .35rem; align-items: center; cursor: pointer; text-transform: none; letter-spacing: 0; font-size: .95rem; color: var(--ink); }
+    .field .checks input[type=checkbox] { width: auto; padding: 0; margin: 0; accent-color: var(--ink); }
+    .controls .field input[type=range] { width: 11rem; }
+    .el-nav { display: flex; justify-content: space-between; gap: 1rem; }
+    .el-nav a { text-decoration: none; }
+    .el-nav a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+<button id="theme-toggle" type="button" aria-label="Switch to dark mode"><span class="theme-icon" aria-hidden="true"></span></button>
+<main class="page">
+  <h1 class="paper-title" id="title">Element</h1>
+  <div class="byline" id="byline"></div>
+
+  <div class="el-head" id="head"></div>
+
+  <h2 class="section">Electron configuration</h2>
+  <div class="conf-line" id="conf"></div>
+  <div class="boxes" id="boxes"></div>
+  <p style="text-align:center;font-size:.9rem;color:var(--muted);margin:.2rem 0 0">Click an orbital box to show that orbital, or the name of a subshell to show all its orbitals together. Under each subshell, its effective nuclear charge <i>Z</i><sub>eff</sub> (Slater’s rules).</p>
+
+  <h2 class="section">Orbitals</h2>
+  <div class="controls">
+    <div class="field"><span>Show</span>
+      <div class="seg" id="mode"><button type="button" data-m="orb">Orbital</button><button type="button" data-m="sub">Subshell</button><button type="button" data-m="atom">Whole atom</button></div></div>
+    <label class="field"><span>Points &nbsp;<b id="vN"></b></span><input id="sN" type="range" min="2000" max="30000" step="1000" value="10000"></label>
+    <label class="field"><span>Contrast &nbsp;<b id="vK"></b></span><input id="sK" type="range" min="1" max="2.5" step="0.1" value="1.6"></label>
+    <div class="field"><span>Display</span>
+      <div class="checks">
+        <label><input type="checkbox" id="cPhase"> colour the phases</label>
+        <label><input type="checkbox" id="cAxes" checked> axes</label>
+        <label><input type="checkbox" id="cScale"> to scale</label>
+        <label><input type="checkbox" id="cSpin" checked> turn</label>
+      </div></div>
+  </div>
+  <figure class="fig viewer">
+    <canvas id="cloud" role="img" aria-label="Electron cloud of the selected orbital, as sampled points"></canvas>
+    <div class="side">
+      <div class="readout" id="readout"></div>
+      <canvas id="radial" role="img" aria-label="Radial probability distribution"></canvas>
+    </div>
+  </figure>
+  <div class="tips"><span><code>drag</code> rotate</span><span><code>scroll</code> zoom (far in, for the inner shells of the whole atom)</span><span><code>double-click</code> reset view</span><span><code>←</code> <code>→</code> previous, next orbital</span></div>
+  <figcaption style="margin-top:.9rem"><b>Figure 1.</b> <span id="cap"></span> Each point is a position of the electron drawn at random from the probability density |ψ|², raised to the power shown as <i>contrast</i> (1 gives the true density; higher values make the lobes stand out, as in the background of the Chemistry pages). Where ψ &gt; 0 the points are darker (or red), where ψ &lt; 0 lighter (or blue): the two phases of the wavefunction, separated by its nodes. The shapes are those of the hydrogen atom, the standard approximation for any atom; in an atom with several electrons each orbital is drawn in towards the nucleus by its effective nuclear charge <i>Z</i><sub>eff</sub>, estimated here with Slater’s rules (with his effective principal quantum number <i>n</i>* from <i>n</i> = 4: orbitals scale as <i>n</i>*²/<i>Z</i><sub>eff</sub>), which sets the sizes shown <i>to scale</i> and the radial distributions on the right. Distances are in Bohr radii, <i>a</i><sub>0</sub> = 52.9 pm.</figcaption>
+
+  <h2 class="section">Elsewhere in the table</h2>
+  <div class="el-nav" id="nav"></div>
+  <div class="pager"><a href="periodic-table.html">&larr; The Periodic Table</a><span></span></div>
+</main>
+<footer class="site-footer">
+  <span>&copy; 2026 Antoine Barthelemy</span>
+  <span>Figures are computed in your browser &middot; nothing is sent anywhere.</span>
+</footer>
+</body>
+</html>
