@@ -1,4 +1,4 @@
-/* Faint background for the Books page: an open book lies at the bottom left,
+/* Faint background for the Literature pages, in the manner of a shadow theatre (ombres chinoises): an open book lies at the bottom left,
    and an irregular wind blows its pages off, one by one, away to the right.
    - The book is drawn in 3D through the same kind of perspective camera as the
      fish background: page blocks arching up from the gutter, the stacked page
@@ -207,7 +207,7 @@
     var p = sheet();
     if (flip) { p.flip = true; p.th = Math.PI - 0.02; p.dth = -rand(0.5, 1.5); } // lying on the left, about to turn over
     else { p.th = 0.02; p.dth = rand(0.3, 1); }
-    p.release = rand(1.1, 2); p.held = 0;
+    p.release = rand(.8, 1.25); p.held = 0;
     lifting.push(p);
   }
   function hingePose(p) {
@@ -299,10 +299,11 @@
         if (p.th <= 0.01) lifting.splice(i, 1); // landed on the right-hand side
         continue;
       }
-      var target = (overdue ? Math.max(gb * 2.3, 2.7) : gb * 2.3) + 0.25 * Math.sin(p.fl);
+      // a right-hand page only lifts and flutters, never past the upright: the book's pages turn from left to right only
+      var target = Math.min(1.35, (overdue ? Math.max(gb * 1.4, 1.3) : gb * 1.3) + 0.15 * Math.sin(p.fl));
       p.dth += (7 * (target - p.th) - 2.2 * p.dth) * dt;
       p.th += p.dth * dt;
-      if (p.th > 2.9) { p.th = 2.9; p.dth = 0; }
+      if (p.th > 1.4) { p.th = 1.4; p.dth = Math.min(0, p.dth); }
       p.curl = clamp(0.15 + gb * 0.45 + 0.12 * Math.sin(p.fl * 1.7), 0, 0.8) * (p.th > 0.3 ? 1 : p.th / 0.3);
       hingePose(p);
       if (p.th > p.release) p.held += dt;
@@ -362,7 +363,17 @@
     }
   }
 
+  // shadow theatre: the scene is drawn as one flat silhouette off-screen (every shape fully opaque,
+  // so the details inside merge), then laid on the page softly blurred and faint, like a shadow on a screen
+  var shadowCv = null, shadowCtx = null;
   function draw() {
+    var screen = ctx;
+    if (!shadowCv) {
+      shadowCv = document.createElement('canvas'); shadowCtx = shadowCv.getContext('2d');
+      Object.defineProperty(shadowCtx, 'globalAlpha', { get: function () { return 1; }, set: function () {} });
+    }
+    if (shadowCv.width !== cv.width || shadowCv.height !== cv.height) { shadowCv.width = cv.width; shadowCv.height = cv.height; }
+    ctx = shadowCtx;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, cv.width, cv.height);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -374,6 +385,13 @@
     drawBook(Math.min(1, baseAlpha * 1.2));
     for (i = 0; i < lifting.length; i++) drawSheet(lifting[i]);
     for (i = 0; i < loose.length; i++) if (loose[i].z <= bz) drawSheet(loose[i]);
+    ctx = screen;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    ctx.globalAlpha = Math.min(1, baseAlpha * 1.1);
+    if ('filter' in ctx) ctx.filter = 'blur(' + (1.2 * dpr).toFixed(1) + 'px)';
+    ctx.drawImage(shadowCv, 0, 0);
+    if ('filter' in ctx) ctx.filter = 'none';
     ctx.globalAlpha = 1;
   }
 
@@ -412,6 +430,7 @@
     readColor();
     resize();
     firstGust();
+    var skip = /[?&]pages-t=(\d+)/.exec(location.search); if (skip) for (var k = 0; k < +skip[1] * 30; k++) step(1 / 30);   // test: start n seconds in
     window.addEventListener('resize', function () { resize(); if (reduce) draw(); });
     window.addEventListener('themechange', function () { readColor(); if (reduce) draw(); });
     document.addEventListener('visibilitychange', function () { last = 0; });
