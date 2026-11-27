@@ -46,6 +46,14 @@
   var c = [0, 0, 0]; N.forEach(function (n) { n.x = pos[n.id][0]; n.y = pos[n.id][1]; n.z = pos[n.id][2]; c[0] += n.x; c[1] += n.y; c[2] += n.z; });
   N.forEach(function (n) { n.x -= c[0] / N.length; n.y -= c[1] / N.length; n.z -= c[2] / N.length; });
   var edges = N.filter(function (n) { return n.p; }).map(function (n) { return [by[n.p], n]; });
+  // branches for the running light: the path from Home to a page with no sub-pages
+  var leaves = N.filter(function (n) { return !N.some(function (m) { return m.p === n.id; }); });
+  function branch() {
+    var n = leaves[Math.floor(Math.random() * leaves.length)], path = [n];
+    while (n.p) { n = by[n.p]; path.unshift(n); }
+    return path;
+  }
+  var lights = [], nextLight = .6, LIGHT_SPEED = 1.1, LIGHT_LEN = .55; // edges per second, streak length in edges
 
   // ---- icons (drawn centred on 0,0, half-size S) -----------------------
   function soft(rgb, fog, a) { return 'rgba(' + rgb + ',' + a * fog + ')'; }
@@ -265,17 +273,37 @@
     // project nodes
     N.forEach(function (n) { n.q = project(n.x, n.y, n.z); });
 
-    // edges with travelling pulses
-    edges.forEach(function (e, i) {
+    // edges
+    edges.forEach(function (e) {
       var a = e[0].q, b = e[1].q, hot = hover && (hover === e[0] || hover === e[1]);
       var fog = Math.max(.25, Math.min(1, 1 - (a.z + b.z) / 2 / 900));
       ctx.strokeStyle = 'rgba(' + (hot ? C.hot : C.line) + ',' + (hot ? .95 : .55 * fog) + ')';
       ctx.lineWidth = hot ? 2 : 1.2;
       ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-      var u = ((t * .35 + i * .21) % 1);
-      ctx.fillStyle = 'rgba(' + (hot ? C.hot : C.node) + ',' + .9 * fog + ')';
-      ctx.beginPath(); ctx.arc(a.x + (b.x - a.x) * u, a.y + (b.y - a.y) * u, 1.8, 0, 6.283); ctx.fill();
     });
+
+    // light running from Home out along one branch to its tip
+    if (!reduce && !lights.length && t >= nextLight) { // one light at a time, a short pause after it reaches the tip
+      var path = branch(); lights.push({ path: path, t0: t }); nextLight = t + (path.length - 1 + LIGHT_LEN) / LIGHT_SPEED + .4 + Math.random() * .8;
+    }
+    lights = lights.filter(function (L) { return (t - L.t0) * LIGHT_SPEED < L.path.length - 1 + LIGHT_LEN; });
+    ctx.save(); ctx.lineCap = 'round';
+    lights.forEach(function (L) {
+      var head = (t - L.t0) * LIGHT_SPEED, tail = head - LIGHT_LEN;
+      for (var k = 0; k < L.path.length - 1; k++) {
+        var s0 = Math.max(tail, k), s1 = Math.min(head, k + 1);
+        if (s1 <= s0) continue;
+        var a = L.path[k].q, b = L.path[k + 1].q;
+        var p0 = [a.x + (b.x - a.x) * (s0 - k), a.y + (b.y - a.y) * (s0 - k)], p1 = [a.x + (b.x - a.x) * (s1 - k), a.y + (b.y - a.y) * (s1 - k)];
+        var fog = Math.max(.3, Math.min(1, 1 - (a.z + b.z) / 2 / 900));
+        var g = ctx.createLinearGradient(p0[0], p0[1], p1[0], p1[1]);   // dim at the tail, bright at the head
+        g.addColorStop(0, 'rgba(' + C.line + ',' + (.45 * fog * (s0 - tail) / LIGHT_LEN) + ')');
+        g.addColorStop(1, 'rgba(' + C.line + ',' + (.45 * fog * (s1 - tail) / LIGHT_LEN) + ')');
+        ctx.strokeStyle = g; ctx.lineWidth = 1.8;
+        ctx.beginPath(); ctx.moveTo(p0[0], p0[1]); ctx.lineTo(p1[0], p1[1]); ctx.stroke();
+      }
+    });
+    ctx.restore();
 
     // nodes, far to near
     var order = N.slice().sort(function (p, q) { return q.q.z - p.q.z; });
