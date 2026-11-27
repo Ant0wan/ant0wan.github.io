@@ -25,6 +25,8 @@
     { id: 'gc', label: 'Gas cost', href: 'gas-cost.html', r: 6.5, p: 'pd' },
     { id: 'cc', label: 'Course cost', href: 'course-cost.html', r: 6.5, p: 'pd' },
     { id: 'pt', label: 'Periodic table', href: 'periodic-table.html', r: 7, p: 'cm' },
+    { id: 'cp', label: 'Ions & molecules', href: 'compounds.html', r: 7, p: 'cm' },
+    { id: 'mn', label: 'Minerals', href: 'minerals.html', r: 7, p: 'ge' },
     { id: 'ms', label: 'Raup morphospace', href: 'morphospace.html', r: 7, p: 'pa' },
     { id: 'ch', label: 'Cheatsheets', href: 'cheatsheets.html', r: 6.5, p: 'cs' },
     { id: 'lt', label: 'Literature', href: 'literature.html', r: 7, p: 'home' },
@@ -39,7 +41,9 @@
     ph: [150, 40, 250], pp: [60, 130, 340], vo: [230, 120, 360], ox: [250, -30, 330],
     pd: [-20, -85, 240], gc: [-125, -125, 300], cc: [-95, -15, 345], sg: [60, -150, 300], pf: [20, -195, 320],
     pt: [235, -175, -175],
+    cp: [110, -230, -110],
     ms: [-105, -45, -235],
+    mn: [-270, 160, 175],
     ch: [-275, -40, 90],
     ab: [-235, -150, 30],
     lt: [215, -185, 40], bk: [285, -225, 20]

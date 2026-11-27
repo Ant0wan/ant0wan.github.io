@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ions, Molecules and Salts — Antoine Barthelemy</title>
+  <meta name="description" content="Commonly known chemical species: cations, anions, molecules, organic molecules, acids, bases, oxides and salts, with formula, molar mass, composition and what they are known for.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <script>(function(){var t=null,q=/[?&]theme=(dark|light)/.exec(location.search);if(q)t=q[1];try{if(!t)t=localStorage.getItem('theme')}catch(e){}if(!t){var m=/(?:^|;)theme=(dark|light)/.exec(window.name);if(m)t=m[1]}if(!t&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)t='dark';document.documentElement.setAttribute('data-theme',t||'light')})()</script>
+  <link rel="stylesheet" href="site.css">
+  <script src="site.js"></script>
+  <script src="elements.js" defer></script>
+  <script src="hydrogen.js" defer></script>
+  <script src="compounds.js" defer></script>
+  <script src="orbitals.js" defer></script>
+  <style>
+    .cp-search { display: flex; justify-content: center; align-items: baseline; gap: 1rem; margin: 1.2rem 0 .4rem; }
+    .cp-search input { font: inherit; font-size: 1rem; color: var(--ink); background: var(--bg); border: 1px solid var(--grid-strong); padding: .35rem .6rem; width: min(26rem, 100%); }
+    .cp-search input:focus { outline: 2px solid var(--link); outline-offset: -1px; }
+    .cp-search .n { color: var(--muted); font-size: .9rem; font-style: italic; }
+    .cp-intro { font-size: .95rem; text-align: justify; hyphens: auto; -webkit-hyphens: auto; margin: .3rem 0 .9rem; }
+    .cp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(12.5rem, 1fr)); gap: .6rem; }
+    .cp { border: 1px solid var(--grid-strong); padding: .7rem .6rem .6rem; text-align: center; display: flex; flex-direction: column; gap: .18rem; }
+    .cp .k { font-size: .6rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+    .cp .f { font-size: 1.55rem; line-height: 1.25; font-variant-numeric: lining-nums; margin: .1rem 0; }
+    .cp .f sub, .cp .f sup { font-size: .62em; line-height: 0; }
+    .cp .nm { font-style: italic; font-size: .98rem; }
+    .cp .m { font-size: .8rem; font-variant-numeric: lining-nums; }
+    .cp .fig { font-size: .8rem; font-variant-numeric: lining-nums; }
+    .cp .note { font-size: .78rem; color: var(--muted); line-height: 1.35; margin-top: .15rem; }
+    .cp .comp { font-size: .7rem; color: var(--muted); margin-top: auto; padding-top: .35rem; font-variant-numeric: lining-nums; }
+    .cp .comp a { color: inherit; text-decoration: none; border-bottom: 1px dotted var(--grid-strong); }
+    .cp .comp a:hover { color: var(--ink); border-bottom-color: var(--ink); }
+    .cp[hidden] { display: none; }
+    #toc { columns: 3 13rem; column-gap: 2rem; }
+    #toc li { break-inside: avoid; }
+    .cp-empty { text-align: center; color: var(--muted); font-style: italic; margin: 2rem 0; }
+    h2.section .no { color: var(--muted); margin-right: .6rem; font-variant-numeric: lining-nums; }
+  </style>
+</head>
+<body>
+<button id="theme-toggle" type="button" aria-label="Switch to dark mode"><span class="theme-icon" aria-hidden="true"></span></button>
+<main class="page">
+  <h1 class="paper-title">Ions, Molecules and Salts</h1>
+  <div class="byline">The chemical species everyone meets, kind by kind</div>
+  <div class="abstract"><strong>Abstract</strong>
+    The commonly known species of chemistry, from the proton to chlorophyll: cations and anions, inorganic and organic molecules, acids and bases with their p<i>K</i><sub>a</sub> or p<i>K</i><sub>b</sub>, oxides with their acid or basic character, and salts with their solubility in water. Each is shown as in a reference table: its kind, its formula, its name and its molar mass, computed from the standard atomic weights, with its composition by mass and what it is known for. Every element in a composition opens the element’s page.
+  </div>
+
+  <h2 class="section">Contents</h2>
+  <ul class="toc" id="toc"></ul>
+
+  <div class="cp-search"><input id="q" type="search" placeholder="Search a name, a formula or a use…" aria-label="Search the species"><span class="n" id="count"></span></div>
+  <div id="sections"></div>
+  <p class="cp-empty" id="empty" hidden>Nothing matches.</p>
+
+  <h2 class="section">Notes</h2>
+  <p style="font-size:.95rem">Molar masses are computed from the IUPAC standard atomic weights, abridged, and are given in g·mol⁻¹; for an ion the mass of the electrons gained or lost is neglected. p<i>K</i><sub>a</sub> and p<i>K</i><sub>b</sub> are for water at 25&nbsp;°C, one value per proton for polyprotic acids; the p<i>K</i><sub>a</sub> of strong acids are estimates, since they dissociate completely in water. Solubilities are for water at room temperature: <i>insoluble</i> means less than about 0.1&nbsp;g per 100&nbsp;mL. Minerals, the crystalline compounds of nature, have their own page in Geology: <a href="minerals.html">Minerals and their crystals</a>.</p>
+  <div class="pager"><a href="chemistry.html">&larr; Chemistry</a><span></span></div>
+</main>
+<footer class="site-footer">
+  <span>&copy; 2026 Antoine Barthelemy</span>
+  <span>Figures are computed in your browser &middot; nothing is sent anywhere.</span>
+</footer>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var CP = window.Compounds, E = window.PERIODIC_ELEMENTS;
+  if (!CP || !E) return;
+  var Z = {}; E.forEach(function (e) { Z[e.sym] = e.z; });
+  var SECTIONS = [
+    ['cation', 'Cations', 'Positive ions: an atom or a group of atoms that has lost one or more electrons. Metals give monatomic cations; ammonium and hydronium are the common polyatomic ones; in a complex ion, molecules (ligands) are bound around a metal ion.'],
+    ['anion', 'Anions', 'Negative ions: an atom or a group of atoms that has gained one or more electrons. Nonmetals give monatomic anions; most polyatomic anions are oxoanions, a central atom bound to oxygens, whose names end in <i>-ate</i> or, with one oxygen less, <i>-ite</i>.'],
+    ['molecule', 'Molecules', 'Neutral groups of atoms held together by covalent bonds, outside organic chemistry: the elements that exist as molecules, and simple molecular compounds of the nonmetals.'],
+    ['organic', 'Organic Molecules', 'The compounds of carbon, bound to hydrogen and to oxygen, nitrogen, sulfur, phosphorus or the halogens: fuels and solvents, sugars and amino acids, drugs and the molecules of life.'],
+    ['acid', 'Acids', 'Proton donors (Brønsted). The acid constant <i>K</i><sub>a</sub> measures how far an acid gives its proton to water, and p<i>K</i><sub>a</sub> = −log <i>K</i><sub>a</sub>: the lower it is, the stronger the acid. A strong acid gives up its proton completely; a polyprotic acid has one p<i>K</i><sub>a</sub> per proton.'],
+    ['base', 'Bases', 'Proton acceptors. The hydroxides of the alkali and alkaline-earth metals are strong bases, fully dissociated; ammonia and the amines are weak, with p<i>K</i><sub>b</sub> = 14 − p<i>K</i><sub>a</sub> of their conjugate acid; amphoteric hydroxides dissolve in acids and in bases alike.'],
+    ['oxide', 'Oxides', 'Compounds of an element with oxygen. The oxides of nonmetals are acidic (with water they give acids), those of metals basic, those of the elements in between amphoteric; a few, such as CO, NO and N<sub>2</sub>O, are neutral.'],
+    ['salt', 'Salts', 'Ionic compounds of a cation and an anion, as formed when an acid neutralises a base, with their solubility in water. Hydrates hold water molecules in their crystal, written after a middle dot.']
+  ];
+  var toc = document.getElementById('toc'), host = document.getElementById('sections');
+  function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+  function fig(c) {
+    var t = esc(c.fig).replace(/pK([ab])/g, 'p<i>K</i><sub>$1</sub>');
+    if (c.cat === 'oxide') return '';   // its character is already in its kind
+    if (c.cat === 'base' && /^(strong|weak|amphoteric)/.test(c.fig)) return t.replace(/^(strong|weak|amphoteric)( · )?/, '');
+    if (c.cat === 'acid') return t.replace(/^strong · /, '');
+    return t;
+  }
+  function composition(c) {
+    var n = CP.count(c.f), m = CP.molarMass(c.f), syms = Object.keys(n);
+    if (syms.length < 2 || !m) return '';
+    return syms.map(function (s) {
+      var p = 100 * n[s] * CP.MASS[s] / m;
+      return '<a href="element.html?z=' + Z[s] + '">' + s + '</a> ' + (p < 1 ? p.toFixed(2) : p.toFixed(1)) + ' %';
+    }).join(' · ');
+  }
+  function card(c) {
+    var m = CP.molarMass(c.f), f = fig(c);
+    var d = document.createElement('div'); d.className = 'cp';
+    d.innerHTML = '<span class="k">' + esc(c.kind) + '</span><span class="f">' + CP.html(c.f) + '</span><span class="nm">' + esc(c.name) + '</span>' +
+      '<span class="m"><i>M</i> = ' + m.toFixed(m < 10 ? 3 : 2) + ' g·mol<sup>−1</sup></span>' + (f ? '<span class="fig">' + f + '</span>' : '') +
+      (c.note ? '<span class="note">' + esc(c.note) + '</span>' : '') + '<span class="comp">' + composition(c) + '</span>';
+    d.dataset.q = (c.f.replace(/[\^\[\]]/g, '') + ' ' + c.name + ' ' + c.note + ' ' + c.kind + ' ' + c.fig).toLowerCase();
+    return d;
+  }
+  var blocks = SECTIONS.map(function (s, i) {
+    var items = CP.list.filter(function (c) { return c.cat === s[0]; }), no = '4.2.' + (i + 1);
+    toc.insertAdjacentHTML('beforeend', '<li><span class="num">' + no + '</span><span><a href="#' + s[0] + '">' + s[1] + '</a><span class="desc">' + items.length + ' species</span></span></li>');
+    var sec = document.createElement('section'); sec.id = s[0];
+    sec.innerHTML = '<h2 class="section"><span class="no">' + no + '</span>' + s[1] + '</h2><p class="cp-intro">' + s[2] + '</p>';
+    var grid = document.createElement('div'); grid.className = 'cp-grid';
+    items.forEach(function (c) { grid.appendChild(card(c)); });
+    sec.appendChild(grid); host.appendChild(sec);
+    return sec;
+  });
+  var q = document.getElementById('q'), count = document.getElementById('count'), empty = document.getElementById('empty');
+  function filter() {
+    var t = q.value.trim().toLowerCase(), shown = 0;
+    blocks.forEach(function (sec) {
+      var n = 0;
+      [].forEach.call(sec.querySelectorAll('.cp'), function (d) { var ok = !t || d.dataset.q.indexOf(t) >= 0; d.hidden = !ok; if (ok) n++; });
+      sec.hidden = !n; shown += n;
+    });
+    count.textContent = shown + ' of ' + CP.list.length + ' species';
+    empty.hidden = shown > 0;
+  }
+  q.addEventListener('input', filter);
+  filter();
+  if (location.hash) { var t = document.querySelector(location.hash); if (t) t.scrollIntoView(); }
+});
+</script>
+</body>
+</html>

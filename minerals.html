@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Minerals and their Crystals — Antoine Barthelemy</title>
+  <meta name="description" content="Common minerals by chemical class, with their crystal system, Bravais lattice, space group, hardness, density, lustre, colour, streak, cleavage and habit, and the fourteen Bravais lattices in 3D.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <script>(function(){var t=null,q=/[?&]theme=(dark|light)/.exec(location.search);if(q)t=q[1];try{if(!t)t=localStorage.getItem('theme')}catch(e){}if(!t){var m=/(?:^|;)theme=(dark|light)/.exec(window.name);if(m)t=m[1]}if(!t&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)t='dark';document.documentElement.setAttribute('data-theme',t||'light')})()</script>
+  <link rel="stylesheet" href="site.css">
+  <script src="site.js"></script>
+  <script src="section.js" defer></script>
+  <script src="elements.js" defer></script>
+  <script src="compounds.js" defer></script>
+  <script src="minerals.js" defer></script>
+  <style>
+    .lat-viewer { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 1.2rem; align-items: start; }
+    @media (max-width: 760px) { .lat-viewer { grid-template-columns: 1fr; } }
+    #cell { background: var(--bg); display: block; width: 100%; height: clamp(340px, 56vh, 520px); cursor: grab; touch-action: none;
+            border-top: 1px solid var(--grid-strong); border-bottom: 1px solid var(--grid-strong); }
+    #cell:active { cursor: grabbing; }
+    .lat-pick { display: grid; grid-template-columns: auto 1fr; gap: .3rem .7rem; align-items: center; font-size: .88rem; }
+    .lat-pick .sys { color: var(--muted); font-style: italic; }
+    .lat-pick .bt { display: flex; flex-wrap: wrap; gap: .3rem; }
+    .lat-pick button { font: inherit; font-size: .85rem; color: var(--ink); background: none; border: 1px solid var(--grid-strong); padding: .1rem .45rem; cursor: pointer; }
+    .lat-pick button.on { background: color-mix(in srgb, var(--ink) 15%, transparent); border-color: var(--ink); }
+    .lat-read { font-size: .92rem; line-height: 1.5; margin-top: .9rem; }
+    .lat-read .nm { font-size: 1.3rem; }
+    .lat-read dl { display: grid; grid-template-columns: auto 1fr; gap: .1rem .8rem; margin: .4rem 0 0; }
+    .lat-read dt { color: var(--muted); font-style: italic; }
+    .lat-read dd { margin: 0; }
+    .lat-read a { text-decoration: none; border-bottom: 1px dotted var(--grid-strong); color: inherit; }
+    .lat-opts { display: flex; gap: 1.2rem; font-size: .9rem; margin-top: .6rem; }
+    .lat-opts label { display: inline-flex; gap: .35rem; align-items: center; cursor: pointer; }
+    .lat-opts input { accent-color: var(--ink); }
+
+    .mn-search { display: flex; justify-content: center; align-items: baseline; gap: 1rem; margin: 1.6rem 0 .4rem; }
+    .mn-search input { font: inherit; font-size: 1rem; color: var(--ink); background: var(--bg); border: 1px solid var(--grid-strong); padding: .35rem .6rem; width: min(26rem, 100%); }
+    .mn-search .n { color: var(--muted); font-size: .9rem; font-style: italic; }
+    .mn-intro { font-size: .95rem; text-align: justify; hyphens: auto; -webkit-hyphens: auto; margin: .3rem 0 .9rem; }
+    .mn-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: .6rem; }
+    .bar { display: inline-block; line-height: 1; border-top: 1px solid currentColor; padding-top: 1px; }
+    .mn { background: var(--bg); border: 1px solid var(--grid-strong); padding: .75rem .8rem .65rem; display: flex; flex-direction: column; gap: .15rem; scroll-margin-top: 1rem; }
+    .mn[hidden] { display: none; }
+    .mn:target { border-color: var(--ink); }
+    .mn .k { font-size: .6rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); text-align: center; }
+    .mn .f { font-size: 1.5rem; line-height: 1.25; text-align: center; font-variant-numeric: lining-nums; }
+    .mn .f sub, .mn .f sup { font-size: .62em; line-height: 0; }
+    .mn .nm { font-style: italic; font-size: 1.05rem; text-align: center; }
+    .mn .m { font-size: .8rem; text-align: center; font-variant-numeric: lining-nums; margin-bottom: .3rem; }
+    .mn dl { display: grid; grid-template-columns: auto 1fr; gap: .05rem .7rem; margin: 0; font-size: .8rem; }
+    .mn dt { color: var(--muted); font-style: italic; white-space: nowrap; }
+    .mn dd { margin: 0; font-variant-numeric: lining-nums; }
+    .mn dd button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; border-bottom: 1px dotted var(--grid-strong); }
+    .mn dd button:hover { border-bottom-color: var(--ink); }
+    .mn .note { font-size: .78rem; color: var(--muted); line-height: 1.35; margin-top: .35rem; text-align: center; }
+    .mn .comp { font-size: .7rem; color: var(--muted); text-align: center; margin-top: auto; padding-top: .35rem; font-variant-numeric: lining-nums; }
+    .mn .comp a { color: inherit; text-decoration: none; border-bottom: 1px dotted var(--grid-strong); }
+    h2.section .no { color: var(--muted); margin-right: .6rem; font-variant-numeric: lining-nums; }
+    #toc { columns: 3 13rem; column-gap: 2rem; }
+    #toc li { break-inside: avoid; }
+  </style>
+</head>
+<body>
+<button id="theme-toggle" type="button" aria-label="Switch to dark mode"><span class="theme-icon" aria-hidden="true"></span></button>
+<main class="page">
+  <h1 class="paper-title">Minerals and their Crystals</h1>
+  <div class="byline">What rocks are made of, and how their atoms are stacked</div>
+  <div class="abstract"><strong>Abstract</strong>
+    A mineral is a naturally occurring solid with a definite chemical composition and an ordered arrangement of atoms: a crystal. Its atoms repeat a small motif, the unit cell, along three directions, and the shape of that cell sorts every crystal into one of seven crystal systems and fourteen Bravais lattices, shown first in 3D. Then the common minerals, by chemical class, each with its formula, molar mass and composition, its crystal system, lattice and space group, and the properties used to tell it apart in the field: hardness on Mohs’ scale, density, lustre, colour, streak, cleavage and habit.
+  </div>
+
+  <h2 class="section">Contents</h2>
+  <ul class="toc" id="toc"></ul>
+
+  <section id="lattices">
+    <h2 class="section"><span class="no">6.1.1</span>Crystal Systems and Bravais Lattices</h2>
+    <p class="mn-intro">A crystal is a lattice of points, all with identical surroundings, with the same group of atoms (the motif) placed on every point. The lattice is built by repeating a parallelepiped, the unit cell, of edges <i>a</i>, <i>b</i>, <i>c</i> and angles α (between <i>b</i> and <i>c</i>), β (between <i>a</i> and <i>c</i>) and γ (between <i>a</i> and <i>b</i>). The symmetry of the cell sorts crystals into seven systems. Besides the primitive cell, with points only at its corners, some systems admit centred cells, with an extra point at the centre of the body (I), of every face (F) or of one pair of faces (C): Bravais showed in 1848 that there are exactly fourteen distinct lattices in three dimensions.</p>
+    <div class="lat-viewer">
+      <figure class="fig" style="margin:0">
+        <canvas id="cell" role="img" aria-label="Unit cell of the selected Bravais lattice in 3D"></canvas>
+        <div class="tips"><span><code>drag</code> rotate</span><span><code>scroll</code> zoom</span><span><code>double-click</code> reset</span></div>
+      </figure>
+      <div>
+        <div class="lat-pick" id="pick"></div>
+        <div class="lat-opts"><label><input type="checkbox" id="cBlock"> 2 × 2 × 2 cells</label><label><input type="checkbox" id="cSpin" checked> turn</label></div>
+        <div class="lat-read" id="latRead"></div>
+      </div>
+    </div>
+    <figcaption style="margin-top:.8rem"><b>Figure 6.1.</b> The conventional unit cell of the selected lattice. Corner points are filled; the points added by centring are drawn as rings. The cell parameters are representative of the system, not of a particular mineral. Each mineral below names its lattice: click it to show that lattice here.</figcaption>
+  </section>
+
+  <div class="mn-search"><input id="q" type="search" placeholder="Search a mineral, a formula, a system, a colour…" aria-label="Search the minerals"><span class="n" id="count"></span></div>
+  <div id="classes"></div>
+
+  <h2 class="section">Notes</h2>
+  <p style="font-size:.95rem">Hardness is on Mohs’ scale, a ranking by which mineral scratches which, from talc (1) to diamond (10): gypsum 2, calcite 3, fluorite 4, apatite 5, orthoclase 6, quartz 7, topaz 8, corundum 9. The <i>streak</i> is the colour of the powder, left by rubbing on unglazed porcelain, and is more reliable than the colour of the crystal. <i>Cleavage</i> is the tendency to split along planes of weak bonding, given by their Miller indices {<i>hkl</i>}. Space groups are in Hermann–Mauguin notation; the first letter gives the centring of the lattice. Formulas are idealised end members: natural crystals take in other elements. Densities are in g/cm³. The compounds of chemistry are in <a href="compounds.html">Ions, Molecules and Salts</a>.</p>
+  <div class="pager"><a href="geology.html">&larr; Geology</a><span></span></div>
+</main>
+<footer class="site-footer">
+  <span>&copy; 2026 Antoine Barthelemy</span>
+  <span>Figures are computed in your browser &middot; nothing is sent anywhere.</span>
+</footer>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var MN = window.Minerals, CP = window.Compounds, E = window.PERIODIC_ELEMENTS;
+  if (!MN || !CP || !E) return;
+  var Z = {}; E.forEach(function (e) { Z[e.sym] = e.z; });
+  function sg(s) { return s.replace(/(\d)\u0304/g, '<span class="bar">$1</span>'); }   // 3̄ → 3 with an overline
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+  function slug(s) { return 'm-' + s.toLowerCase().replace(/\(.*?\)/g, '').trim().replace(/[^a-z]+/g, '-'); }
+  var LAT = {}; MN.LATTICES.forEach(function (l) { LAT[l.id] = l; });
+
+  /* ---------------- contents and classes ---------------- */
+
+  var CLASSES = [
+    ['native element', 'Native Elements', 'Elements found uncombined in nature: the noble metals, which resist oxidation, and a few nonmetals. Diamond and graphite are the same carbon in two structures, and so in two crystal systems.'],
+    ['silicate', 'Silicates', 'Nine tenths of the crust. All are built from the SiO<sub>4</sub> tetrahedron, a silicon between four oxygens; how the tetrahedra share their corners sorts them: isolated (olivine, garnet, zircon), in rings (beryl), in sheets (micas, clays, talc) or in a three-dimensional framework (quartz, feldspars).'],
+    ['carbonate', 'Carbonates', 'Built on the flat CO<sub>3</sub><sup>2−</sup> group: limestone and marble, shells and corals. Most fizz with acid, giving off CO<sub>2</sub>.'],
+    ['halide', 'Halides', 'Salts of the halogens, mostly left by evaporating seas: soft, often cubic, sometimes soluble.'],
+    ['sulfate', 'Sulfates', 'Built on the SO<sub>4</sub><sup>2−</sup> tetrahedron; gypsum forms where seawater evaporates.'],
+    ['phosphate', 'Phosphates', 'Built on the PO<sub>4</sub><sup>3−</sup> tetrahedron; apatite holds most of the phosphorus of rocks, and of bones.'],
+    ['sulfide', 'Sulfides', 'Metals bound to sulfur, mostly from hot hydrothermal fluids: heavy, often metallic, the ores of most base metals.'],
+    ['oxide and hydroxide', 'Oxides and Hydroxides', 'Metals bound to oxygen or to hydroxide: hard gems, the ores of iron, titanium, tin and uranium, and ice.']
+  ];
+  var toc = document.getElementById('toc');
+  toc.insertAdjacentHTML('beforeend', '<li><span class="num">6.1.1</span><span><a href="#lattices">Crystal Systems and Bravais Lattices</a><span class="desc">7 systems, 14 lattices</span></span></li>');
+  var host = document.getElementById('classes');
+  function composition(f) {
+    var n = CP.count(f), m = CP.molarMass(f), syms = Object.keys(n);
+    if (syms.length < 2 || !m) return '';
+    return syms.map(function (s) { var p = 100 * n[s] * CP.MASS[s] / m; return '<a href="element.html?z=' + Z[s] + '">' + s + '</a> ' + (p < 1 ? p.toFixed(2) : p.toFixed(1)) + ' %'; }).join(' · ');
+  }
+  function card(m) {
+    var d = document.createElement('div'); d.className = 'mn'; d.id = slug(m.name);
+    var M = CP.molarMass(m.f), L = LAT[m.lattice];
+    var rows = [['System', m.system], ['Lattice', '<button type="button" data-lat="' + m.lattice + '">' + m.lattice + ' · ' + L.name + '</button>'], ['Space group', sg(m.sg)],
+      ['Hardness', 'Mohs ' + m.mohs], ['Density', m.rho + ' g/cm³'], ['Lustre', m.lustre], ['Colour', m.colour], ['Streak', m.streak], ['Cleavage', m.cleavage], ['Habit', m.habit]];
+    d.innerHTML = '<span class="k">' + esc(m.cls) + ' · ' + m.system + '</span><span class="f">' + CP.html(m.f) + '</span><span class="nm">' + esc(m.name) + '</span>' +
+      '<span class="m"><i>M</i> = ' + M.toFixed(2) + ' g·mol<sup>−1</sup></span>' +
+      '<dl>' + rows.map(function (r) { return '<dt>' + r[0] + '</dt><dd>' + r[1] + '</dd>'; }).join('') + '</dl>' +
+      '<span class="note">' + esc(m.note) + '</span><span class="comp">' + composition(m.f) + '</span>';
+    d.dataset.q = [m.f, m.name, m.cls, m.system, m.lattice, L.name, m.sg, m.lustre, m.colour, m.streak, m.habit, m.note].join(' ').toLowerCase();
+    return d;
+  }
+  var blocks = CLASSES.map(function (c, i) {
+    var items = MN.list.filter(function (m) { return m.cls === c[0]; }), no = '6.1.' + (i + 2);
+    toc.insertAdjacentHTML('beforeend', '<li><span class="num">' + no + '</span><span><a href="#' + c[0].replace(/ /g, '-') + '">' + c[1] + '</a><span class="desc">' + items.length + ' mineral' + (items.length > 1 ? 's' : '') + '</span></span></li>');
+    var sec = document.createElement('section'); sec.id = c[0].replace(/ /g, '-');
+    sec.innerHTML = '<h2 class="section"><span class="no">' + no + '</span>' + c[1] + '</h2><p class="mn-intro">' + c[2] + '</p>';
+    var grid = document.createElement('div'); grid.className = 'mn-grid';
+    items.forEach(function (m) { grid.appendChild(card(m)); });
+    sec.appendChild(grid); host.appendChild(sec);
+    return sec;
+  });
+  var q = document.getElementById('q'), count = document.getElementById('count');
+  function filter() {
+    var t = q.value.trim().toLowerCase(), shown = 0;
+    blocks.forEach(function (sec) {
+      var n = 0;
+      [].forEach.call(sec.querySelectorAll('.mn'), function (d) { var ok = !t || d.dataset.q.indexOf(t) >= 0; d.hidden = !ok; if (ok) n++; });
+      sec.hidden = !n; shown += n;
+    });
+    count.textContent = shown + ' of ' + MN.list.length + ' minerals';
+  }
+  q.addEventListener('input', filter); filter();
+  host.addEventListener('click', function (ev) {
+    var b = ev.target.closest('button[data-lat]'); if (!b) return;
+    pickLattice(b.dataset.lat); document.getElementById('lattices').scrollIntoView({ behavior: 'smooth' });
+  });
+
+  /* ---------------- the Bravais lattice viewer ---------------- */
+
+  var pick = document.getElementById('pick'), read = document.getElementById('latRead');
+  var ORDER = ['triclinic', 'monoclinic', 'orthorhombic', 'tetragonal', 'trigonal', 'hexagonal', 'cubic'];
+  pick.innerHTML = ORDER.map(function (s) {
+    return '<span class="sys">' + s + '</span><span class="bt">' + MN.LATTICES.filter(function (l) { return l.system === s; }).map(function (l) {
+      return '<button type="button" data-l="' + l.id + '" title="' + l.name + '">' + l.id + '</button>'; }).join('') + '</span>';
+  }).join('');
+  pick.addEventListener('click', function (ev) { var b = ev.target.closest('button'); if (b) pickLattice(b.dataset.l); });
+  var cur = null;
+  function pickLattice(id) {
+    cur = LAT[id];
+    [].forEach.call(pick.querySelectorAll('button'), function (b) { b.classList.toggle('on', b.dataset.l === id); });
+    var S = MN.SYSTEMS[cur.system], users = MN.list.filter(function (m) { return m.lattice === id; });
+    var n = MN.points(cur.c).length, perCell = { P: 1, I: 2, C: 2, F: 4, R: 1 }[cur.c];
+    read.innerHTML = '<div class="nm">' + cur.name + ' <span style="color:var(--muted)">(' + cur.id + ')</span></div><dl>' +
+      '<dt>System</dt><dd>' + cur.system + '</dd><dt>Cell</dt><dd>' + S.rule + '</dd><dt>Symmetry</dt><dd>' + S.sym + '</dd>' +
+      '<dt>Points</dt><dd>' + n + ' drawn, ' + perCell + ' per cell (a corner counts ⅛, a face ½)</dd>' +
+      '<dt>Minerals</dt><dd>' + (users.length ? users.map(function (m) { return '<a href="#' + slug(m.name) + '">' + esc(m.name) + '</a>'; }).join(', ') : '<i>none in this list</i>') + '</dd></dl>';
+  }
+  var cv = document.getElementById('cell'), ctx = cv.getContext('2d'), W = 0, H = 0, dpr = 1;
+  var yaw = -.75, pitch = .42, zoom = 1, drag = null, col = {}, cBlock = document.getElementById('cBlock'), cSpin = document.getElementById('cSpin');
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) cSpin.checked = false;
+  function readColors() { var cs = getComputedStyle(document.documentElement); ['--ink', '--muted', '--grid-strong', '--bg'].forEach(function (v) { col[v] = cs.getPropertyValue(v).trim(); }); }
+  function resize() { dpr = window.devicePixelRatio || 1; var r = cv.getBoundingClientRect(); W = r.width; H = r.height; cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+  cv.addEventListener('pointerdown', function (e) { drag = { x: e.clientX, y: e.clientY }; cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener('pointermove', function (e) { if (!drag) return; yaw -= (e.clientX - drag.x) * .01; pitch = Math.max(-1.5, Math.min(1.5, pitch + (e.clientY - drag.y) * .01)); drag = { x: e.clientX, y: e.clientY }; });
+  cv.addEventListener('pointerup', function () { drag = null; }); cv.addEventListener('pointercancel', function () { drag = null; });
+  cv.addEventListener('wheel', function (e) { e.preventDefault(); zoom = Math.max(.4, Math.min(4, zoom * Math.exp(-e.deltaY * .0015))); }, { passive: false });
+  cv.addEventListener('dblclick', function () { yaw = -.75; pitch = .42; zoom = 1; });
+  function draw() {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
+    if (!cur) return;
+    var B = MN.basis(cur.system), n = cBlock.checked ? 2 : 1, font = getComputedStyle(document.body).fontFamily;
+    function at(u, v, w) { return [u * B[0][0] + v * B[1][0] + w * B[2][0], u * B[0][1] + v * B[1][1] + w * B[2][1], u * B[0][2] + v * B[1][2] + w * B[2][2]]; }
+    var ctr = at(n / 2, n / 2, n / 2), cy = Math.cos(yaw), sy = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
+    var k = Math.min(W, H) * .3 * zoom / n;
+    function proj(p) {
+      var x = p[0] - ctr[0], y = p[1] - ctr[1], z = p[2] - ctr[2];
+      var x1 = x * cy - y * sy, y1 = x * sy + y * cy;
+      return [W / 2 + x1 * k, H / 2 - (z * cp - y1 * sp) * k, z * sp + y1 * cp];
+    }
+    // edges of every cell
+    ctx.strokeStyle = col['--ink']; ctx.lineWidth = 1;
+    for (var i = 0; i <= n; i++) for (var j = 0; j <= n; j++) {
+      [[[i, j, 0], [i, j, n]], [[i, 0, j], [i, n, j]], [[0, i, j], [n, i, j]]].forEach(function (e) {
+        var a = proj(at.apply(null, e[0])), b = proj(at.apply(null, e[1]));
+        ctx.globalAlpha = .55; ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
+      });
+    }
+    // lattice points, far ones first
+    var seen = {}, pts = [];
+    for (var u = 0; u < n; u++) for (var v = 0; v < n; v++) for (var w = 0; w < n; w++) MN.points(cur.c).forEach(function (q) {
+      var key = (u + q[0]) + ',' + (v + q[1]) + ',' + (w + q[2]); if (seen[key]) return; seen[key] = 1;
+      var p = proj(at(u + q[0], v + q[1], w + q[2])); p.push(q[3]); pts.push(p);
+    });
+    pts.sort(function (a, b) { return a[2] - b[2]; });
+    var R = Math.max(3.5, Math.min(8, k * .07));
+    pts.forEach(function (p) {
+      var r = R * (1 + .12 * p[2]);
+      ctx.globalAlpha = 1; ctx.beginPath(); ctx.arc(p[0], p[1], r, 0, 6.283);
+      if (p[3]) { ctx.fillStyle = col['--bg']; ctx.fill(); ctx.lineWidth = 1.6; ctx.strokeStyle = col['--ink']; ctx.stroke(); ctx.lineWidth = 1; }
+      else { ctx.fillStyle = col['--ink']; ctx.fill(); }
+    });
+    // the cell vectors a, b, c from the origin
+    ctx.fillStyle = col['--muted']; ctx.font = 'italic 16px ' + font; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    [['a', [1.18, 0, 0]], ['b', [0, 1.18, 0]], ['c', [0, 0, 1.18]]].forEach(function (L) {
+      var p = proj(at(L[1][0], L[1][1], L[1][2])); ctx.globalAlpha = 1; ctx.fillText(L[0], p[0], p[1]);
+    });
+    ctx.globalAlpha = 1; ctx.font = '13px ' + font; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+    ctx.fillText(cur.id + ' · ' + cur.name, 12, H - 10);
+  }
+  var last = 0;
+  function frame(t) { var dt = last ? Math.min(.05, (t - last) / 1000) : 0; last = t; if (cSpin.checked && !drag) yaw += dt * .25; draw(); requestAnimationFrame(frame); }
+  readColors(); resize();
+  window.addEventListener('resize', resize);
+  window.addEventListener('themechange', readColors);
+  document.addEventListener('visibilitychange', function () { last = 0; });
+  var ql = new URLSearchParams(location.search).get('lattice'); pickLattice(LAT[ql] ? ql : 'cF');
+  requestAnimationFrame(frame);
+  if (location.hash) { var t = document.querySelector(location.hash); if (t) t.scrollIntoView(); }
+});
+</script>
+</body>
+</html>
