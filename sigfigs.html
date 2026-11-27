@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Significant Figures — Antoine Barthelemy</title>
+  <meta name="description" content="Significant figures (chiffres significatifs): every rule for counting, rounding and computing with them, two tools that apply them step by step, and worked examples from simple arithmetic to physics, chemistry and uncertainty propagation.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <script>(function(){var t=null,q=/[?&]theme=(dark|light)/.exec(location.search);if(q)t=q[1];try{if(!t)t=localStorage.getItem('theme')}catch(e){}if(!t){var m=/(?:^|;)theme=(dark|light)/.exec(window.name);if(m)t=m[1]}if(!t&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)t='dark';document.documentElement.setAttribute('data-theme',t||'light')})()</script>
+  <link rel="stylesheet" href="site.css">
+  <script src="site.js"></script>
+  <script src="math.js" defer></script>
+  <script src="elements.js" defer></script>
+  <script src="compounds.js" defer></script>
+  <style>
+    main p, main li { hyphens: auto; -webkit-hyphens: auto; }
+    main > p, section > p { text-align: justify; }
+    .rule { border-left: 2px solid var(--ink); padding: .1rem 0 .1rem .9rem; margin: .9rem 0; }
+    .rule b.n { font-weight: normal; font-variant: small-caps; letter-spacing: .06em; margin-right: .3rem; }
+    .sf-table { width: 100%; border-collapse: collapse; border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink); font-size: .92rem; font-variant-numeric: lining-nums tabular-nums; margin: .8rem 0 .4rem; }
+    .sf-table th { border-bottom: 1px solid var(--ink); font-weight: bold; text-align: left; padding: .3rem .4rem; }
+    .sf-table td { padding: .25rem .4rem; vertical-align: top; }
+    .sf-table td.n { text-align: right; white-space: nowrap; }
+    .sf-table tr + tr td { border-top: 1px solid var(--grid); }
+    .d-sig { color: var(--ink); font-weight: bold; }
+    .d-no { color: var(--faint); }
+    .d-amb { color: var(--c-amber); font-weight: bold; text-decoration: underline dotted; }
+    .ex { border: 1px solid var(--grid-strong); padding: .8rem 1rem .7rem; margin: 1rem 0; }
+    .ex h4 { margin: 0 0 .4rem; font-weight: normal; font-size: 1.02rem; }
+    .ex h4 .lvl { font-size: .62rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-left: .5rem; }
+    .ex .given { font-size: .95rem; margin: .2rem 0 .5rem; }
+    .steps { margin: .3rem 0 .4rem; padding-left: 1.4rem; font-size: .95rem; }
+    .steps li { margin: .28rem 0; }
+    .steps .c { display: block; font-size: .85rem; color: var(--muted); font-style: italic; }
+    .ans { font-size: 1rem; border-top: 1px solid var(--grid); padding-top: .4rem; margin-top: .4rem; }
+    .ans b { font-weight: normal; font-variant: small-caps; letter-spacing: .06em; margin-right: .4rem; }
+    .tool { border: 1px solid var(--grid-strong); padding: .9rem 1rem; margin: 1rem 0; }
+    .tool .row { display: flex; flex-wrap: wrap; gap: .6rem; align-items: flex-end; }
+    .tool label { display: flex; flex-direction: column; gap: .2rem; font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+    .tool input[type=text], .tool select { font: inherit; font-size: 1.05rem; color: var(--ink); background: var(--bg); border: 1px solid var(--grid-strong); padding: .3rem .5rem; text-transform: none; letter-spacing: 0; border-radius: 0; }
+    .tool input[type=text] { width: 11rem; font-variant-numeric: lining-nums tabular-nums; }
+    .tool label i { text-transform: none; font-size: 1rem; color: var(--ink); }
+    .sf-table td:first-child { white-space: nowrap; }
+    .tool .chk { flex-direction: row; align-items: center; gap: .3rem; text-transform: none; letter-spacing: 0; font-size: .85rem; }
+    .tool .chk input { accent-color: var(--ink); }
+    .tool .digits { font-size: 2rem; letter-spacing: .06em; margin: .8rem 0 .3rem; font-variant-numeric: lining-nums tabular-nums; }
+    .tool .out { font-size: .95rem; line-height: 1.55; }
+    .tool .out ol { margin: .4rem 0; padding-left: 1.4rem; }
+    .tool .res { font-size: 1.35rem; margin-top: .4rem; }
+    .tool .warn { color: var(--c-amber); }
+    .tool table.st { border-collapse: collapse; font-size: .9rem; margin: .5rem 0; font-variant-numeric: lining-nums tabular-nums; width: 100%; }
+    .tool table.st th { text-align: left; border-bottom: 1px solid var(--ink); padding: .2rem .4rem; font-weight: normal; font-style: italic; color: var(--muted); }
+    .tool table.st td { padding: .2rem .4rem; border-top: 1px solid var(--grid); vertical-align: top; }
+    .tool table.st td.n { text-align: right; white-space: nowrap; }
+    .tool .why { color: var(--muted); font-size: .85rem; }
+    .try { font: inherit; font-size: .8rem; color: var(--link); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; margin-left: .4rem; }
+    .tool td.mx { font-size: 1rem; }
+    .tool td.mx .frac { font-size: .95em; }
+    .tool .legend { font-size: .82rem; color: var(--muted); margin-top: .4rem; }
+    .eqn { text-align: center; margin: .7rem 0; font-size: 1.05rem; font-variant-numeric: lining-nums; }
+    .frac { display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; margin: 0 .12em; line-height: 1.25; }
+    .frac > span { display: block; padding: 0 .25em; white-space: nowrap; }
+    .frac > span:first-child { border-bottom: 1px solid currentColor; padding-bottom: .08em; }
+    .frac > span:last-child { padding-top: .1em; }
+    .frac .frac { font-size: .9em; }
+    sup .frac, sub .frac { font-size: .8em; vertical-align: middle; line-height: 1.1; }
+    .rad { display: inline-flex; align-items: stretch; white-space: nowrap; vertical-align: middle; }
+    .rad .rs { width: .62em; min-height: 1.1em; height: auto; align-self: stretch; overflow: visible; flex: none; }
+    .rad .rc { border-top: 1px solid currentColor; padding: .14em .15em .02em .08em; line-height: 1.2; display: inline-block; }
+    .bp { font-size: 1.6em; line-height: 1; vertical-align: -.12em; font-weight: 300; }
+    .eqn { line-height: 1.5; }
+    .ex .eqn { font-size: 1.12rem; margin: .5rem 0 .7rem; }
+    .steps .frac { font-size: .95em; }
+    .why2 { display: block; font-size: .8rem; color: var(--muted); font-style: italic; margin-top: .25rem; }
+    ul.mistakes li { margin: .35rem 0; }
+    h2.section .no { color: var(--muted); margin-right: .6rem; font-variant-numeric: lining-nums; }
+  </style>
+</head>
+<body>
+<button id="theme-toggle" type="button" aria-label="Switch to dark mode"><span class="theme-icon" aria-hidden="true"></span></button>
+<main class="page narrow">
+  <h1 class="paper-title">Significant Figures</h1>
+  <div class="byline">Chiffres significatifs: how many digits a result deserves</div>
+  <div class="abstract"><strong>Abstract</strong>
+    A measured number carries its precision in the way it is written: 2.5&nbsp;m and 2.500&nbsp;m are not the same measurement. The significant figures of a number are the digits that carry this information, and the rules below say how to count them, how to round, and how many to keep after multiplying, adding, taking a power, a root, a logarithm or an exponential, so that a result never claims more precision than its data. Tools apply the rules digit by digit and step by step, to rounding, to whole expressions and to molar masses; then twenty-two worked examples, from simple arithmetic to physics, chemistry and diving, and on to the propagation of uncertainties, which is what the rules approximate.
+  </div>
+
+  <h2 class="section">Contents</h2>
+  <ul class="toc">
+    <li><span class="num">2.1.1</span><span><a href="#meaning">What the digits of a measurement say</a></span></li>
+    <li><span class="num">2.1.2</span><span><a href="#counting">Counting significant figures</a></span></li>
+    <li><span class="num">2.1.3</span><span><a href="#rounding">Rounding</a></span></li>
+    <li><span class="num">2.1.4</span><span><a href="#muldiv">Multiplication and division</a></span></li>
+    <li><span class="num">2.1.5</span><span><a href="#addsub">Addition and subtraction</a></span></li>
+    <li><span class="num">2.1.6</span><span><a href="#functions">Powers, roots, logarithms, exponentials and other functions</a></span></li>
+    <li><span class="num">2.1.7</span><span><a href="#exact">Exact numbers and constants</a></span></li>
+    <li><span class="num">2.1.8</span><span><a href="#chains">Calculations in several steps</a></span></li>
+    <li><span class="num">2.1.9</span><span><a href="#calculator">Calculators that show the rules</a></span></li>
+    <li><span class="num">2.1.10</span><span><a href="#examples">Worked examples, from simple to complicated</a></span></li>
+    <li><span class="num">2.1.11</span><span><a href="#uncertainty">Beyond the rules: uncertainties</a></span></li>
+    <li><span class="num">2.1.12</span><span><a href="#mistakes">Common mistakes</a></span></li>
+  </ul>
+
+  <section id="meaning">
+    <h2 class="section"><span class="no">2.1.1</span>What the digits of a measurement say</h2>
+    <p>Every measurement is uncertain. A ruler graduated in millimetres lets you read 23.4&nbsp;mm, perhaps guess 23.45&nbsp;mm, but never 23.4512&nbsp;mm. The convention is to write all the digits you are sure of plus one more, the first uncertain one, and no others: those are the <i>significant figures</i>. Writing 23.4&nbsp;mm says “between about 23.35 and 23.45”; writing 23.40&nbsp;mm says “between about 23.395 and 23.405”, a measurement ten times more precise.</p>
+    <p>Significant figures concern <i>precision</i> (how finely a value is known), not <i>accuracy</i> (how close it is to the truth): a miscalibrated balance can give a precise but wrong 12.347&nbsp;g. They are also a shorthand: the honest way to state precision is an explicit uncertainty, 23.40 ± 0.05&nbsp;mm (§&nbsp;2.1.11). The rules exist so that a calculation keeps roughly the right number of digits without a full uncertainty analysis.</p>
+  </section>
+
+  <section id="counting">
+    <h2 class="section"><span class="no">2.1.2</span>Counting significant figures</h2>
+    <div class="rule"><b class="n">Rule 1.</b> Every nonzero digit is significant. <i>4.52</i> has 3; <i>7</i> has 1.</div>
+    <div class="rule"><b class="n">Rule 2.</b> Zeros between nonzero digits (captive zeros) are significant. <i>1005</i> has 4; <i>3.08</i> has 3.</div>
+    <div class="rule"><b class="n">Rule 3.</b> Leading zeros, before the first nonzero digit, are never significant: they only place the decimal point. <i>0.0045</i> has 2, the same as 4.5 × 10<sup>−3</sup>.</div>
+    <div class="rule"><b class="n">Rule 4.</b> Trailing zeros after a decimal point are significant: someone measured them. <i>2.500</i> has 4; <i>0.0200</i> has 3.</div>
+    <div class="rule"><b class="n">Rule 5.</b> Trailing zeros in a whole number written without a decimal point are ambiguous. <i>1500</i> has 2, 3 or 4: the writer must say which. A final decimal point marks them all significant (<i>1500.</i> has 4), and scientific notation removes all doubt.</div>
+    <div class="rule"><b class="n">Rule 6.</b> In scientific notation, count the digits of the mantissa only; the power of ten carries no precision. <i>1.50 × 10<sup>3</sup></i> has 3; <i>1.5 × 10<sup>3</sup></i> has 2.</div>
+    <div class="rule"><b class="n">Rule 7.</b> Exact numbers have infinitely many significant figures and never limit a result: counted objects (12 eggs), integers in formulas (the 2 in 2π<i>r</i>, the <span class="frac"><span>1</span><span>2</span></span> in <span class="frac"><span>1</span><span>2</span></span><i>mv</i><sup>2</sup>), defined conversions (1&nbsp;in = 2.54&nbsp;cm exactly), and the constants fixed by the SI since 2019 (§&nbsp;2.1.7).</div>
+    <table class="sf-table">
+      <thead><tr><th>Number</th><th class="n">Significant figures</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>0.004 50</td><td class="n">3</td><td>leading zeros do not count (3); the final zero does (4)</td></tr>
+        <tr><td>30.07</td><td class="n">4</td><td>a captive zero (2)</td></tr>
+        <tr><td>100.0</td><td class="n">4</td><td>after a decimal point, every zero counts (4)</td></tr>
+        <tr><td>100.</td><td class="n">3</td><td>the decimal point marks the zeros as measured (5)</td></tr>
+        <tr><td>100</td><td class="n">1, 2 or 3</td><td>ambiguous: write 1 × 10<sup>2</sup>, 1.0 × 10<sup>2</sup> or 1.00 × 10<sup>2</sup> (5)</td></tr>
+        <tr><td>6.022 × 10<sup>23</sup></td><td class="n">4</td><td>the mantissa only (6)</td></tr>
+        <tr><td>0.000 001</td><td class="n">1</td><td>only the 1 (3)</td></tr>
+        <tr><td>12 students</td><td class="n">∞</td><td>a count is exact (7)</td></tr>
+        <tr><td>0</td><td class="n">—</td><td>a measured zero has no significant figure; its precision is its last decimal place (0.00 is known to the hundredth)</td></tr>
+      </tbody>
+    </table>
+    <div class="tool" id="counter">
+      <div class="row">
+        <label>A number <input type="text" id="cIn" value="0.004050" spellcheck="false" autocomplete="off"></label>
+      </div>
+      <div class="digits" id="cDigits"></div>
+      <div class="out" id="cOut"></div>
+      <div class="legend"><span class="d-sig">significant</span> · <span class="d-no">not significant</span> · <span class="d-amb">ambiguous</span>. Accepts 1.50e3, 1.50×10^3, and a decimal comma (0,0450).</div>
+    </div>
+  </section>
+
+  <section id="rounding">
+    <h2 class="section"><span class="no">2.1.3</span>Rounding</h2>
+    <p>Rounding is how a full calculator value becomes a result with the right number of figures. The procedure is always the same.</p>
+    <ol class="steps" style="font-size:1rem">
+      <li><b>Find the last digit to keep.</b> Count <i>n</i> significant figures from the first nonzero digit (to round to <i>n</i> figures), or go to the decimal place required (to round after a sum, rule 13).</li>
+      <li><b>Look at the digit just after it</b>, the first digit dropped, and, if it is a 5, at all the digits after that.</li>
+      <li><b>Decide.</b> Below 5: the kept digit stays. Above 5, or 5 followed by anything that is not zero: the kept digit goes up by one. Exactly 5 (nothing or only zeros after): a tie, rule 9.</li>
+      <li><b>Carry.</b> If the kept digit was a 9 and goes up, it becomes 0 and the digit before it goes up by one, as far as needed: 9.96 → 10.0.</li>
+      <li><b>Drop the rest</b>, and write the result so its figures are readable: keep zeros the rounding produced after the decimal point; replace dropped digits before the decimal point by a power of ten (rule 11).</li>
+    </ol>
+    <div class="rule"><b class="n">Rule 8.</b> If the first dropped digit is below 5, leave the last kept digit as it is: 3.1416 → 3.14. If it is above 5, or 5 followed by any nonzero digit, add one: 2.6789 → 2.68; 2.6751 → 2.68.</div>
+    <div class="rule"><b class="n">Rule 9.</b> If the dropped part is exactly 5 (or 5000…), schools usually round up (2.65 → 2.7), away from zero for negative numbers (−2.65 → −2.7). Laboratories and the ISO 80000-1 standard prefer to round to the even digit (2.65 → 2.6, 2.75 → 2.8), so that ties do not push a long series of results upwards. Either is acceptable if applied consistently.</div>
+    <div class="rule"><b class="n">Rule 10.</b> Round once, from the full number. Rounding 2.346 to two figures gives 2.3; rounding it first to 2.35 and then to 2.4 is wrong (double rounding): only the first dropped digit, here the 4, decides.</div>
+    <div class="rule"><b class="n">Rule 11.</b> When rounding leaves trailing zeros in the units, write them in scientific notation: 4567 to two figures is 4.6 × 10<sup>3</sup>, not 4600, which would be ambiguous. Keep the zeros a rounding produces after the decimal point: 9.998 to three figures is 10.0, not 10.</div>
+    <table class="sf-table">
+      <thead><tr><th>Number</th><th class="n">Round to</th><th>Last kept digit · first dropped</th><th class="n">Result</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>3.141 59</td><td class="n">3 figures</td><td>3.1<b>4</b> · <b>1</b></td><td class="n">3.14</td><td>1 &lt; 5: stays</td></tr>
+        <tr><td>0.006 274</td><td class="n">2 figures</td><td>0.006 2 · <b>7</b> (leading zeros do not count)</td><td class="n">0.0063</td><td>7 &gt; 5: up</td></tr>
+        <tr><td>2.6751</td><td class="n">3 figures</td><td>2.6<b>7</b> · <b>5</b>1</td><td class="n">2.68</td><td>5 followed by 1: more than half, up</td></tr>
+        <tr><td>2.65</td><td class="n">2 figures</td><td>2.<b>6</b> · <b>5</b></td><td class="n">2.7 or 2.6</td><td>an exact tie: up (school) or to even (ISO)</td></tr>
+        <tr><td>9.96</td><td class="n">2 figures</td><td>9.<b>9</b> · <b>6</b></td><td class="n">10.</td><td>up, carried twice: 9.9 → 10.0, kept to 2 figures: 10. or 1.0 × 10<sup>1</sup></td></tr>
+        <tr><td>0.099 97</td><td class="n">3 figures</td><td>0.099 <b>9</b> · <b>7</b></td><td class="n">0.100</td><td>carried: the two final zeros are significant</td></tr>
+        <tr><td>45 678</td><td class="n">2 figures</td><td>4<b>5</b> · <b>6</b></td><td class="n">4.6 × 10<sup>4</sup></td><td>not 46 000, which would be ambiguous</td></tr>
+        <tr><td>−0.0345</td><td class="n">2 figures</td><td>−0.03<b>4</b> · <b>5</b></td><td class="n">−0.035 or −0.034</td><td>a tie: away from zero (school), or to the even 4 (ISO)</td></tr>
+        <tr><td>31.123</td><td class="n">tenths</td><td>31.<b>1</b> · <b>2</b></td><td class="n">31.1</td><td>after a sum, round at a decimal place (rule 13)</td></tr>
+        <tr><td>2.346</td><td class="n">2 figures</td><td>2.<b>3</b> · <b>4</b></td><td class="n">2.3</td><td>not 2.35 → 2.4 (rule 10)</td></tr>
+      </tbody>
+    </table>
+    <div class="tool" id="rounder">
+      <div class="row">
+        <label>A number <input type="text" id="rIn" value="0.099 97" spellcheck="false" autocomplete="off"></label>
+        <label>Significant figures <input type="text" id="rN" value="3" spellcheck="false" autocomplete="off" style="width:4rem"></label>
+      </div>
+      <div class="out" id="rOut"></div>
+    </div>
+  </section>
+
+  <section id="muldiv">
+    <h2 class="section"><span class="no">2.1.4</span>Multiplication and division</h2>
+    <div class="rule"><b class="n">Rule 12.</b> The result has as many significant figures as the factor with the fewest. What matters is <i>relative</i> precision: a number known to 2 figures is uncertain by about 1 to 10&nbsp;%, and no product can do better.</div>
+    <p class="eqn">4.56 × 1.4 = 6.384 → <b>6.4</b> <span style="color:var(--muted)">(2 figures, from 1.4)</span></p>
+    <div class="eqn"><span class="frac"><span>0.0258</span><span>3.1416</span></span> = 0.008 212… → <b>0.008 21</b> <span style="color:var(--muted)">(3 figures, from 0.0258)</span></div>
+    <p>The rule is a rough one: a number starting with 9 (9.8, uncertain by 1&nbsp;%) is as precise as one starting with 1 and having one more digit (1.02, uncertain by 1&nbsp;%). Some books therefore keep one extra figure when the least precise factor begins with 8 or 9, or when the result begins with 1. When it matters, compute the uncertainty (§&nbsp;2.1.11).</p>
+  </section>
+
+  <section id="addsub">
+    <h2 class="section"><span class="no">2.1.5</span>Addition and subtraction</h2>
+    <div class="rule"><b class="n">Rule 13.</b> The result is rounded at the decimal place of the least precise term: the leftmost of the terms’ last significant places. What matters here is <i>absolute</i> precision, so it is the position of the last digit that counts, not the number of figures.</div>
+    <p class="eqn">12.11 + 18.0 + 1.013 = 31.123 → <b>31.1</b> <span style="color:var(--muted)">(tenths, from 18.0)</span></p>
+    <p class="eqn">1.50 × 10<sup>3</sup> + 26.4 = 1526.4 → <b>1.53 × 10<sup>3</sup></b> <span style="color:var(--muted)">(tens, from 1.50 × 10<sup>3</sup>)</span></p>
+    <p>A sum can have more figures than its terms (9.7 + 0.6 = 10.3: two figures in, three out), and a difference can lose almost all of them: 1.0000 − 0.9998 = 0.0002 has one significant figure, though both terms had five. This loss in subtracting nearly equal numbers, <i>cancellation</i>, is the main way precision disappears in a calculation; rearrange the formula to avoid it when you can.</p>
+  </section>
+
+  <section id="functions">
+    <h2 class="section"><span class="no">2.1.6</span>Powers, roots, logarithms, exponentials and other functions</h2>
+    <div class="rule"><b class="n">Rule 14.</b> A power or a root keeps the significant figures of its base: (2.5)<sup>3</sup> = 15.625 → 16; <span class="rad"><svg class="rs" viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.5 12.5 L2.8 11.2 L5.2 19.5 L9.6 0.5" fill="none" stroke="currentColor" stroke-width="1.1" vector-effect="non-scaling-stroke"/></svg><span class="rc">30.0</span></span> = 5.477… → 5.48. (A square doubles the relative uncertainty and a square root halves it, but the rule of thumb ignores this.)</div>
+    <div class="rule"><b class="n">Rule 15.</b> A logarithm has as many <i>decimal places</i> as its argument has significant figures. The digits before the decimal point only give the power of ten, so they are not counted: log<sub>10</sub>(2.5 × 10<sup>−4</sup>) = −3.602… → <b>−3.60</b>. That is why a pH of 3.60 corresponds to a concentration known to 2 figures. The same holds for ln.</div>
+    <div class="rule"><b class="n">Rule 16.</b> Conversely, 10<sup><i>x</i></sup> (or e<sup><i>x</i></sup>) has as many significant figures as <i>x</i> has decimal places: 10<sup>−4.75</sup> = 1.778… × 10<sup>−5</sup> → <b>1.8 × 10<sup>−5</sup></b>.</div>
+    <div class="rule"><b class="n">Rule 17.</b> For any other function (sin, cos, tan…), there is no reliable rule of digits. Evaluate the function at the value and at the value moved by one unit of its last digit, and keep the digits that do not change: sin(30.0°) = 0.5000, sin(30.1°) = 0.5015, so the result is 0.500, three figures; but cos(89.0°) = 0.0175 and cos(89.1°) = 0.0157, so it is 0.017 or even 0.02.</div>
+  </section>
+
+  <section id="exact">
+    <h2 class="section"><span class="no">2.1.7</span>Exact numbers and constants</h2>
+    <p>Exact numbers never limit the significant figures of a result (rule 7). Besides counts and the integers of formulas, many constants are exact by definition. Since the revision of the SI in 2019, seven constants have fixed values, from which the units are defined:</p>
+    <table class="sf-table">
+      <thead><tr><th>Constant</th><th class="n">Exact value</th></tr></thead>
+      <tbody>
+        <tr><td>speed of light in vacuum <i>c</i></td><td class="n">299 792 458 m·s<sup>−1</sup></td></tr>
+        <tr><td>Planck constant <i>h</i></td><td class="n">6.626 070 15 × 10<sup>−34</sup> J·s</td></tr>
+        <tr><td>elementary charge <i>e</i></td><td class="n">1.602 176 634 × 10<sup>−19</sup> C</td></tr>
+        <tr><td>Boltzmann constant <i>k</i></td><td class="n">1.380 649 × 10<sup>−23</sup> J·K<sup>−1</sup></td></tr>
+        <tr><td>Avogadro constant <i>N</i><sub>A</sub></td><td class="n">6.022 140 76 × 10<sup>23</sup> mol<sup>−1</sup></td></tr>
+        <tr><td>caesium frequency Δν<sub>Cs</sub></td><td class="n">9 192 631 770 Hz</td></tr>
+        <tr><td>luminous efficacy <i>K</i><sub>cd</sub></td><td class="n">683 lm·W<sup>−1</sup></td></tr>
+      </tbody>
+    </table>
+    <p>So are the constants built from them, such as the gas constant <i>R</i> = <i>N</i><sub>A</sub><i>k</i> = 8.314 462 618… J·mol<sup>−1</sup>·K<sup>−1</sup>, and conventional values such as standard gravity <i>g</i><sub>n</sub> = 9.806 65 m·s<sup>−2</sup> and the standard atmosphere 101 325 Pa. In practice, use a constant with at least one or two more figures than your least precise datum, and it will not limit the result. Measured constants are not exact: the gravitational constant <i>G</i> = 6.674 30(15) × 10<sup>−11</sup> m<sup>3</sup>·kg<sup>−1</sup>·s<sup>−2</sup> is known to only about five figures. Neither are atomic weights, which carry their own number of figures (1.008, 15.999).</p>
+    <p>Conversions between units are exact when they are definitions (1&nbsp;h = 3600&nbsp;s, 1&nbsp;L = 1&nbsp;dm³, 1&nbsp;bar = 10<sup>5</sup>&nbsp;Pa, 0&nbsp;°C = 273.15&nbsp;K). Adding 273.15 to a Celsius temperature is an addition, though, and rule 13 applies: 25&nbsp;°C becomes 298&nbsp;K, 25.0&nbsp;°C becomes 298.2&nbsp;K.</p>
+  </section>
+
+  <section id="chains">
+    <h2 class="section"><span class="no">2.1.8</span>Calculations in several steps</h2>
+    <div class="rule"><b class="n">Rule 18.</b> Do not round intermediate results. Keep every digit (in the calculator’s memory) or at least two guard digits beyond the significant ones, and round only the final answer. Rounding at every step adds a rounding error at every step: <span class="frac"><span>1</span><span>3</span></span> rounded to 0.33, then multiplied by 3, gives 0.99 instead of 1.</div>
+    <div class="rule"><b class="n">Rule 19.</b> Still, follow the significant figures at every step, applying to each operation its own rule (12 or 13), to know how many the final answer may keep. Parentheses first: in (5.25 + 3.1) × 2.000, the sum 8.35 is known only to the tenth, 8.4, so 2 figures; the product is 16.70, rounded to 2 figures: <b>17</b>.</div>
+    <p>When a calculation mixes sums and products, the figures are decided operation by operation, not by counting over the whole formula: this is why a short subtraction inside a long product can ruin its precision (examples 6 and 17).</p>
+  </section>
+
+  <section id="calculator">
+    <h2 class="section"><span class="no">2.1.9</span>Calculators that show the rules</h2>
+    <p>The first evaluates a whole expression, operation by operation, the way you would by hand: every intermediate result is shown in full (it is kept unrounded for the next step, rule 18), with the number of significant figures it carries and the rule that decides it; only the final answer is rounded. Write a measured whole number with a decimal point (<i>25.</i>) or in scientific notation; whole numbers written without one, and powers of ten written 1e5, are taken as exact (counts, coefficients, exponents, unit conversions) while the box below is ticked. π and e are exact. Type / for a division: it is shown as a fraction.</p>
+    <div class="tool" id="calc">
+      <div class="row">
+        <label style="flex:1">Expression <input type="text" id="xIn" value="(3*12.011 + 8*1.008)" spellcheck="false" autocomplete="off" style="width:100%"></label>
+      </div>
+      <div class="row" style="margin-top:.5rem">
+        <label class="chk"><input type="checkbox" id="xInt" checked> whole numbers without a decimal point are exact</label>
+      </div>
+      <div class="out" id="xOut"></div>
+      <div class="legend">Operations: + − × (or *) ÷ (or /) ^ and parentheses; functions sqrt( ), log( ) (base 10), ln( ), exp( ), pow10( ); constants pi, e. Numbers: 0.0250, 1.50e3, 2,5.</div>
+    </div>
+    <p>The second builds the molar mass of any chemical formula from the IUPAC atomic weights of the <a href="periodic-table.html">periodic table</a>. Each count of atoms is exact, so multiplying by it keeps the significant figures of the atomic weight, not its decimal places; the sum is then rounded at the coarsest decimal place (rules 12 and 13).</p>
+    <div class="tool" id="mm">
+      <div class="row">
+        <label>Formula <input type="text" id="mIn" value="C6H12O6" spellcheck="false" autocomplete="off"></label>
+      </div>
+      <div class="out" id="mOut"></div>
+      <div class="legend">Formulas such as H2O, Ca(OH)2, CuSO4·5H2O (or CuSO4.5H2O), K4[Fe(CN)6]. Atomic weights in brackets are mass numbers of radioactive elements, known only to the unit.</div>
+    </div>
+  </section>
+
+  <section id="examples">
+    <h2 class="section"><span class="no">2.1.10</span>Worked examples, from simple to complicated</h2>
+    <p>Ordered from simple to complicated. Each shows the formula, then every intermediate result in full with the figures it carries and the rule that decides it; the answer is rounded once, at the end. Most can be replayed in the calculator of § 2.1.9.</p>
+    <div class="ex"><h4>Example 1 · Area of a sheet <span class="lvl">simple · product</span></h4>
+      <p class="given">A rectangle measures 12.5&nbsp;cm by 3.2&nbsp;cm. What is its area?</p>
+      <div class="eqn"><i>A</i> = <i>a</i> × <i>b</i></div>
+      <ol class="steps">
+        <li>12.5 has 3 figures, 3.2 has 2. <span class="c">rule 1</span></li>
+        <li><i>A</i> = 12.5 × 3.2 = 40.0&nbsp;cm<sup>2</sup>, in full.</li>
+        <li>A product keeps the fewest figures: 2. <span class="c">rule 12</span></li>
+        <li>40 written plainly would be ambiguous: scientific notation. <span class="c">rule 11</span></li>
+      </ol>
+      <div class="ans"><b>Answer</b> 4.0 × 10<sup>1</sup> cm<sup>2</sup> (or 40.&nbsp;cm<sup>2</sup>, with a decimal point) <button type="button" class="try" data-expr="12.5*3.2">replay in the calculator</button></div>
+    </div>
+    <div class="ex"><h4>Example 2 · Total mass <span class="lvl">simple · sum</span></h4>
+      <p class="given">Three samples weigh 12.11&nbsp;g, 18.0&nbsp;g and 1.013&nbsp;g, on three different balances. Total mass?</p>
+      <div class="eqn"><i>m</i> = <i>m</i><sub>1</sub> + <i>m</i><sub>2</sub> + <i>m</i><sub>3</sub></div>
+      <ol class="steps">
+        <li>Last significant places: hundredths, tenths, thousandths. In a sum the places decide, not the number of figures. <span class="c">rule 13</span></li>
+        <li>12.11 + 18.0 + 1.013 = 31.123&nbsp;g.</li>
+        <li>Round at the coarsest place, the tenths of 18.0. <span class="c">rules 8, 13</span></li>
+      </ol>
+      <div class="ans"><b>Answer</b> 31.1 g <button type="button" class="try" data-expr="12.11+18.0+1.013">replay in the calculator</button></div>
+    </div>
+    <div class="ex"><h4>Example 3 · Kinetic energy <span class="lvl">physics · exact factors</span></h4>
+      <p class="given">A ball of 2.50&nbsp;kg moves at 3.0&nbsp;m·s<sup>−1</sup>. Its kinetic energy?</p>
+      <div class="eqn"><i>E</i><sub>k</sub> = <span class="frac"><span>1</span><span>2</span></span> <i>m</i><i>v</i><sup>2</sup></div>
+      <ol class="steps">
+        <li>The <span class="frac"><span>1</span><span>2</span></span> and the exponent 2 are exact: they do not limit anything. <span class="c">rule 7</span></li>
+        <li><i>v</i><sup>2</sup> = 9.0&nbsp;m<sup>2</sup>·s<sup>−2</sup>: 2 figures, those of 3.0. <span class="c">rule 14</span></li>
+        <li><i>E</i><sub>k</sub> = <span class="frac"><span>1</span><span>2</span></span> × 2.50 × 9.0 = 11.25&nbsp;J.</li>
+        <li>The measured factors have 3 and 2 figures: 2. <span class="c">rule 12</span></li>
+      </ol>
+      <div class="ans"><b>Answer</b> 11 J <button type="button" class="try" data-expr="1/2*2.50*3.0^2">replay in the calculator</button></div>
+    </div>
+    <div class="ex"><h4>Example 4 · Speed of a falling stone <span class="lvl">physics · root</span></h4>
+      <p class="given">A stone falls 1.25&nbsp;m (<i>g</i> = 9.81&nbsp;m·s<sup>−2</sup>). Its speed at the bottom, air resistance neglected?</p>
+      <div class="eqn"><i>v</i> = <span class="rad"><svg class="rs" viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.5 12.5 L2.8 11.2 L5.2 19.5 L9.6 0.5" fill="none" stroke="currentColor" stroke-width="1.1" vector-effect="non-scaling-stroke"/></svg><span class="rc">2<i>g</i><i>h</i></span></span></div>
+      <ol class="steps">
+        <li>2<i>g</i><i>h</i> = 2 × 9.81 × 1.25 = 24.525&nbsp;m<sup>2</sup>·s<sup>−2</sup>: 3 figures; the 2 is exact. <span class="c">rules 7, 12</span></li>
+        <li><i>v</i> = <span class="rad"><svg class="rs" viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.5 12.5 L2.8 11.2 L5.2 19.5 L9.6 0.5" fill="none" stroke="currentColor" stroke-width="1.1" vector-effect="non-scaling-stroke"/></svg><span class="rc">24.525</span></span> = 4.9523&nbsp;m·s<sup>−1</sup>: a root keeps the 3 figures. <span class="c">rule 14</span></li>
+      </ol>
+      <div class="ans"><b>Answer</b> 4.95 m·s<sup>−1</sup> <button type="button" class="try" data-expr="sqrt(2*9.81*1.25)">replay in the calculator</button></div>
+    </div>
+    <div class="ex"><h4>Example 5 · <i>g</i> from a pendulum <span class="lvl">physics · a formula with π</span></h4>
+      <p class="given">A pendulum of length 0.750&nbsp;m has a period of 1.74&nbsp;s. Since <i>T</i> = 2π<span class="rad"><svg class="rs" viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.5 12.5 L2.8 11.2 L5.2 19.5 L9.6 0.5" fill="none" stroke="currentColor" stroke-width="1.1" vector-effect="non-scaling-stroke"/></svg><span class="rc"><span class="frac"><span><i>L</i></span><span><i>g</i></span></span></span></span>:</p>
+      <div class="eqn"><i>g</i> = <span class="frac"><span>4π<sup>2</sup><i>L</i></span><span><i>T</i><sup>2</sup></span></span></div>
+      <ol class="steps">
+        <li>4 and the exponent 2 are exact; π is taken with all the calculator’s digits. <span class="c">rule 7</span></li>
+        <li>Numerator: 4π<sup>2</sup> × 0.750 = 29.609&nbsp;m, 3 figures (from 0.750). <span class="c">rule 12</span></li>
+        <li>Denominator: 1.74<sup>2</sup> = 3.0276&nbsp;s<sup>2</sup>, 3 figures, kept unrounded. <span class="c">rules 14, 18</span></li>
+        <li><i>g</i> = <span class="frac"><span>29.609</span><span>3.0276</span></span> = 9.7796&nbsp;m·s<sup>−2</sup>: 3 figures. <span class="c">rule 12</span></li>
+      </ol>
+      <div class="ans"><b>Answer</b> 9.78 m·s<sup>−2</sup> <span style="color:var(--muted);font-size:.9rem">(its uncertainty is computed in example 19)</span> <button type="button" class="try" data-expr="4*pi^2*0.750/1.74^2">replay in the calculator</button></div>
+    </div>
+    <div class="ex"><h4>Example 6 · Density by water displacement <span class="lvl">physics · a subtraction loses a figure</span></h4>
+      <p class="given">A pebble of 25.47&nbsp;g is dropped into a graduated cylinder: the water rises from 12.3&nbsp;mL to 21.8&nbsp;mL. Its density?</p>
+      <div class="eqn">ρ = <span class="frac"><span><i>m</i></span><span><i>V</i><sub>2</sub> − <i>V</i><sub>1</sub></span></span></div>
+      <ol class="steps">
+        <li>Denominator first: 21.8 − 12.3 = 9.5&nbsp;mL, rounded at the tenths. <span class="c">rule 13</span></li>
+        <li>9.5 has only 2 figures, though both readings had 3: the subtraction lost one.</li>
+        <li>ρ = <span class="frac"><span>25.47</span><span>9.5</span></span> = 2.6811&nbsp;g·mL<sup>−1</sup>: 4 and 2 figures, so 2. <span class="c">rule 12</span></li>
+      </ol>
+      <div class="ans"><b>Answer</b> 2.7 g·mL<sup>−1</sup>: the 4 figures of the balance are wasted; to do better, measure the volume better. <button type="button" class="try" data-expr="25.47/(21.8-12.3)">replay in the calculator</button></div>
+    </div>
+    <div class="ex"><h4>Example 7 · Molar mass of water <span class="lvl">chemistry · exact counts</span></h4>
+      <p class="given">Atomic weights: H 1.008, O 15.999&nbsp;g·mol<sup>−1</sup>. Molar mass of H<sub>2</sub>O?</p>
+      <div class="eqn"><i>M</i>(H<sub>2</sub>O) = 2 <i>M</i>(H) + <i>M</i>(O)</div>
+      <ol class="steps">
+        <li>The 2 of H<sub>2</sub> is a count: exact. 2 × 1.008 = 2.016, still 4 figures, last place the thousandths. <span class="c">rules 7, 12</span></li>
+        <li>2.016 + 15.999 = 18.015: both terms end at the thousandths. <span class="c">rule 13</span></li>
+      </ol>
+      <div class="ans"><b>Answer</b> 18.015 g·mol<sup>−1</sup>, 5 figures, more than either atomic weight: a sum can gain figures. <button type="button" class="try" data-expr="2*1.008+15.999">replay in the calculator</button></div>
+    </div>
+    <div class="ex"><h4>Example 8 · Molar mass of glucose <span class="lvl">chemistry · when an exact count moves the last place</span></h4>
+      <p class="given">Glucose is C<sub>6</sub>H<sub>12</sub>O<sub>6</sub>. Atomic weights: C 12.011, H 1.008, O 15.999&nbsp;g·mol<sup>−1</sup>.</p>
+      <div class="eqn"><i>M</i> = 6 <i>M</i>(C) + 12 <i>M</i>(H) + 6 <i>M</i>(O)</div>
+      <ol class="steps">
+        <li>6 × 12.011 = 72.066: 5 figures (from 12.011), last place the thousandths. <span class="c">rules 7, 12</span></li>
+        <li>12 × 1.008 = 12.096: 1.008 has only 4 figures, so the product keeps 4: <b>12.10</b>, last place the <b>hundredths</b>. Multiplying by an exact 12 multiplies the uncertainty of 1.008 (±0.001) by 12 too: ±0.012, a hundredth. <span class="c">rules 7, 12</span></li>
+        <li>6 × 15.999 = 95.994: 5 figures, the thousandths. <span class="c">rule 12</span></li>
+        <li>Sum, with the full values: 72.066 + 12.096 + 95.994 = 180.156. <span class="c">rule 18</span></li>
+        <li>The coarsest last place is the hundredths, from the hydrogen term: round there. <span class="c">rules 8, 13</span></li>
+      </ol>
+      <div class="ans"><b>Answer</b> 180.16 g·mol<sup>−1</sup>, not 180.156: the twelve hydrogens limit the result. <button type="button" class="try" data-expr="6*12.011+12*1.008+6*15.999">replay in the calculator</button></div>
+    </div>
+    <div class="ex"><h4>Example 9 · Molar mass of a hydrate <span class="lvl">chemistry · grouping does not change the answer</span></h4>
+      <p class="given">Copper sulfate pentahydrate is CuSO<sub>4</sub>·5H<sub>2</sub>O. Atomic weights: Cu 63.546, S 32.06, O 15.999, H 1.008&nbsp;g·mol<sup>−1</sup>.</p>
+      <div class="eqn"><i>M</i> = <i>M</i>(Cu) + <i>M</i>(S) + 4 <i>M</i>(O) + 5 <i>M</i>(H<sub>2</sub>O)</div>
+      <ol class="steps">
+        <li><i>M</i>(H<sub>2</sub>O) = 2 × 1.008 + 15.999 = 18.015, the thousandths (example 7). <span class="c">rule 13</span></li>
+        <li>5 × 18.015 = 90.075: 5 figures, the thousandths. <span class="c">rule 12</span></li>
+        <li>4 × 15.999 = 63.996: 5 figures, the thousandths. <span class="c">rule 12</span></li>
+        <li>63.546 + 32.06 + 63.996 + 90.075 = 249.677: sulfur, 32.06, is known only to the hundredths. <span class="c">rule 13</span></li>
+        <li>Counting atom by atom instead, 9 O and 10 H: 9 × 15.999 = 143.99 (hundredths) and 10 × 1.008 = 10.08 (hundredths): the same 249.677, the same last place.</li>
+      </ol>
+      <div class="ans"><b>Answer</b> 249.68 g·mol<sup>−1</sup> <button type="button" class="try" data-expr="63.546+32.06+4*15.999+5*(2*1.008+15.999)">replay in the calculator</button></div>
+    </div>
+    <div class="ex"><h4>Example 10 · Preparing a solution <span class="lvl">chemistry · two quotients</span></h4>
+      <p class="given">3.65&nbsp;g of NaCl (<i>M</i> = 58.44&nbsp;g·mol<sup>−1</sup>) is dissolved and made up to 250.0&nbsp;mL in a volumetric flask. Amount and concentration?</p>
+      <div class="eqn"><i>n</i> = <span class="frac"><span><i>m</i></span><span><i>M</i></span></span> , &nbsp; <i>c</i> = <span class="frac"><span><i>n</i></span><span><i>V</i></span></span></div>
+      <ol class="steps">
+        <li><i>n</i> = <span class="frac"><span>3.65</span><span>58.44</span></span> = 0.062 457&nbsp;mol: 3 figures, reported 0.0625&nbsp;mol, kept in full. <span class="c">rules 12, 18</span></li>
+        <li><i>V</i> = 250.0&nbsp;mL = 0.2500&nbsp;L: changing the unit does not change the figures (4).</li>
+        <li><i>c</i> = <span class="frac"><span>0.062 457</span><span>0.2500</span></span> = 0.249 83&nbsp;mol·L<sup>−1</sup>: 3 figures, from the mass. <span class="c">rule 12</span></li>
+      </ol>
+      <div class="ans"><b>Answer</b> <i>n</i> = 0.0625 mol; <i>c</i> = 0.250 mol·L<sup>−1</sup>: the final zero is significant and must be written. <button type="button" class="try" data-expr="3.65/58.44/0.2500">replay in the calculator</button></div>
+    </div>
+    <div class="ex"><h4>Example 11 · A titration <span class="lvl">chemistry · a difference inside a product</span></h4>
+      <p class="given">25.00&nbsp;mL of hydrochloric acid (pipette) is titrated with sodium hydroxide at 0.1050&nbsp;mol·L<sup>−1</sup>. The burette reads 0.35&nbsp;mL before and 23.85&nbsp;mL at the end point. HCl + NaOH → NaCl + H<sub>2</sub>O, one to one (exact).</p>
+      <div class="eqn"><i>c</i><sub>HCl</sub> = <span class="frac"><span><i>c</i><sub>NaOH</sub> (<i>V</i><sub>end</sub> − <i>V</i><sub>start</sub>)</span><span><i>V</i><sub>HCl</sub></span></span></div>
+      <ol class="steps">
+        <li>Volume delivered: 23.85 − 0.35 = 23.50&nbsp;mL, to the hundredths: 4 figures. Here the subtraction loses nothing, the readings being far apart. <span class="c">rule 13</span></li>
+        <li>Numerator: 0.1050 × 23.50 = 2.4675&nbsp;mmol·…, 4 and 4 figures: 4. <span class="c">rule 12</span></li>
+        <li><i>c</i><sub>HCl</sub> = <span class="frac"><span>0.1050 × 23.50</span><span>25.00</span></span> = 0.098 70&nbsp;mol·L<sup>−1</sup>: 4 figures. The millilitres cancel; no conversion is needed. <span class="c">rule 12</span></li>
+      </ol>
+      <div class="ans"><b>Answer</b> 0.098 70 mol·L<sup>−1</sup>, written with its final zero. <button type="button" class="try" data-expr="0.1050*(23.85-0.35)/25.00">replay in the calculator</button></div>
+    </div>
+    <div class="ex"><h4>Example 12 · pH and back <span class="lvl">chemistry · logarithm, antilogarithm</span></h4>
+      <p class="given">(a) [H<sub>3</sub>O<sup>+</sup>] = 2.5 × 10<sup>−4</sup>&nbsp;mol·L<sup>−1</sup>: pH? (b) A buffer has pH 4.75: [H<sub>3</sub>O<sup>+</sup>]?</p>
+      <div class="eqn">pH = −log<sub>10</sub> [H<sub>3</sub>O<sup>+</sup>] , &nbsp; [H<sub>3</sub>O<sup>+</sup>] = 10<sup>−pH</sup></div>
+      <ol class="steps">
+        <li>(a) −log<sub>10</sub>(2.5 × 10<sup>−4</sup>) = 3.6021: 2 figures give 2 decimal places; the 3 only carries the power of ten. <span class="c">rule 15</span></li>
+        <li>(b) 10<sup>−4.75</sup> = 1.7783 × 10<sup>−5</sup>: 2 decimal places give 2 figures. <span class="c">rule 16</span></li>
+      </ol>
+      <div class="ans"><b>Answer</b> (a) pH = 3.60; (b) [H<sub>3</sub>O<sup>+</sup>] = 1.8 × 10<sup>−5</sup> mol·L<sup>−1</sup> <button type="button" class="try" data-expr="-log(2.5e-4)">replay in the calculator</button></div>
+    </div>
+    <div class="ex"><h4>Example 13 · Gas in a flask <span class="lvl">chemistry · a temperature conversion inside a quotient</span></h4>
+      <p class="given">2.50&nbsp;L of gas at 101.3&nbsp;kPa and 25&nbsp;°C. Amount of gas?</p>
+      <div class="eqn"><i>n</i> = <span class="frac"><span><i>pV</i></span><span><i>RT</i></span></span></div>
+      <ol class="steps">
+        <li><i>T</i> = 25 + 273.15 = 298.15&nbsp;K, rounded at the units of 25: 298&nbsp;K, 3 figures. 273.15 is exact, 25 is measured. <span class="c">rule 13</span></li>
+        <li>SI units: <i>p</i> = 1.013 × 10<sup>5</sup>&nbsp;Pa, <i>V</i> = 2.50 × 10<sup>−3</sup>&nbsp;m<sup>3</sup>; <i>R</i> = 8.314&nbsp;J·mol<sup>−1</sup>·K<sup>−1</sup>, more figures than the data. <span class="c">§ 2.1.7</span></li>
+        <li><i>n</i> = <span class="frac"><span>1.013 × 10<sup>5</sup> × 2.50 × 10<sup>−3</sup></span><span>8.314 × 298.15</span></span> = <span class="frac"><span>253.25</span><span>2478.8</span></span> = 0.102 17&nbsp;mol. <span class="c">rule 18</span></li>
+        <li>Fewest figures: 3, from 2.50 and from the temperature. <span class="c">rule 12</span></li>
+      </ol>
+      <div class="ans"><b>Answer</b> 0.102 mol <button type="button" class="try" data-expr="101.3e3*2.50e-3/(8.314*(25.+273.15))">replay in the calculator</button></div>
+    </div>
+    <div class="ex"><h4>Example 14 · Density of air <span class="lvl">chemistry · four data, one constant</span></h4>
+      <p class="given">Air (<i>M</i> = 28.96&nbsp;g·mol<sup>−1</sup>) at 98.6&nbsp;kPa and 18.5&nbsp;°C. Its density, from the ideal gas law?</p>
+      <div class="eqn">ρ = <span class="frac"><span><i>pM</i></span><span><i>RT</i></span></span></div>
+      <ol class="steps">
+        <li><i>T</i> = 18.5 + 273.15 = 291.65, rounded at the tenths: 291.7&nbsp;K, 4 figures. <span class="c">rule 13</span></li>
+        <li><i>M</i> = 0.028 96&nbsp;kg·mol<sup>−1</sup>, 4 figures; <i>R</i> = 8.314 462 618&nbsp;J·mol<sup>−1</sup>·K<sup>−1</sup>, exact. <span class="c">§ 2.1.7</span></li>
+        <li>ρ = <span class="frac"><span>98 600 × 0.028 96</span><span>8.314 462 618 × 291.65</span></span> = <span class="frac"><span>2855.5</span><span>2424.9</span></span> = 1.1775&nbsp;kg·m<sup>−3</sup>.</li>
+        <li>Figures: 3 (pressure), 4, 4: the pressure decides. <span class="c">rule 12</span></li>
+      </ol>
+      <div class="ans"><b>Answer</b> 1.18 kg·m<sup>−3</sup> <button type="button" class="try" data-expr="98.6e3*0.02896/(8.314462618*(18.5+273.15))">replay in the calculator</button></div>
+    </div>
+    <div class="ex"><h4>Example 15 · Energy of a photon <span class="lvl">physics · exact SI constants</span></h4>
+      <p class="given">A green laser emits at 532&nbsp;nm. Energy of one photon, in joules and in electronvolts?</p>
+      <div class="eqn"><i>E</i> = <span class="frac"><span><i>hc</i></span><span>λ</span></span></div>
+      <ol class="steps">
+        <li><i>h</i>, <i>c</i> and <i>e</i> are exact since 2019: only λ limits the result, to 3 figures. <span class="c">rule 7, § 2.1.7</span></li>
+        <li><i>E</i> = <span class="frac"><span>6.626 070 15 × 10<sup>−34</sup> × 299 792 458</span><span>532 × 10<sup>−9</sup></span></span> = 3.7339 × 10<sup>−19</sup>&nbsp;J.</li>
+        <li>In eV: <span class="frac"><span>3.7339 × 10<sup>−19</sup></span><span>1.602 176 634 × 10<sup>−19</sup></span></span> = 2.3305&nbsp;eV. <span class="c">rule 12</span></li>
+      </ol>
+      <div class="ans"><b>Answer</b> 3.73 × 10<sup>−19</sup> J = 2.33 eV <button type="button" class="try" data-expr="6.62607015e-34*299792458/532e-9">replay in the calculator</button></div>
+    </div>
+    <div class="ex"><h4>Example 16 · Oxygen at depth <span class="lvl">diving · product, sum, product</span></h4>
+      <p class="given">A diver breathes Nitrox 32 (oxygen fraction 0.32) at 33.5&nbsp;m in seawater (<i>ρ</i> = 1025&nbsp;kg·m<sup>−3</sup>, <i>g</i> = 9.81&nbsp;m·s<sup>−2</sup>), under 1.013&nbsp;bar of atmosphere. Partial pressure of oxygen?</p>
+      <div class="eqn"><i>p</i>O<sub>2</sub> = <i>f</i>O<sub>2</sub> × <span class="bp">(</span><span class="frac"><span>ρ<i>gh</i></span><span>10<sup>5</sup></span></span> + <i>p</i><sub>atm</sub>)</div>
+      <ol class="steps">
+        <li>Water: <span class="frac"><span>1025 × 9.81 × 33.5</span><span>10<sup>5</sup></span></span> = 3.368 51&nbsp;bar (10<sup>5</sup>&nbsp;Pa per bar, exact): 3 figures, so to the hundredths. <span class="c">rule 12</span></li>
+        <li>Absolute: 3.368 51 + 1.013 = 4.381 51&nbsp;bar, rounded at the hundredths of the water term: 4.38&nbsp;bar. <span class="c">rule 13</span></li>
+        <li><i>p</i>O<sub>2</sub> = 0.32 × 4.381 51 = 1.4021&nbsp;bar: 2 figures, from 0.32. <span class="c">rule 12</span></li>
+      </ol>
+      <div class="ans"><b>Answer</b> <i>p</i>O<sub>2</sub> = 1.4 bar, the usual working limit. To know whether it is 1.38 or 1.42, the gas must be analysed to more than two figures. <button type="button" class="try" data-expr="0.32*(1025.*9.81*33.5/1e5+1.013)">replay in the calculator</button></div>
+    </div>
+    <div class="ex"><h4>Example 17 · Calorimetry <span class="lvl">physics · two subtractions in a quotient</span></h4>
+      <p class="given">A metal block of 50.0&nbsp;g at 98.7&nbsp;°C is dropped into 150.0&nbsp;g of water at 22.5&nbsp;°C (<i>c</i><sub>w</sub> = 4.184&nbsp;J·g<sup>−1</sup>·K<sup>−1</sup>); both end at 25.8&nbsp;°C. Specific heat of the metal?</p>
+      <div class="eqn"><i>c</i><sub>m</sub> = <span class="frac"><span><i>m</i><sub>w</sub> <i>c</i><sub>w</sub> (<i>T</i><sub>f</sub> − <i>T</i><sub>w</sub>)</span><span><i>m</i><sub>m</sub> (<i>T</i><sub>m</sub> − <i>T</i><sub>f</sub>)</span></span></div>
+      <ol class="steps">
+        <li>Heat gained by the water equals heat lost by the metal; solve for <i>c</i><sub>m</sub>.</li>
+        <li>Warming of the water: 25.8 − 22.5 = 3.3&nbsp;K, to the tenths: only <b>2</b> figures. <span class="c">rule 13</span></li>
+        <li>Cooling of the metal: 98.7 − 25.8 = 72.9&nbsp;K: 3 figures. <span class="c">rule 13</span></li>
+        <li>Numerator: 150.0 × 4.184 × 3.3 = 2071.1&nbsp;J: 4, 4 and 2 figures, so 2. <span class="c">rule 12</span></li>
+        <li>Denominator: 50.0 × 72.9 = 3645&nbsp;g·K: 3 figures. <span class="c">rule 12</span></li>
+        <li><i>c</i><sub>m</sub> = <span class="frac"><span>2071.1</span><span>3645</span></span> = 0.568 20&nbsp;J·g<sup>−1</sup>·K<sup>−1</sup>: 2 figures. <span class="c">rule 12</span></li>
+      </ol>
+      <div class="ans"><b>Answer</b> 0.57 J·g<sup>−1</sup>·K<sup>−1</sup>. The small temperature rise of the water, known to 2 figures, limits everything: a better thermometer would help more than a better balance. <button type="button" class="try" data-expr="150.0*4.184*(25.8-22.5)/(50.0*(98.7-25.8))">replay in the calculator</button></div>
+    </div>
+    <div class="ex"><h4>Example 18 · Burning propane <span class="lvl">chemistry · a chain of five steps, and the price of rounding too early</span></h4>
+      <p class="given">25.0&nbsp;g of propane burns completely: C<sub>3</sub>H<sub>8</sub> + 5 O<sub>2</sub> → 3 CO<sub>2</sub> + 4 H<sub>2</sub>O. What mass of CO<sub>2</sub> forms? (C 12.011, H 1.008, O 15.999&nbsp;g·mol<sup>−1</sup>)</p>
+      <div class="eqn"><i>m</i>(CO<sub>2</sub>) = 3 × <span class="frac"><span><i>m</i>(C<sub>3</sub>H<sub>8</sub>)</span><span><i>M</i>(C<sub>3</sub>H<sub>8</sub>)</span></span> × <i>M</i>(CO<sub>2</sub>)</div>
+      <ol class="steps">
+        <li><i>M</i>(C<sub>3</sub>H<sub>8</sub>) = 3 × 12.011 + 8 × 1.008 = 36.033 + 8.064 = 44.097&nbsp;g·mol<sup>−1</sup>, to the thousandths: 5 figures. <span class="c">rules 7, 12, 13</span></li>
+        <li><i>M</i>(CO<sub>2</sub>) = 12.011 + 2 × 15.999 = 44.009&nbsp;g·mol<sup>−1</sup>: 5 figures. <span class="c">rule 13</span></li>
+        <li><i>n</i>(C<sub>3</sub>H<sub>8</sub>) = <span class="frac"><span>25.0</span><span>44.097</span></span> = 0.566 93&nbsp;mol: 3 figures, kept in full. <span class="c">rules 12, 18</span></li>
+        <li><i>n</i>(CO<sub>2</sub>) = 3 × 0.566 93 = 1.700 80&nbsp;mol: the 3 of the equation is exact, 3 figures remain. <span class="c">rule 7</span></li>
+        <li><i>m</i>(CO<sub>2</sub>) = 1.700 80 × 44.009 = 74.850&nbsp;g: 3 figures. <span class="c">rule 12</span></li>
+        <li>Had each step been rounded (0.567, then 1.70, then 1.70 × 44.0), the answer would have been 74.8&nbsp;g: wrong in its last figure. <span class="c">rule 18</span></li>
+      </ol>
+      <div class="ans"><b>Answer</b> 74.9 g of CO<sub>2</sub> <button type="button" class="try" data-expr="3*(25.0/(3*12.011+8*1.008))*(12.011+2*15.999)">replay in the calculator</button></div>
+    </div>
+    <div class="ex"><h4>Example 19 · The pendulum, with its uncertainty <span class="lvl">complicated · propagation</span></h4>
+      <p class="given">In example 5, <i>L</i> = 0.750 ± 0.002&nbsp;m and <i>T</i> = 1.74 ± 0.01&nbsp;s. How precise is <i>g</i> = 9.7796&nbsp;m·s<sup>−2</sup> really?</p>
+      <div class="eqn"><span class="frac"><span><i>u</i>(<i>g</i>)</span><span><i>g</i></span></span> = <span class="rad"><svg class="rs" viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.5 12.5 L2.8 11.2 L5.2 19.5 L9.6 0.5" fill="none" stroke="currentColor" stroke-width="1.1" vector-effect="non-scaling-stroke"/></svg><span class="rc"><span class="bp">(</span><span class="frac"><span><i>u</i>(<i>L</i>)</span><span><i>L</i></span></span><span class="bp">)</span><sup>2</sup> + <span class="bp">(</span>2 <span class="frac"><span><i>u</i>(<i>T</i>)</span><span><i>T</i></span></span><span class="bp">)</span><sup>2</sup></span></span></div>
+      <ol class="steps">
+        <li>For <i>g</i> ∝ <i>L</i><i>T</i><sup>−2</sup>, relative uncertainties combine in quadrature, each multiplied by its exponent. <span class="c">§ 2.1.11</span></li>
+        <li><span class="frac"><span>0.002</span><span>0.750</span></span> = 0.002 67 ; &nbsp; 2 × <span class="frac"><span>0.01</span><span>1.74</span></span> = 0.011 49</li>
+        <li><span class="frac"><span><i>u</i>(<i>g</i>)</span><span><i>g</i></span></span> = <span class="rad"><svg class="rs" viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.5 12.5 L2.8 11.2 L5.2 19.5 L9.6 0.5" fill="none" stroke="currentColor" stroke-width="1.1" vector-effect="non-scaling-stroke"/></svg><span class="rc">0.002 67<sup>2</sup> + 0.011 49<sup>2</sup></span></span> = 0.0118 ; &nbsp; <i>u</i>(<i>g</i>) = 9.7796 × 0.0118 = 0.115&nbsp;m·s<sup>−2</sup></li>
+        <li>Round the uncertainty to 2 figures, 0.12, and the value to the same decimal place. <span class="c">§ 2.1.11</span></li>
+      </ol>
+      <div class="ans"><b>Answer</b> <i>g</i> = 9.78 ± 0.12 m·s<sup>−2</sup>. The 3 figures of example 5 were right; the period, squared, dominates the uncertainty.</div>
+    </div>
+    <div class="ex"><h4>Example 20 · Radioactive decay <span class="lvl">complicated · a measured exponent</span></h4>
+      <p class="given">5.00&nbsp;g of iodine-131 (half-life <i>T</i> = 8.02&nbsp;days) decays for 12.0&nbsp;days. How much is left?</p>
+      <div class="eqn"><i>m</i> = <i>m</i><sub>0</sub> <span class="bp">(</span><span class="frac"><span>1</span><span>2</span></span><span class="bp">)</span><sup><span class="frac"><span><i>t</i></span><span><i>T</i></span></span></sup></div>
+      <ol class="steps">
+        <li>Exponent: <span class="frac"><span>12.0</span><span>8.02</span></span> = 1.4963: 3 figures. <span class="c">rule 12</span></li>
+        <li><span class="bp">(</span><span class="frac"><span>1</span><span>2</span></span><span class="bp">)</span><sup>1.4963</sup> = 10<sup>1.4963 × log<sub>10</sub> 0.5</sup> = 10<sup>−0.4504</sup>: this exponent has 3 figures, so 3 decimal places, so the power has 3 figures. <span class="c">rule 16</span></li>
+        <li>10<sup>−0.4504</sup> = 0.354 47 ; &nbsp; <i>m</i> = 5.00 × 0.354 47 = 1.7724&nbsp;g: 3 figures. <span class="c">rule 12</span></li>
+      </ol>
+      <div class="ans"><b>Answer</b> 1.77 g <button type="button" class="try" data-expr="5.00*(1/2)^(12.0/8.02)">replay in the calculator</button></div>
+    </div>
+    <div class="ex"><h4>Example 21 · Sound level <span class="lvl">complicated · logarithm of a ratio</span></h4>
+      <p class="given">A sound has an intensity of 3.2 × 10<sup>−5</sup>&nbsp;W·m<sup>−2</sup>; the reference <i>I</i><sub>0</sub> = 10<sup>−12</sup>&nbsp;W·m<sup>−2</sup> is a definition, exact. Its level?</p>
+      <div class="eqn"><i>L</i> = 10 log<sub>10</sub> <span class="frac"><span><i>I</i></span><span><i>I</i><sub>0</sub></span></span></div>
+      <ol class="steps">
+        <li><span class="frac"><span>3.2 × 10<sup>−5</sup></span><span>10<sup>−12</sup></span></span> = 3.2 × 10<sup>7</sup>: 2 figures. <span class="c">rule 12</span></li>
+        <li>log<sub>10</sub>(3.2 × 10<sup>7</sup>) = 7.5051: 2 decimal places, 7.51. <span class="c">rule 15</span></li>
+        <li>× 10, exact: 75.051, the decimal place moves with it: 75.1&nbsp;dB. <span class="c">rule 7</span></li>
+      </ol>
+      <div class="ans"><b>Answer</b> 75.1 dB: 3 figures from a 2-figure intensity; after a logarithm, count decimals, not figures. <button type="button" class="try" data-expr="10*log(3.2e-5/1e-12)">replay in the calculator</button></div>
+    </div>
+    <div class="ex"><h4>Example 22 · Average of repeated measurements <span class="lvl">complicated · statistics</span></h4>
+      <p class="given">Five measurements of <i>g</i>: 9.81, 9.79, 9.83, 9.80, 9.82&nbsp;m·s<sup>−2</sup>. Best value?</p>
+      <div class="eqn"><i>ḡ</i> = <span class="frac"><span>Σ <i>g</i><sub>i</sub></span><span><i>N</i></span></span> , &nbsp; <i>u</i>(<i>ḡ</i>) = <span class="frac"><span><i>s</i></span><span><span class="rad"><svg class="rs" viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.5 12.5 L2.8 11.2 L5.2 19.5 L9.6 0.5" fill="none" stroke="currentColor" stroke-width="1.1" vector-effect="non-scaling-stroke"/></svg><span class="rc"><i>N</i></span></span></span></span></div>
+      <ol class="steps">
+        <li>Sum: 49.05, to the hundredths; mean: <span class="frac"><span>49.05</span><span>5</span></span> = 9.810, the 5 being a count, exact. <span class="c">rules 7, 13</span></li>
+        <li>Standard deviation <i>s</i> = 0.016&nbsp;m·s<sup>−2</sup>: the scatter of one measurement.</li>
+        <li>Standard error of the mean: <span class="frac"><span>0.016</span><span><span class="rad"><svg class="rs" viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.5 12.5 L2.8 11.2 L5.2 19.5 L9.6 0.5" fill="none" stroke="currentColor" stroke-width="1.1" vector-effect="non-scaling-stroke"/></svg><span class="rc">5</span></span></span></span> = 0.0071&nbsp;m·s<sup>−2</sup>: averaging <i>N</i> measurements shrinks the uncertainty by <span class="rad"><svg class="rs" viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.5 12.5 L2.8 11.2 L5.2 19.5 L9.6 0.5" fill="none" stroke="currentColor" stroke-width="1.1" vector-effect="non-scaling-stroke"/></svg><span class="rc"><i>N</i></span></span>, so the mean may keep a digit no single measurement has. <span class="c">§ 2.1.11</span></li>
+      </ol>
+      <div class="ans"><b>Answer</b> <i>g</i> = 9.810 ± 0.007 m·s<sup>−2</sup> <button type="button" class="try" data-expr="(9.81+9.79+9.83+9.80+9.82)/5">replay in the calculator</button></div>
+    </div>
+  </section>
+
+  <section id="uncertainty">
+    <h2 class="section"><span class="no">2.1.11</span>Beyond the rules: uncertainties</h2>
+    <p>The rules of significant figures approximate the propagation of uncertainties, the method of metrology (the <i>Guide to the Expression of Uncertainty in Measurement</i>, GUM). Each datum is given with a standard uncertainty <i>u</i>, and for independent data:</p>
+    <div class="eqn"><i>u</i>(<i>a</i> ± <i>b</i>) = <span class="rad"><svg class="rs" viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.5 12.5 L2.8 11.2 L5.2 19.5 L9.6 0.5" fill="none" stroke="currentColor" stroke-width="1.1" vector-effect="non-scaling-stroke"/></svg><span class="rc"><i>u</i>(<i>a</i>)<sup>2</sup> + <i>u</i>(<i>b</i>)<sup>2</sup></span></span> <span class="why2">sums: absolute uncertainties combine (rule 13)</span></div>
+    <div class="eqn"><span class="frac"><span><i>u</i>(<i>ab</i>)</span><span><i>ab</i></span></span> = <span class="frac"><span><i>u</i><span class="bp">(</span><span class="frac"><span><i>a</i></span><span><i>b</i></span></span><span class="bp">)</span></span><span><span class="frac"><span><i>a</i></span><span><i>b</i></span></span></span></span> = <span class="rad"><svg class="rs" viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.5 12.5 L2.8 11.2 L5.2 19.5 L9.6 0.5" fill="none" stroke="currentColor" stroke-width="1.1" vector-effect="non-scaling-stroke"/></svg><span class="rc"><span class="bp">(</span><span class="frac"><span><i>u</i>(<i>a</i>)</span><span><i>a</i></span></span><span class="bp">)</span><sup>2</sup> + <span class="bp">(</span><span class="frac"><span><i>u</i>(<i>b</i>)</span><span><i>b</i></span></span><span class="bp">)</span><sup>2</sup></span></span> <span class="why2">products and quotients: relative uncertainties combine (rule 12)</span></div>
+    <div class="eqn"><span class="frac"><span><i>u</i>(<i>a</i><sup><i>n</i></sup>)</span><span><i>a</i><sup><i>n</i></sup></span></span> = |<i>n</i>| <span class="frac"><span><i>u</i>(<i>a</i>)</span><span><i>a</i></span></span> &nbsp;&nbsp;&nbsp;&nbsp; <i>u</i>(<i>f</i>) = |<i>f</i> ′(<i>a</i>)| <i>u</i>(<i>a</i>) <span class="why2">powers and any function</span></div>
+    <p>The last line explains rules 15 and 16: <i>u</i>(log<sub>10</sub> <i>a</i>) = 0.434 <span class="frac"><span><i>u</i>(<i>a</i>)</span><span><i>a</i></span></span>, an absolute uncertainty on the logarithm set by the relative uncertainty of <i>a</i>. To report a result: round the uncertainty to one or two significant figures (two when its first digit is 1 or 2), then round the value to the same decimal place: 9.7796 ± 0.1154 becomes 9.78 ± 0.12, and 0.249 83 ± 0.000 43 becomes 0.2498 ± 0.0004. When the uncertainty is known, it decides the digits, not the rules.</p>
+  </section>
+
+  <section id="mistakes">
+    <h2 class="section"><span class="no">2.1.12</span>Common mistakes</h2>
+    <ul class="mistakes">
+      <li><b>Copying the calculator.</b> <span class="frac"><span>25.47</span><span>9.5</span></span> = 2.681 052 631 6 is not a density of ten figures; it is 2.7&nbsp;g·mL<sup>−1</sup>.</li>
+      <li><b>Dropping significant zeros.</b> 0.250&nbsp;mol·L<sup>−1</sup> is not 0.25&nbsp;mol·L<sup>−1</sup>: the zero says the third figure was measured.</li>
+      <li><b>Rounding along the way.</b> Round once, at the end (rule 18); round from the full number, never from a rounded one (rule 10).</li>
+      <li><b>Counting figures in a sum.</b> In a sum, the decimal place decides (rule 13): 100.1 + 0.0035 = 100.1, not 100.10.</li>
+      <li><b>Counting figures in a logarithm.</b> pH 7.0 has one significant figure in the concentration it stands for (rule 15).</li>
+      <li><b>Letting exact numbers limit the result.</b> The 2 of 2π<i>r</i>, the 12 of a dozen, 1&nbsp;in = 2.54&nbsp;cm: all exact (rule 7).</li>
+      <li><b>Writing ambiguous zeros.</b> 4600 with two figures is 4.6 × 10<sup>3</sup> (rule 11).</li>
+      <li><b>Forgetting the units.</b> A significant figure belongs to a quantity with its unit: 0.002 50&nbsp;kg = 2.50&nbsp;g, 3 figures either way.</li>
+    </ul>
+  </section>
+
+  <h2 class="section">References</h2>
+  <p style="font-size:.95rem">BIPM. (2019). <i>The International System of Units (SI)</i> (9th ed.). Bureau international des poids et mesures.<br>
+  JCGM. (2008). <i>Evaluation of measurement data — Guide to the expression of uncertainty in measurement</i> (JCGM 100:2008). Joint Committee for Guides in Metrology.<br>
+  Taylor, J. R. (1997). <i>An Introduction to Error Analysis: The Study of Uncertainties in Physical Measurements</i> (2nd ed.). University Science Books.<br>
+  Commissions romandes de mathématique, de physique et de chimie. (2025). <i>Formulaires et tables : Mathématiques, physique, chimie</i>. Éditions G d’Encre.</p>
+  <div class="pager"><a href="mathematics.html">&larr; Mathematics</a><span></span></div>
+</main>
+<footer class="site-footer">
+  <span>&copy; 2026 Antoine Barthelemy</span>
+  <span>Figures are computed in your browser &middot; nothing is sent anywhere.</span>
+</footer>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  /* ---------------- reading a number: which digits are significant ---------------- */
+
+  // returns { ok, neg, int, frac, dot, exp, kinds (per digit of int+frac), sf, sfMax, lsd (power of ten of the last sure significant digit), value }
+  function parse(str) {
+    var s = String(str).trim().replace(/\s+/g, '').replace(/,/g, '.').replace(/[−–]/g, '-')
+      .replace(/(?:×|x|\*)10\^?/i, 'e').replace(/·10\^?/, 'e').replace(/E/, 'e');
+    var m = /^([+-]?)(\d*)(\.?)(\d*)(?:e([+-]?\d+))?$/.exec(s);
+    if (!m || (m[2] + m[4]) === '') return { ok: false };
+    var int = m[2], dot = m[3] === '.', frac = m[4], exp = m[5] ? parseInt(m[5], 10) : 0, d = int + frac, kinds = [], i;
+    var first = d.search(/[1-9]/), last = -1;
+    for (i = d.length - 1; i >= 0; i--) if (d[i] !== '0') { last = i; break; }
+    for (i = 0; i < d.length; i++) {
+      if (first < 0 || i < first) kinds.push('lead');
+      else if (d[i] !== '0') kinds.push('sig');
+      else if (i < last) kinds.push('captive');
+      else if (dot || frac.length) kinds.push('trail');       // after a decimal point
+      else kinds.push('amb');                               // trailing zeros of a whole number
+    }
+    var sf = kinds.filter(function (k) { return k === 'sig' || k === 'captive' || k === 'trail'; }).length;
+    var amb = kinds.filter(function (k) { return k === 'amb'; }).length;
+    var lastSure = -1; kinds.forEach(function (k, j) { if (k === 'sig' || k === 'captive' || k === 'trail') lastSure = j; });
+    var lsd = (first < 0 ? (frac.length ? -frac.length : 0) : int.length - 1 - lastSure) + exp;
+    if (first < 0 && !frac.length) lsd = exp;
+    return { ok: true, neg: m[1] === '-', int: int, frac: frac, dot: dot, exp: exp, kinds: kinds, sf: first < 0 ? 0 : sf, sfMax: sf + amb,
+             zero: first < 0, lsd: lsd, value: parseFloat(s) };
+  }
+  function sup(n) { return String(n).replace(/-/g, '−'); }
+  function digitsHTML(p) {
+    var h = p.neg ? '−' : '', d = p.int + p.frac;
+    for (var i = 0; i < d.length; i++) {
+      if (i === p.int.length && (p.dot || p.frac)) h += '.';
+      var k = p.kinds[i]; h += '<span class="' + (k === 'lead' ? 'd-no' : k === 'amb' ? 'd-amb' : 'd-sig') + '">' + d[i] + '</span>';
+    }
+    if (p.dot && !p.frac) h += '.';
+    if (p.exp) h += ' × 10<sup>' + sup(p.exp) + '</sup>';
+    return h;
+  }
+  function placeName(e) {
+    var names = { 3: 'thousands', 2: 'hundreds', 1: 'tens', 0: 'units', '-1': 'tenths', '-2': 'hundredths', '-3': 'thousandths' };
+    return names[e] || '10<sup>' + sup(e) + '</sup>';
+  }
+
+  /* ---------------- writing a result with n significant figures ---------------- */
+
+  function clean(v) { return Number(v.toPrecision(12)); }
+  function fmt(v, sf) {
+    if (!isFinite(v)) return '—';
+    if (v === 0) return '0';
+    sf = Math.max(1, sf);
+    var r = Number(Math.abs(v).toPrecision(sf)), e = Math.floor(Math.log10(r) + 1e-12), lsd = e - sf + 1, sign = v < 0 ? '−' : '';
+    var sci = lsd > 0 || e >= 6 || e <= -5 || (lsd === 0 && /0$/.test(String(Math.round(r))) && sf > 0 && r >= 10);
+    if (sci) {
+      var mant = (r / Math.pow(10, e)).toFixed(sf - 1);
+      return sign + mant + ' × 10<sup>' + sup(e) + '</sup>';
+    }
+    return sign + r.toFixed(Math.max(0, -lsd));
+  }
+  function full(v) { return isFinite(v) ? String(clean(v)).replace('-', '−').replace(/e([+-]?\d+)/, function (_, x) { return ' × 10<sup>' + sup(+x) + '</sup>'; }) : '—'; }
+
+  /* ---------------- the counter ---------------- */
+
+  var cIn = document.getElementById('cIn'), cD = document.getElementById('cDigits'), cO = document.getElementById('cOut');
+  function count() {
+    var p = parse(cIn.value);
+    if (!p.ok) { cD.innerHTML = ''; cO.innerHTML = '<span class="warn">Not a number this tool can read.</span>'; return; }
+    cD.innerHTML = digitsHTML(p);
+    if (p.zero) { cO.innerHTML = 'A zero has no significant figure; its precision is its last place: the ' + placeName(p.lsd) + '.'; return; }
+    var why = [], d = p.int + p.frac;
+    p.kinds.forEach(function (k, i) {
+      var t = { lead: 'leading zero, not significant (rule 3)', sig: 'nonzero, significant (rule 1)', captive: 'zero between nonzero digits, significant (rule 2)',
+                trail: 'trailing zero after a decimal point, significant (rule 4)', amb: 'trailing zero of a whole number: ambiguous (rule 5)' }[k];
+      why.push('<li><b>' + d[i] + '</b> (digit ' + (i + 1) + '): ' + t + '</li>');
+    });
+    var n = p.sf === p.sfMax ? '<b>' + p.sf + '</b> significant figure' + (p.sf > 1 ? 's' : '') : '<b>' + p.sf + ' to ' + p.sfMax + '</b> significant figures: ambiguous';
+    var mant = d.replace(/^0+/, ''), sci = '';
+    if (p.sf) {
+      var e = p.int.length - 1 - d.search(/[1-9]/) + p.exp, sig = mant.slice(0, p.sf);
+      sci = sig[0] + (sig.length > 1 ? '.' + sig.slice(1) : '') + ' × 10<sup>' + sup(e) + '</sup>';
+    }
+    cO.innerHTML = n + '. Last significant place: the ' + placeName(p.lsd) + '. In scientific notation: ' + (p.neg ? '−' : '') + sci +
+      (p.sf !== p.sfMax ? ' (taking the ambiguous zeros as not significant; with all of them: ' + p.sfMax + ' figures).' : '.') +
+      '<ol>' + why.join('') + '</ol>';
+  }
+  cIn.addEventListener('input', count); count();
+
+  /* ---------------- the rounding tool: on the digits as written, no binary arithmetic ---------------- */
+
+  var rIn = document.getElementById('rIn'), rN = document.getElementById('rN'), rOut = document.getElementById('rOut');
+  function roundSteps() {
+    var p = parse(rIn.value), n = parseInt(rN.value, 10);
+    if (!p.ok || p.zero) { rOut.innerHTML = '<span class="warn">Enter a nonzero number.</span>'; return; }
+    if (!(n >= 1 && n <= 30)) { rOut.innerHTML = '<span class="warn">Enter a number of figures, 1 or more.</span>'; return; }
+    var d = p.int + p.frac, f = d.search(/[1-9]/), k = f + n - 1, steps = [];
+    var place = p.int.length - 1 - k + p.exp;   // power of ten of the last kept digit
+    function mark(upto) { var h = ''; for (var j = 0; j < d.length; j++) { if (j === p.int.length && (p.dot || p.frac)) h += '.'; h += j <= upto && j >= f ? '<b>' + d[j] + '</b>' : '<span class="d-no">' + d[j] + '</span>'; } return (p.neg ? '−' : '') + h + (p.exp ? ' × 10<sup>' + sup(p.exp) + '</sup>' : ''); }
+    if (k >= d.length) {
+      rOut.innerHTML = 'The number has only ' + (d.length - f) + ' digits from its first nonzero one: rounding cannot add figures. Writing zeros at the end would claim a precision that was never measured.';
+      return;
+    }
+    steps.push('Count ' + n + ' significant figure' + (n > 1 ? 's' : '') + ' from the first nonzero digit: ' + mark(k) + '. The last kept digit is the <b>' + d[k] + '</b>, at the ' + placeName(place) + '.');
+    var next = d[k + 1], rest = d.slice(k + 2), up, tieUp = null;
+    if (next === undefined) { steps.push('Nothing follows it: the number already has exactly ' + n + ' figures.'); up = false; }
+    else if (+next < 5) { steps.push('The first dropped digit is ' + next + ', below 5: the kept digit stays (rule 8).'); up = false; }
+    else if (+next > 5 || /[1-9]/.test(rest)) { steps.push('The first dropped digit is ' + next + (next === '5' ? ', followed by ' + rest + ', more than half' : ', above 5') + ': the kept digit goes up by one (rule 8).'); up = true; }
+    else {
+      var even = +d[k] % 2 === 0;
+      steps.push('The dropped part is exactly 5: a tie (rule 9). Rounding half up: the kept digit goes up. Rounding to even: the kept digit ' + d[k] + ' is ' + (even ? 'even, so it stays' : 'odd, so it goes up') + '.');
+      up = true; tieUp = !even;
+    }
+    function build(goUp) {
+      var keep = d.slice(0, k + 1).split('').map(Number), j = k;
+      if (goUp) { while (j >= 0) { if (keep[j] < 9) { keep[j]++; break; } keep[j] = 0; j--; } if (j < 0) keep.unshift(1); }
+      var carried = keep.length > k + 1;   // 9.96 → 10.0: one more digit in front
+      var digits = keep.join(''), intLen = p.int.length + (carried ? 1 : 0), e10 = p.exp;
+      var sigStart = digits.search(/[1-9]/), sigDigits = digits.slice(sigStart, sigStart + n);
+      var top = intLen - 1 - sigStart + e10;   // power of ten of the first significant digit
+      var last = top - n + 1, sign = p.neg ? '−' : '';
+      if (last > 0 || top >= 6 || top <= -5) return sign + sigDigits[0] + (n > 1 ? '.' + sigDigits.slice(1) : '') + ' × 10<sup>' + sup(top) + '</sup>';
+      var str = '';
+      if (top < 0) str = '0.' + '0'.repeat(-top - 1) + sigDigits;
+      else { str = sigDigits.slice(0, top + 1); var fr = sigDigits.slice(top + 1); str += fr ? '.' + fr : (last === 0 && /0$/.test(str) ? '.' : ''); }
+      return sign + str;
+    }
+    var res = build(up), carry = up && /^9+$/.test(d.slice(f, k + 1).replace(/^0+/, '').slice(-1)) && d[k] === '9';
+    if (carry) steps.push('The kept digit is a 9: it becomes 0 and the carry moves to the digit before it, as far as needed (step 4).');
+    steps.push('Drop the rest and write the ' + n + ' figure' + (n > 1 ? 's' : '') + ' so they can be read: zeros produced after the decimal point are kept; dropped places before it become a power of ten (rule 11).');
+    var h = '<ol>' + steps.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ol>';
+    if (tieUp !== null && !tieUp) h += '<div class="res">Result: <b>' + res + '</b> (half up) &nbsp;or&nbsp; <b>' + build(false) + '</b> (to even)</div>';
+    else h += '<div class="res">Result: <b>' + res + '</b></div>';
+    rOut.innerHTML = h;
+  }
+  rIn.addEventListener('input', roundSteps); rN.addEventListener('input', roundSteps); roundSteps();
+
+  /* ---------------- the expression calculator ---------------- */
+
+  function mag(v) { return Math.floor(Math.log10(Math.abs(v)) + 1e-12); }
+  function sfText(n) { return n + ' significant figure' + (n === 1 ? '' : 's'); }
+  function lastPlace(q) { return 'last place: the ' + placeName(q.lsd); }
+  // a value carried through the calculation: full value, and either exact or its figures and last place
+  function measured(v, sf) { return { v: v, exact: false, sf: sf, lsd: v === 0 ? -sf : mag(v) - sf + 1 }; }
+  function shown(q) { return q.exact ? full(q.v) + ' (exact)' : fmt(q.v, q.sf); }
+  function tokenize(str) {
+    var s = str.replace(/[×·]/g, '*').replace(/÷/g, '/').replace(/[−–]/g, '-').replace(/π/g, 'pi'), out = [], m;
+    var re = /\s*(?:(\d+(?:[.,]\d*)?(?:[eE][+-]?\d+)?|[.,]\d+(?:[eE][+-]?\d+)?)|([A-Za-z]+[0-9]*)|(\*\*|[-+*/^()]))/y;
+    re.lastIndex = 0;
+    while (re.lastIndex < s.length) {
+      if (/^\s*$/.test(s.slice(re.lastIndex))) break;
+      var at = re.lastIndex; m = re.exec(s);
+      if (!m) throw 'Cannot read “' + s.slice(at).trim().slice(0, 12) + '”.';
+      if (m[1]) out.push({ t: 'num', s: m[1] }); else if (m[2]) out.push({ t: 'id', s: m[2].toLowerCase() }); else out.push({ t: 'op', s: m[3] === '**' ? '^' : m[3] });
+    }
+    return out;
+  }
+  // whole numbers, and powers of ten written 1e5, are exact when the box is ticked
+  function isExact(s, on) { return on && (/^\d+$/.test(s) || /^1[eE][+-]?\d+$/.test(s)); }
+  function pretty(s) {
+    s = s.replace(',', '.'); var m = /^(.*?)[eE]([+-]?\d+)$/.exec(s);
+    if (!m) return s;
+    return (m[1] === '1' ? '' : m[1] + ' × ') + '10<sup>' + sup(+m[2]) + '</sup>';
+  }
+  function evaluate(str, intExact) {
+    var tk = tokenize(str), i = 0, steps = [];
+    function peek() { return tk[i]; }
+    function eat(s) { if (tk[i] && tk[i].s === s) { i++; return true; } return false; }
+    function step(expr, q, why, rule) { steps.push({ expr: expr, q: q, why: why, rule: rule }); }
+    function lit(s) {
+      var p = parse(s);
+      if (!p.ok) throw 'Cannot read the number ' + s + '.';
+      var exact = isExact(s, intExact);
+      var q = exact ? { v: p.value, exact: true } : { v: p.value, exact: false, sf: p.sf, lsd: p.lsd, amb: p.sf !== p.sfMax, zero: p.zero };
+      q.label = pretty(s); return q;
+    }
+    function atom() {
+      var t = peek(); if (!t) throw 'The expression ends too early.';
+      if (t.t === 'num') { i++; return lit(t.s); }
+      if (t.t === 'op' && t.s === '(') { i++; var q = add(); if (!eat(')')) throw 'A parenthesis is not closed.'; q = Object.assign({}, q); q.inner = q.label; if (!/^<span class="frac">[\s\S]*<\/span><\/span>$/.test(q.label) || /<\/span><\/span>[^<]/.test(q.label)) q.label = '(' + q.label + ')'; return q; }   // a fraction groups itself: no parentheses
+      if (t.t === 'id') {
+        i++;
+        if (t.s === 'pi') return { v: Math.PI, exact: true, label: 'π' };
+        if (t.s === 'e') return { v: Math.E, exact: true, label: 'e' };
+        var F = { sqrt: 1, log: 1, log10: 1, ln: 1, exp: 1, pow10: 1 };
+        if (!F[t.s]) throw 'Unknown name “' + t.s + '”.';
+        if (!eat('(')) throw t.s + ' needs parentheses: ' + t.s + '( … ).';
+        var a = add(); if (!eat(')')) throw 'A parenthesis is not closed.';
+        return fn(t.s === 'log10' ? 'log' : t.s, a);
+      }
+      throw 'Unexpected “' + t.s + '”.';
+    }
+    function fn(name, a) {
+      var x = a.inner || a.label, q, why, rule;
+      var lab = { sqrt: '<span class="rad"><svg class="rs" viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.5 12.5 L2.8 11.2 L5.2 19.5 L9.6 0.5" fill="none" stroke="currentColor" stroke-width="1.1" vector-effect="non-scaling-stroke"/></svg><span class="rc">' + x + '</span></span>', log: 'log<sub>10</sub>(' + x + ')', ln: 'ln(' + x + ')', exp: 'e<sup>' + x + '</sup>', pow10: '10<sup>' + x + '</sup>' }[name];
+      var v = { sqrt: Math.sqrt, log: Math.log10, ln: Math.log, exp: Math.exp, pow10: function (x) { return Math.pow(10, x); } }[name](a.v);
+      if (!isFinite(v)) throw lab + ' is not defined.';
+      if (a.exact) { q = { v: v, exact: true }; why = 'the argument is exact, so is the result'; rule = 7; }
+      else if (name === 'sqrt') { q = measured(v, a.sf); why = 'a root keeps the figures of its argument (' + a.sf + ')'; rule = 14; }
+      else if (name === 'log' || name === 'ln') {
+        q = { v: v, exact: false, lsd: -a.sf }; q.sf = Math.max(1, mag(v === 0 ? 1 : v) + a.sf + 1);
+        why = 'a logarithm keeps as many decimal places as its argument has figures: ' + a.sf; rule = 15;
+      } else {
+        var dec = Math.max(0, -a.lsd); q = measured(v, Math.max(1, dec));
+        why = 'an exponential has as many figures as its exponent has decimal places: ' + dec + (dec ? '' : ' (shown with 1: an order of magnitude only)'); rule = 16;
+      }
+      q.label = lab; step(lab, q, why, rule); return q;
+    }
+    function power() {
+      var a = atom();
+      if (eat('^')) {
+        var b = unary(), v = Math.pow(a.v, b.v), q, why, rule = 14;
+        if (!isFinite(v)) throw 'The power is not defined.';
+        if (a.exact && b.exact) { q = { v: v, exact: true }; why = 'exact numbers give an exact result'; rule = 7; }
+        else if (b.exact) { q = measured(v, a.sf); why = 'a power keeps the figures of its base (' + a.sf + '); the exponent ' + b.label + ' is exact'; }
+        else {   // a measured exponent: write the power as 10^z with z = b log a, then rule 16
+          var z = b.v * Math.log10(a.v), zsf = a.exact ? b.sf : Math.min(a.sf, b.sf), zl = z === 0 ? -zsf : mag(z) - zsf + 1, d = Math.max(0, -zl);
+          q = measured(v, Math.max(1, d));
+          why = 'a measured exponent: the power is 10 to the ' + full(z) + ', an exponent of ' + zsf + ' figures, so ' + d + ' decimal places, so ' + Math.max(1, d) + ' figures'; rule = 16;
+        }
+        q.label = a.label + '<sup>' + (b.inner || b.label) + '</sup>'; step(q.label, q, why, rule); return q;
+      }
+      return a;
+    }
+    function unary() {
+      if (eat('-')) { var a = unary(), q = Object.assign({}, a, { v: -a.v, label: '−' + a.label }); return q; }
+      if (eat('+')) return unary();
+      return power();
+    }
+    function mul() {
+      var a = unary();
+      while (peek() && peek().t === 'op' && (peek().s === '*' || peek().s === '/')) {
+        var op = tk[i++].s, b = unary(), v = op === '*' ? a.v * b.v : a.v / b.v, q, why, rule = 12;
+        if (!isFinite(v)) throw 'Division by zero.';
+        var lab = op === '*' ? a.label + ' × ' + b.label : '<span class="frac"><span>' + (a.inner || a.label) + '</span><span>' + (b.inner || b.label) + '</span></span>';
+        if (a.exact && b.exact) { q = { v: v, exact: true }; why = 'both are exact, so is the result'; rule = 7; }
+        else {
+          var parts = [a, b].filter(function (x) { return !x.exact; }), n = Math.min.apply(null, parts.map(function (x) { return x.sf; }));
+          q = measured(v, n);
+          why = parts.length === 2 ? 'a product keeps the fewest figures: ' + a.label + ' has ' + a.sf + ', ' + b.label + ' has ' + b.sf + ', so ' + n
+                                   : (a.exact ? a : b).label + ' is exact, so the result keeps the ' + n + ' figures of ' + parts[0].label + ' (not its decimal places)';
+          if (parts.some(function (x) { return x.amb; })) why += '; a number with ambiguous zeros was counted at its smallest';
+        }
+        q.label = lab; step(lab, q, why, rule); a = q;
+      }
+      return a;
+    }
+    function add() {
+      var a = mul();
+      while (peek() && peek().t === 'op' && (peek().s === '+' || peek().s === '-')) {
+        var op = tk[i++].s, b = mul(), v = op === '+' ? a.v + b.v : a.v - b.v, q, why, rule = 13;
+        var lab = a.label + (op === '+' ? ' + ' : ' − ') + b.label;
+        if (a.exact && b.exact) { q = { v: v, exact: true }; why = 'both are exact, so is the result'; rule = 7; }
+        else {
+          var parts = [a, b].filter(function (x) { return !x.exact; }), place = Math.max.apply(null, parts.map(function (x) { return x.lsd; }));
+          var r = clean(Math.round(clean(v) / Math.pow(10, place)) * Math.pow(10, place));
+          why = 'a sum is rounded at the coarsest last place: ' + parts.map(function (x) { return x.label + ' ends at the ' + placeName(x.lsd); }).join(', ') + ', so the ' + placeName(place);
+          if (r === 0) { q = { v: v, exact: false, sf: 0, lsd: place }; why += '; nothing significant is left (cancellation)'; }
+          else {
+            q = { v: v, exact: false, lsd: place, sf: mag(r) - place + 1 };
+            var fewest = Math.min.apply(null, parts.map(function (x) { return x.sf; }));
+            if (q.sf < fewest) why += ' — figures were lost (' + q.sf + ' left)';
+            else if (q.sf > Math.max.apply(null, parts.map(function (x) { return x.sf; }))) why += ' — the sum gains figures (' + q.sf + ')';
+            else why += ' — ' + q.sf + ' figures';
+          }
+        }
+        q.label = lab; step(lab, q, why, rule); a = q;
+      }
+      return a;
+    }
+    var res = add();
+    if (i < tk.length) throw 'Unexpected “' + tk[i].s + '”.';
+    return { res: res, steps: steps };
+  }
+  function show(q) {   // the full value, with the figures it may keep
+    if (q.exact) return full(q.v) + ' <span class="why">(exact)</span>';
+    if (!q.sf) return full(q.v) + ' <span class="why">(no significant figure)</span>';
+    return full(q.v) + ' <span class="why">→ ' + q.sf + ' fig.: ' + (q.lsd !== undefined && q.sf ? fmtPlace(q) : fmt(q.v, q.sf)) + '</span>';
+  }
+  function fmtPlace(q) { return fmt(q.v, q.sf); }
+  var xIn = document.getElementById('xIn'), xInt = document.getElementById('xInt'), xOut = document.getElementById('xOut');
+  function calc() {
+    var r;
+    try { r = evaluate(xIn.value, xInt.checked); } catch (err) { xOut.innerHTML = '<span class="warn">' + err + '</span>'; return; }
+    var lits = [];
+    (function collect() { tokenize(xIn.value).forEach(function (t) { if (t.t === 'num') lits.push(t.s); }); })();
+    var dataRows = lits.map(function (s) {
+      var p = parse(s), ex = isExact(s, xInt.checked);
+      return '<tr><td>' + digitsHTML(p) + '</td><td>' + (ex ? 'exact (' + (/e/i.test(s) ? 'a power of ten' : 'a whole number') + ')' : p.zero ? 'a measured zero' : sfText(p.sf) + (p.sf !== p.sfMax ? ' (ambiguous)' : '') + ', last place: the ' + placeName(p.lsd)) + '</td></tr>';
+    }).join('');
+    var h = (dataRows ? '<table class="st"><thead><tr><th>Datum</th><th>Precision</th></tr></thead><tbody>' + dataRows + '</tbody></table>' : '');
+    if (r.steps.length) {
+      h += '<table class="st"><thead><tr><th>Step</th><th>Operation</th><th>Full value, kept for the next step</th></tr></thead><tbody>' +
+        r.steps.map(function (s, k) {
+          return '<tr><td>' + (k + 1) + '</td><td class="mx">' + s.expr + '<div class="why">' + s.why + ' (rule ' + s.rule + ')</div></td><td class="n">' + show(s.q) + '</td></tr>';
+        }).join('') + '</tbody></table>';
+    }
+    var q = r.res;
+    h += '<div class="res">Result: <b>' + (q.exact ? full(q.v) + '</b> (exact)' : !q.sf ? '0</b> (nothing significant is left)' : fmt(q.v, q.sf) + '</b> <span class="why">' + sfText(q.sf) + ', rounded once, at the end (rules 8, 18)</span>') + '</div>';
+    xOut.innerHTML = h;
+  }
+  var qx = new URLSearchParams(location.search).get('expr'); if (qx) xIn.value = qx;   // ?expr=… opens the calculator on an expression
+  xIn.addEventListener('input', calc); xInt.addEventListener('change', calc); calc();
+  document.addEventListener('click', function (ev) {
+    var b = ev.target.closest('.try'); if (!b) return;
+    xIn.value = b.dataset.expr; xInt.checked = true; calc();
+    document.getElementById('calc').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+
+  /* ---------------- the molar mass calculator ---------------- */
+
+  var mIn = document.getElementById('mIn'), mOut = document.getElementById('mOut');
+  var E = window.PERIODIC_ELEMENTS || [], W = {}; E.forEach(function (e) { W[e.sym] = e; });
+  function molar() {
+    var f = mIn.value.trim().replace(/\./g, '·').replace(/\s+/g, ''), n;
+    try { n = window.Compounds.count(f); } catch (err) { n = null; }
+    var syms = n ? Object.keys(n) : [];
+    if (!syms.length || syms.some(function (s) { return !W[s]; })) { mOut.innerHTML = '<span class="warn">Not a formula this tool can read (check the capital letters: Co is cobalt, CO is carbon monoxide).</span>'; return; }
+    var rows = [], terms = [];
+    syms.forEach(function (s) {
+      var w = W[s].mass, br = /^\[/.test(w), p = parse(w.replace(/[\[\]]/g, '')), k = n[s], v = k * p.value;
+      var q = k === 1 ? { v: v, sf: p.sf, lsd: p.lsd } : measured(v, p.sf);
+      terms.push(q);
+      rows.push('<tr><td>' + s + '</td><td class="n">' + k + '</td><td class="n">' + w + '</td><td>' + sfText(p.sf) + (br ? ', a mass number' : '') + '</td><td class="n">' +
+        (k === 1 ? w.replace(/[\[\]]/g, '') : k + ' × ' + w.replace(/[\[\]]/g, '') + ' = ' + full(v)) + '</td><td class="n">' + fmt(v, q.sf) + '</td><td>' + placeName(q.lsd) + '</td></tr>');
+    });
+    var tot = terms.reduce(function (t, q) { return t + q.v; }, 0), place = Math.max.apply(null, terms.map(function (q) { return q.lsd; }));
+    var r = clean(Math.round(clean(tot) / Math.pow(10, place)) * Math.pow(10, place)), sf = mag(r) - place + 1;
+    var coarse = syms.filter(function (s, j) { return terms[j].lsd === place; });
+    mOut.innerHTML = '<table class="st"><thead><tr><th>El.</th><th>Count (exact)</th><th>Atomic weight</th><th>Figures</th><th>Count × weight</th><th>Kept as</th><th>Last place</th></tr></thead><tbody>' + rows.join('') + '</tbody></table>' +
+      '<ol><li>Each product keeps the figures of its atomic weight; the count, exact, does not limit it, but it moves the last place to the left when it makes the number larger (rules 7, 12).</li>' +
+      '<li>Sum, unrounded: ' + terms.map(function (q) { return full(q.v); }).join(' + ') + ' = ' + full(tot) + '.</li>' +
+      '<li>The coarsest last place is the ' + placeName(place) + ', set by ' + coarse.join(', ') + ': round the sum there (rule 13).</li></ol>' +
+      '<div class="res"><i>M</i>(' + window.Compounds.html(f) + ') = <b>' + fmt(r, sf) + ' g/mol</b> <span class="why">' + sfText(sf) + '</span></div>';
+  }
+  mIn.addEventListener('input', molar); molar();
+});
+</script>
+</body>
+</html>
