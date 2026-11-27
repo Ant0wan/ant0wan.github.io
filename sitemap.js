@@ -21,6 +21,7 @@
     { id: 'vo', label: 'Boyle volumes', href: 'volumes.html', r: 6, p: 'ph' },
     { id: 'ox', label: 'pO₂ isopleths', href: 'oxygen-chart.html', r: 6, p: 'ph' },
     { id: 'pd', label: 'GUE', href: 'plan-a-dive.html', r: 7, p: 'dv' },
+    { id: 'sg', label: 'Standard gases', href: 'standard-gases.html', r: 6.5, p: 'pd' },
     { id: 'gc', label: 'Gas cost', href: 'gas-cost.html', r: 6.5, p: 'pd' },
     { id: 'cc', label: 'Course cost', href: 'course-cost.html', r: 6.5, p: 'pd' },
     { id: 'ms', label: 'Raup morphospace', href: 'morphospace.html', r: 7, p: 'pa' },
@@ -35,7 +36,7 @@
     dv: [75, 0, 130], py: [-40, -150, -120], cm: [150, -115, -45], bi: [100, 35, -150],
     ge: [-175, 95, 95], pa: [-80, 30, -150], cs: [-170, -20, 10],
     ph: [150, 40, 250], pp: [60, 130, 340], vo: [230, 120, 360], ox: [250, -30, 330],
-    pd: [-20, -85, 240], gc: [-125, -125, 300], cc: [-95, -15, 345], pf: [20, -195, 320],
+    pd: [-20, -85, 240], gc: [-125, -125, 300], cc: [-95, -15, 345], sg: [60, -150, 300], pf: [20, -195, 320],
     ms: [-105, -45, -235],
     ch: [-275, -40, 90],
     ab: [-235, -150, 30],
@@ -92,6 +93,14 @@
       ctx.lineTo(.4 * S, S); ctx.lineTo(-.4 * S, S); ctx.closePath(); ctx.stroke();
       ctx.strokeRect(-.12 * S, -1.1 * S, .24 * S, .25 * S);
       ctx.font = 'bold ' + (.8 * S) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('¤', 0, .15 * S);
+    },
+    sg: function (S, t, rgb, fog) { // pie of a trimix: oxygen, helium and nitrogen slices
+      var f = [.21, .35, .44], a = -Math.PI / 2 + t * .2;
+      f.forEach(function (p, i) {
+        ctx.fillStyle = soft(rgb, fog, [.9, .15, .45][i]);
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, .9 * S, a, a + p * 6.283); ctx.closePath(); ctx.fill(); ctx.stroke();
+        a += p * 6.283;
+      });
     },
     cc: function (S, t, rgb, fog) { // certificate with a price seal
       ctx.fillStyle = soft(rgb, fog, .14); ctx.fillRect(-S, -.7 * S, 1.8 * S, 1.3 * S); ctx.strokeRect(-S, -.7 * S, 1.8 * S, 1.3 * S);

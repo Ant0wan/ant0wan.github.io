@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GUE Standard Gas Mixes — Antoine Barthelemy</title>
+  <meta name="description" content="The Global Underwater Explorers (GUE) standard gas mixes: what they are, why GUE uses them, and how they are used, with a summary table.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <script>(function(){var t=null,q=/[?&]theme=(dark|light)/.exec(location.search);if(q)t=q[1];try{if(!t)t=localStorage.getItem('theme')}catch(e){}if(!t){var m=/(?:^|;)theme=(dark|light)/.exec(window.name);if(m)t=m[1]}if(!t&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)t='dark';document.documentElement.setAttribute('data-theme',t||'light')})()</script>
+  <link rel="stylesheet" href="site.css">
+  <script src="site.js"></script>
+  <script src="fish.js" defer></script>
+  <style>
+    .prose p, .prose li { text-align: justify; hyphens: auto; -webkit-hyphens: auto; }
+    .prose ul { padding-left: 1.4rem; }
+    .prose li { margin-bottom: .45rem; }
+    .sg-chart { display: block; width: 100%; max-width: 760px; margin: 1rem auto 0; font-family: var(--font); }
+    .sg-chart .grid { stroke: var(--grid); stroke-width: 1; }
+    .sg-chart .sep { stroke: var(--grid-strong); stroke-width: 1; stroke-dasharray: 3 3; }
+    .sg-chart .tick, .sg-chart .axis { fill: var(--muted); font-size: 11px; }
+    .sg-chart .tick { text-anchor: middle; }
+    .sg-chart .axis { text-anchor: end; }
+    .sg-chart .axis { font-style: italic; }
+    .sg-chart .lab { fill: var(--ink); font-size: 13px; }
+    .sg-chart .val { fill: var(--muted); font-size: 11px; }
+    .sg-chart .usable { fill: var(--grid); }
+    .sg-chart .band { fill: var(--c-blue); opacity: .75; }
+    .sg-chart .deco { fill: var(--c-green); opacity: .6; }
+    .sg-chart .switch { stroke: var(--ink); stroke-width: 2; }
+    .sg-chart { cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
+    .sg-chart.drag { cursor: grabbing; }
+    .gas-table td.note { white-space: normal; font-size: .85rem; color: var(--muted); min-width: 14rem; }
+    .gas-table sup { font-size: .7em; }
+  </style>
+</head>
+<body>
+<button id="theme-toggle" type="button" aria-label="Switch to dark mode"><span class="theme-icon" aria-hidden="true"></span></button>
+<main class="page">
+  <h1 class="paper-title">GUE Standard Gas Mixes</h1>
+  <div class="byline">What they are, why GUE uses them, and how</div>
+  <div class="abstract"><strong>Abstract</strong>
+    Global Underwater Explorers (GUE) does not let each diver pick a &ldquo;best mix&rdquo; for every dive. It uses a short list of standard mixes, each covering a range of depths, plus a few standard decompression gases switched at fixed depths. This page explains the rules the mixes are built on, why a whole team breathes the same gases, and how the mixes are used on a dive, then sums them up in one table.
+  </div>
+
+  <div class="prose">
+  <h2 class="section">Reading a mix</h2>
+  <p>A mix is named by its oxygen and helium percentages, and the rest is nitrogen. <i>EAN32</i> (Nitrox 32) is 32% oxygen and 68% nitrogen. <i>Trimix 21/35</i> is 21% oxygen, 35% helium and 44% nitrogen. Helium is added to make the gas less narcotic and less dense at depth. Oxygen is reduced on deeper mixes so that its partial pressure stays safe.</p>
+
+  <h2 class="section">The rules behind the mixes</h2>
+  <div class="eq">
+    <span><i>p</i>O₂ = <i>F</i><sub>O₂</sub> (<i>d</i>/10 + 1)</span><span class="tag">(1)</span>
+    <span>END = (<i>d</i> + 10)(1 &minus; <i>F</i><sub>He</sub>) &minus; 10</span><span class="tag">(2)</span>
+    <span class="param"><i>d</i> = depth (m), <i>F</i> = gas fraction; END counts oxygen as narcotic, as GUE does</span>
+  </div>
+  <ul>
+    <li><b>Oxygen.</b> During the working part of the dive the oxygen partial pressure stays around 1.2&ndash;1.3 bar, at most 1.4 bar. During decompression it is raised to 1.4 bar on deep stops and 1.6 bar at the 6 m stop, to speed up off-gassing while the diver is resting.</li>
+    <li><b>Narcosis.</b> The equivalent narcotic depth (END) stays at about 30 m or less. GUE counts oxygen as narcotic, so only helium lowers the END (equation 2). At 30 m a diver can still think clearly and solve problems.</li>
+    <li><b>Gas density.</b> Dense gas is harder to breathe and builds up carbon dioxide. The equivalent air density depth (EADD), the depth at which air would be as dense as the mix, stays close to 30 m on the standard mixes up to 60 m.</li>
+    <li><b>No deep air.</b> Below 30 m GUE uses helium mixes, never air.</li>
+  </ul>
+
+  <h2 class="section">Why standard gases</h2>
+  <ul>
+    <li><b>Team.</b> Every diver in the team breathes the same gas. A donated gas is the planned gas at the planned depth, and the whole team shares one decompression schedule and one maximum depth.</li>
+    <li><b>Familiarity.</b> Diving the same few gases again and again, divers learn their no-stop times, decompression and oxygen exposure, and can plan with simple rules of thumb.</li>
+    <li><b>Fewer choices, fewer errors.</b> There is no debate between 30% and 28%: the depth picks the gas. Fewer numbers means fewer mistakes in planning, labelling and analysis.</li>
+    <li><b>Margin.</b> Each mix covers a range of depths, so a few metres beyond the plan does not put the diver in serious trouble.</li>
+    <li><b>Blending.</b> The deep trimixes are made by adding helium and topping up with EAN32: 35% helium and 65% EAN32 give 20.8% oxygen, 21/35; the same recipe, with 45, 55, 65 or 70% helium, gives about 18/45, 15/55, 12/65 and 10/70. Leftover helium is used up, and fill stations learn a few recipes.</li>
+  </ul>
+
+  <h2 class="section">How they are used</h2>
+  <ul>
+    <li><b>Bottom gas</b> is carried in the back-mounted twinset and chosen from the deepest planned depth: EAN32 to 30 m, then 21/35 to 45 m and 18/45 to 60 m, and deeper trimixes beyond. Trimix 30/30 is an alternative to EAN32 down to 30 m, with less narcosis and lower density.</li>
+    <li><b>Decompression gas</b> is carried in stage cylinders, each labelled with its gas and maximum depth and analysed before the dive. On a Tech 1 dive the single decompression gas is EAN50, switched at 21 m. Deeper dives add oxygen at 6 m and, for long decompressions, trimix 35/25 from 36 m.</li>
+    <li><b>Switching.</b> The team switches gas together at the planned depth, confirming the cylinder and its label for each diver before breathing from it.</li>
+    <li><b>Travel gas.</b> With 15/55 and deeper mixes the bottom gas is hypoxic: it has too little oxygen to breathe at the surface. The diver descends and ascends on 21/35 as a travel gas, which is also used for decompression from 57 m.</li>
+    <li><b>Rebreathers.</b> The same mixes are used as diluents on closed-circuit rebreathers, and as bailout gas.</li>
+  </ul>
+  </div>
+
+  <h2 class="section">Depth ranges</h2>
+  <svg id="sgchart" viewBox="0 0 720 392" role="img" aria-labelledby="sgfig-t" class="sg-chart"><title id="sgfig-t">Depth range of each GUE standard mix</title>
+  <line x1="120.0" y1="30" x2="120.0" y2="362" class="grid"/>
+  <text x="120.0" y="22" class="tick">0</text>
+  <line x1="165.0" y1="30" x2="165.0" y2="362" class="grid"/>
+  <text x="165.0" y="22" class="tick">10</text>
+  <line x1="210.0" y1="30" x2="210.0" y2="362" class="grid"/>
+  <text x="210.0" y="22" class="tick">20</text>
+  <line x1="255.0" y1="30" x2="255.0" y2="362" class="grid"/>
+  <text x="255.0" y="22" class="tick">30</text>
+  <line x1="300.0" y1="30" x2="300.0" y2="362" class="grid"/>
+  <text x="300.0" y="22" class="tick">40</text>
+  <line x1="345.0" y1="30" x2="345.0" y2="362" class="grid"/>
+  <text x="345.0" y="22" class="tick">50</text>
+  <line x1="390.0" y1="30" x2="390.0" y2="362" class="grid"/>
+  <text x="390.0" y="22" class="tick">60</text>
+  <line x1="435.0" y1="30" x2="435.0" y2="362" class="grid"/>
+  <text x="435.0" y="22" class="tick">70</text>
+  <line x1="480.0" y1="30" x2="480.0" y2="362" class="grid"/>
+  <text x="480.0" y="22" class="tick">80</text>
+  <line x1="525.0" y1="30" x2="525.0" y2="362" class="grid"/>
+  <text x="525.0" y="22" class="tick">90</text>
+  <line x1="570.0" y1="30" x2="570.0" y2="362" class="grid"/>
+  <text x="570.0" y="22" class="tick">100</text>
+  <line x1="615.0" y1="30" x2="615.0" y2="362" class="grid"/>
+  <text x="615.0" y="22" class="tick">110</text>
+  <line x1="660.0" y1="30" x2="660.0" y2="362" class="grid"/>
+  <text x="660.0" y="22" class="tick">120</text>
+  <text x="660" y="386" class="axis" text-anchor="end">depth (m)</text>
+  <rect x="120.0" y="40" width="135.0" height="14" class="usable"/>
+  <rect x="120.0" y="40" width="135.0" height="14" class="band"/>
+  <text x="261.0" y="51" class="val">30 m</text>
+  <text x="110" y="51" class="lab" text-anchor="end">EAN32</text>
+  <rect x="120.0" y="66" width="135.0" height="14" class="usable"/>
+  <rect x="120.0" y="66" width="135.0" height="14" class="band"/>
+  <text x="261.0" y="77" class="val">30 m</text>
+  <text x="110" y="77" class="lab" text-anchor="end">30/30</text>
+  <rect x="120.0" y="92" width="202.5" height="14" class="usable"/>
+  <rect x="255.0" y="92" width="67.5" height="14" class="band"/>
+  <text x="328.5" y="103" class="val">45 m</text>
+  <text x="110" y="103" class="lab" text-anchor="end">21/35</text>
+  <rect x="120.0" y="118" width="270.0" height="14" class="usable"/>
+  <rect x="322.5" y="118" width="67.5" height="14" class="band"/>
+  <text x="396.0" y="129" class="val">60 m</text>
+  <text x="110" y="129" class="lab" text-anchor="end">18/45</text>
+  <rect x="120.0" y="144" width="337.5" height="14" class="usable"/>
+  <rect x="390.0" y="144" width="67.5" height="14" class="band"/>
+  <text x="463.5" y="155" class="val">75 m</text>
+  <text x="110" y="155" class="lab" text-anchor="end">15/55</text>
+  <rect x="120.0" y="170" width="405.0" height="14" class="usable"/>
+  <rect x="457.5" y="170" width="67.5" height="14" class="band"/>
+  <text x="531.0" y="181" class="val">90 m</text>
+  <text x="110" y="181" class="lab" text-anchor="end">12/65</text>
+  <rect x="120.0" y="196" width="540.0" height="14" class="usable"/>
+  <rect x="525.0" y="196" width="135.0" height="14" class="band"/>
+  <text x="666.0" y="207" class="val">120 m</text>
+  <text x="110" y="207" class="lab" text-anchor="end">10/70</text>
+  <line x1="10" y1="226" x2="660" y2="226" class="sep"/>
+  <rect x="120.0" y="234" width="256.5" height="14" class="deco"/>
+  <line x1="376.5" y1="231" x2="376.5" y2="251" class="switch"/>
+  <text x="382.5" y="245" class="val">switch at 57 m</text>
+  <text x="110" y="245" class="lab" text-anchor="end">21/35 travel</text>
+  <rect x="120.0" y="260" width="162.0" height="14" class="deco"/>
+  <line x1="282.0" y1="257" x2="282.0" y2="277" class="switch"/>
+  <text x="288.0" y="271" class="val">switch at 36 m</text>
+  <text x="110" y="271" class="lab" text-anchor="end">35/25</text>
+  <rect x="120.0" y="286" width="94.5" height="14" class="deco"/>
+  <line x1="214.5" y1="283" x2="214.5" y2="303" class="switch"/>
+  <text x="220.5" y="297" class="val">switch at 21 m</text>
+  <text x="110" y="297" class="lab" text-anchor="end">EAN50</text>
+  <rect x="120.0" y="312" width="27.0" height="14" class="deco"/>
+  <line x1="147.0" y1="309" x2="147.0" y2="329" class="switch"/>
+  <text x="153.0" y="323" class="val">switch at 6 m</text>
+  <text x="110" y="323" class="lab" text-anchor="end">Oxygen</text>
+  </svg>
+  <p class="tips"><span>Scroll to zoom</span><span>Drag to move</span><span>Double-click to reset</span></p>
+  <figcaption><b>Figure 1.2.1.</b> Depth range of each standard mix. For bottom gases the dark band is the range where the mix is the standard choice, and the light bar shows that it is breathable from the surface (except the hypoxic mixes, which need a travel gas). For decompression and travel gases the bar runs from the switch depth to the surface.</figcaption>
+
+  <h2 class="section">Summary of the standard mixes</h2>
+  <div class="table-wrap">
+    <table class="gas-table">
+      <thead>
+        <tr><th>Mix</th><th class="n">O₂ / He / N₂</th><th>Role</th><th class="n">Max depth</th><th class="n"><i>p</i>O₂ at max</th><th class="n">END at max</th><th class="n">EADD at max</th><th>Use</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>EAN32</td><td class="n">32 / 0 / 68</td><td>bottom</td><td class="n">30 m</td><td class="n">1.28</td><td class="n">30 m</td><td class="n">30 m</td><td class="note">The basic gas: Fundamentals, Cave 1, all dives to 30 m. Also the top-up gas for blending trimix.</td></tr>
+        <tr><td>Trimix 30/30</td><td class="n">30 / 30 / 40</td><td>bottom</td><td class="n">30 m</td><td class="n">1.20</td><td class="n">18 m</td><td class="n">20 m</td><td class="note">&ldquo;Triox&rdquo;: Deep Primer, Cave 2. Less narcotic and less dense than EAN32 for the same depths.</td></tr>
+        <tr><td>Trimix 21/35</td><td class="n">21 / 35 / 44</td><td>bottom</td><td class="n">45 m</td><td class="n">1.15</td><td class="n">26 m</td><td class="n">29 m</td><td class="note">Tech 1, Master Diver.</td></tr>
+        <tr><td>Trimix 18/45</td><td class="n">18 / 45 / 37</td><td>bottom</td><td class="n">60 m</td><td class="n">1.26</td><td class="n">29 m</td><td class="n">33 m</td><td class="note">Tech 1 deepest dives, Tech 2.</td></tr>
+        <tr><td>Trimix 15/55</td><td class="n">15 / 55 / 30</td><td>bottom</td><td class="n">75 m<sup>*</sup></td><td class="n">1.28</td><td class="n">28 m</td><td class="n">35 m</td><td class="note">Tech 2. Hypoxic: needs a travel gas.</td></tr>
+        <tr><td>Trimix 12/65</td><td class="n">12 / 65 / 23</td><td>bottom</td><td class="n">90 m<sup>*</sup></td><td class="n">1.20</td><td class="n">25 m</td><td class="n">34 m</td><td class="note">Beyond Tech 2. Hypoxic.</td></tr>
+        <tr><td>Trimix 10/70</td><td class="n">10 / 70 / 20</td><td>bottom</td><td class="n">120 m<sup>*</sup></td><td class="n">1.30</td><td class="n">29 m</td><td class="n">42 m</td><td class="note">Expedition depths. Hypoxic.</td></tr>
+        <tr class="first-deco"><td>Trimix 21/35</td><td class="n">21 / 35 / 44</td><td>travel, deco</td><td class="n">57 m<sup>*</sup></td><td class="n">1.41</td><td class="n">34 m</td><td class="n">37 m</td><td class="note">Travel gas with hypoxic bottom gas; first decompression gas on the deepest dives.</td></tr>
+        <tr><td>Trimix 35/25</td><td class="n">35 / 25 / 40</td><td>deco</td><td class="n">36 m<sup>*</sup></td><td class="n">1.61</td><td class="n">25 m</td><td class="n">27 m</td><td class="note">Intermediate decompression gas on long, deep dives.</td></tr>
+        <tr><td>EAN50</td><td class="n">50 / 0 / 50</td><td>deco</td><td class="n">21 m</td><td class="n">1.55</td><td class="n">21 m</td><td class="n">22 m</td><td class="note">The standard decompression gas; the only one on Tech 1.</td></tr>
+        <tr><td>Oxygen</td><td class="n">100 / 0 / 0</td><td>deco</td><td class="n">6 m</td><td class="n">1.60</td><td class="n">6 m</td><td class="n">8 m</td><td class="note">Last decompression stop, at 6 m.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <figcaption><b>Table 1.2.1.</b> GUE standard bottom gases (top) and decompression and travel gases (bottom). <i>Max depth</i> is the deepest planned depth for a bottom gas, or the switch depth for a decompression gas. <i>p</i>O₂, END and EADD are worked out at that depth with equations (1) and (2) and the densities of the gases. The values for EAN32 to 18/45 are those of the GUE Tech 1 notes. Depths marked * come from secondary sources and vary slightly between them; check them with your GUE instructor. To price these mixes, see <a href="gas-cost.html">The Cost of GUE Standard Gas Mixes</a>.</figcaption>
+
+  <h2 class="section">Sources</h2>
+  <ol class="refs">
+    <li>GUE, <i>T1 Notes (metric)</i>, v1.7: standard bottom gases table (range, max pO₂, EADD, END, MOD) and EAN50 as the Tech 1 decompression gas. <a href="https://s3.amazonaws.com/kajabi-storefronts-production/file-uploads/sites/59705/themes/2155304654/downloads/d0b5b48-cef3-ffce-a0f-00fe2270a08_38ab33-2020-d130-7510-d82acaa01a_T1-Wet-Notes-V1.7-for-reading.pdf" rel="noopener">T1 Wet Notes v1.7</a>.</li>
+    <li>Walker, R. <i>Standard gases: The simplicity of everyone singing the same song</i>. InDEPTH (GUE). PO₂ limits, END of about 30 m, reasons for standard gases, blending with EAN32, use as rebreather diluent. <a href="https://indepthmag.com/standard-gases-the-advantages-of-having-everyone-singing-the-same-song/" rel="noopener">indepthmag.com</a>.</li>
+    <li><i>GUE standard gases</i>, Horizontal Ascent (2006): depth ranges of 15/55 and 10/70; switch depths of 21/35 (57 m), 35/25 (36 m), EAN50 (21 m) and oxygen (6 m). <a href="http://horizontal-ascent.blogspot.com/2006/10/gue-standard-gases.html" rel="noopener">horizontal-ascent.blogspot.com</a>.</li>
+    <li>Divesoft, <i>END &le; 30 m as a standard: What it means in practice for gas selection</i> (2026): depth bands, including 12/65 to 90 m. <a href="https://www.divesoft.com/en/blog/end-30-m-as-a-standard-what-it-means-in-practice-for-gas-selection" rel="noopener">divesoft.com</a>.</li>
+    <li>Gardner, J. <i>Standard gases: Why DIR teams use the same mixes</i>. Reasons for standard gases; deco switch depths in the related UTD system. <a href="https://gardnerunderwater.com/learn/standard-gases" rel="noopener">gardnerunderwater.com</a>.</li>
+  </ol>
+
+  <div class="pager"><a href="plan-a-dive.html">&larr; GUE</a><span></span></div>
+</main>
+<script>
+(function () { // zoom and move the figure like a picture
+  var svg = document.getElementById('sgchart'), vb = svg.viewBox.baseVal, W = vb.width, H = vb.height;
+  var v = { x: 0, y: 0, w: W, h: H }, drag = null, pts = {}, pinch = null;
+  function set() {
+    v.w = Math.min(W, Math.max(W / 8, v.w)); v.h = v.w * H / W;
+    v.x = Math.min(W - v.w, Math.max(0, v.x)); v.y = Math.min(H - v.h, Math.max(0, v.y));
+    svg.setAttribute('viewBox', v.x + ' ' + v.y + ' ' + v.w + ' ' + v.h);
+  }
+  function pt(ev) { var r = svg.getBoundingClientRect(); return { x: v.x + (ev.clientX - r.left) / r.width * v.w, y: v.y + (ev.clientY - r.top) / r.height * v.h, k: v.w / r.width }; }
+  function zoom(f, p) { v.x = p.x - (p.x - v.x) * f; v.y = p.y - (p.y - v.y) * f; v.w *= f; set(); }
+  svg.addEventListener('wheel', function (ev) {
+    var f = Math.exp(ev.deltaY * .0015);
+    if (f > 1 && v.w >= W) return;                         // fully zoomed out: let the page scroll
+    ev.preventDefault(); zoom(f, pt(ev));
+  }, { passive: false });
+  svg.addEventListener('pointerdown', function (ev) {
+    svg.setPointerCapture(ev.pointerId); pts[ev.pointerId] = { x: ev.clientX, y: ev.clientY };
+    var ids = Object.keys(pts);
+    if (ids.length === 2) { var a = pts[ids[0]], b = pts[ids[1]]; pinch = { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, w: v.w }; drag = null; }
+    else { drag = { x: ev.clientX, y: ev.clientY }; svg.classList.add('drag'); }
+  });
+  svg.addEventListener('pointermove', function (ev) {
+    if (!pts[ev.pointerId]) return;
+    pts[ev.pointerId] = { x: ev.clientX, y: ev.clientY };
+    var ids = Object.keys(pts), k = v.w / svg.getBoundingClientRect().width;
+    if (pinch && ids.length === 2) {
+      var a = pts[ids[0]], b = pts[ids[1]], r = svg.getBoundingClientRect();
+      var c = { x: v.x + ((a.x + b.x) / 2 - r.left) / r.width * v.w, y: v.y + ((a.y + b.y) / 2 - r.top) / r.height * v.h };
+      zoom(pinch.w * pinch.d / (Math.hypot(a.x - b.x, a.y - b.y) || 1) / v.w, c);
+    } else if (drag) {
+      v.x -= (ev.clientX - drag.x) * k; v.y -= (ev.clientY - drag.y) * k; drag = { x: ev.clientX, y: ev.clientY }; set();
+    }
+  });
+  function up(ev) { delete pts[ev.pointerId]; pinch = null; drag = null; svg.classList.remove('drag'); }
+  svg.addEventListener('pointerup', up); svg.addEventListener('pointercancel', up);
+  svg.addEventListener('dblclick', function () { v = { x: 0, y: 0, w: W, h: H }; set(); });
+})();
+</script>
+<footer class="site-footer">
+  <span>&copy; 2026 Antoine Barthelemy</span>
+  <span>Figures are computed in your browser &middot; nothing is sent anywhere.</span>
+</footer>
+</body>
+</html>
