@@ -5,8 +5,9 @@
      one (a pentagram, a trefoil, a Lissajous figure, a hypotrochoid, a lemniscate).
      The coefficients are the largest terms of the discrete Fourier transform of
      the curve, so the drawing is the curve's own Fourier series.
-   - Top right, a wireframe surface turns slowly in 3D: a torus, a Möbius strip,
-     a saddle (z = x² − y²), one after the other.
+   - Top right, a wireframe surface turns slowly in 3D, a new one picked at
+     random every so often: torus, sphere, trefoil knot, saddle, helicoid,
+     catenoid, hyperboloid, Enneper and Dini surfaces.
    - Classic formulas surface here and there, drift a little and fade away.
    Very faint, no pointer events, paused in hidden tabs, a still frame for
    visitors who prefer reduced motion. Add ?math=debug to see it clearly. */
@@ -91,11 +92,43 @@
 
   /* ---------------- turning wireframe surface ---------------- */
 
+  function trefoil(u) { return [Math.sin(u) + 2 * Math.sin(2 * u), Math.cos(u) - 2 * Math.cos(2 * u), -Math.sin(3 * u)]; }
+  function sub(a, b) { return [a[0] - b[0], a[1] - b[1], a[2] - b[2]]; }
+  function cross(a, b) { return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
+  function unit(a) { var l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; }
+  function tube(curve, r) { // a tube of radius r around a closed space curve
+    return function (u, v) {
+      var h = 1e-3, c = curve(u), T = unit(sub(curve(u + h), curve(u - h)));
+      var N = unit(sub(sub(curve(u + h), c), sub(c, curve(u - h)))), B = cross(T, N);
+      return [c[0] + r * (Math.cos(v) * N[0] + Math.sin(v) * B[0]), c[1] + r * (Math.cos(v) * N[1] + Math.sin(v) * B[1]), c[2] + r * (Math.cos(v) * N[2] + Math.sin(v) * B[2])];
+    };
+  }
+  var cosh = Math.cosh || function (x) { return (Math.exp(x) + Math.exp(-x)) / 2; };
+  var sinh = Math.sinh || function (x) { return (Math.exp(x) - Math.exp(-x)) / 2; };
+  // orientable surfaces only; each is centred and scaled to unit size when it is first shown
   var SURFACES = [
-    { u: [0, TAU], v: [0, TAU], nu: 28, nv: 14, f: function (u, v) { var R = 1, r = .42; return [(R + r * Math.cos(v)) * Math.cos(u), (R + r * Math.cos(v)) * Math.sin(u), r * Math.sin(v)]; } }, // torus
-    { u: [0, TAU], v: [-1, 1], nu: 40, nv: 6, f: function (u, v) { var w = 1 + v / 2 * Math.cos(u / 2); return [w * Math.cos(u), w * Math.sin(u), v / 2 * Math.sin(u / 2)]; } },             // Möbius strip
-    { u: [-1, 1], v: [-1, 1], nu: 14, nv: 14, f: function (u, v) { return [u * 1.1, v * 1.1, (u * u - v * v) * .7]; } }                                                                      // saddle
+    { name: 'torus', u: [0, TAU], v: [0, TAU], nu: 28, nv: 14, f: function (u, v) { var R = 1, r = .42; return [(R + r * Math.cos(v)) * Math.cos(u), (R + r * Math.cos(v)) * Math.sin(u), r * Math.sin(v)]; } },
+    { name: 'sphere', u: [0, TAU], v: [0, Math.PI], nu: 24, nv: 12, f: function (u, v) { return [Math.cos(u) * Math.sin(v), Math.sin(u) * Math.sin(v), Math.cos(v)]; } },
+    { name: 'trefoil knot', u: [0, TAU], v: [0, TAU], nu: 64, nv: 6, f: tube(trefoil, .38) },
+    { name: 'saddle', u: [-1, 1], v: [-1, 1], nu: 14, nv: 14, f: function (u, v) { return [u, v, (u * u - v * v) * .65]; } },
+    { name: 'helicoid', u: [-Math.PI, Math.PI], v: [-1, 1], nu: 36, nv: 8, f: function (u, v) { return [v * Math.cos(u), v * Math.sin(u), u * .32]; } },
+    { name: 'catenoid', u: [0, TAU], v: [-1.1, 1.1], nu: 28, nv: 12, f: function (u, v) { return [cosh(v) * Math.cos(u), cosh(v) * Math.sin(u), v]; } },
+    { name: 'hyperboloid', u: [0, TAU], v: [-1, 1], nu: 28, nv: 10, f: function (u, v) { return [cosh(v) * Math.cos(u), cosh(v) * Math.sin(u), sinh(v)]; } },
+    { name: 'Enneper surface', u: [0, TAU], v: [0, 1.25], nu: 32, nv: 10, f: function (t, r) { return [r * Math.cos(t) - r * r * r * Math.cos(3 * t) / 3, -r * Math.sin(t) - r * r * r * Math.sin(3 * t) / 3, r * r * Math.cos(2 * t)]; } },
+    { name: 'Dini surface', u: [0, 4 * Math.PI], v: [.12, 2], nu: 48, nv: 10, f: function (u, v) { return [Math.cos(u) * Math.sin(v), Math.sin(u) * Math.sin(v), Math.cos(v) + Math.log(Math.tan(v / 2)) + .2 * u]; } }
   ];
+  function normalise(sf) {
+    if (sf.k) return;
+    var pts = [];
+    for (var i = 0; i <= 20; i++) for (var j = 0; j <= 20; j++) pts.push(sf.f(sf.u[0] + (sf.u[1] - sf.u[0]) * i / 20, sf.v[0] + (sf.v[1] - sf.v[0]) * j / 20));
+    var lo = [1e9, 1e9, 1e9], hi = [-1e9, -1e9, -1e9];
+    pts.forEach(function (p) { for (var a = 0; a < 3; a++) { lo[a] = Math.min(lo[a], p[a]); hi[a] = Math.max(hi[a], p[a]); } });
+    sf.c = [(lo[0] + hi[0]) / 2, (lo[1] + hi[1]) / 2, (lo[2] + hi[2]) / 2];
+    var m = 0; pts.forEach(function (p) { m = Math.max(m, Math.hypot(p[0] - sf.c[0], p[1] - sf.c[1], p[2] - sf.c[2])); });
+    sf.k = 1.25 / m;
+  }
+  var surf = { cur: Math.floor(Math.random() * SURFACES.length), prev: -1, since: 0 };
+  var pick = /[?&]math-s=(\d+)/.exec(location.search); if (pick) surf.cur = +pick[1] % SURFACES.length; // test: start on a given surface
   var SURF_TIME = 22;
 
   function project(p, rx, ry, cx, cy, S) {
@@ -106,6 +139,7 @@
     return [cx + x1 * S * k, cy + y1 * S * k];
   }
   function drawSurface(sf, alpha) {
+    normalise(sf);
     var S = Math.min(W, H) * 0.16, cx = W * 0.8, cy = H * 0.28;
     if (W < 700) { cx = W * 0.75; cy = H * 0.18; S = Math.min(W, H) * 0.2; }
     var rx = -1.05 + Math.sin(time * 0.11) * 0.25, ry = time * 0.18;
@@ -114,7 +148,7 @@
       ctx.beginPath();
       for (var i = 0; i <= n; i++) {
         var t = i / n, u = fixU ? val : sf.u[0] + (sf.u[1] - sf.u[0]) * t, v = fixU ? sf.v[0] + (sf.v[1] - sf.v[0]) * t : val;
-        var q = project(sf.f(u, v), rx, ry, cx, cy, S);
+        var p = sf.f(u, v), q = project([(p[0] - sf.c[0]) * sf.k, (p[1] - sf.c[1]) * sf.k, (p[2] - sf.c[2]) * sf.k], rx, ry, cx, cy, S);
         i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]);
       }
       ctx.stroke();
@@ -123,9 +157,13 @@
     for (var j = 0; j <= sf.nv; j++) line(false, sf.v[0] + (sf.v[1] - sf.v[0]) * j / sf.nv, 64);
   }
   function drawSurfaces(alpha) {
-    var k = time / SURF_TIME, i = Math.floor(k) % SURFACES.length, f = k - Math.floor(k), xf = 0.08;
-    if (f < xf) { drawSurface(SURFACES[(i + SURFACES.length - 1) % SURFACES.length], alpha * (1 - f / xf)); drawSurface(SURFACES[i], alpha * f / xf); }
-    else drawSurface(SURFACES[i], alpha);
+    if (time - surf.since > SURF_TIME) { // next structure, chosen at random
+      var n; do { n = Math.floor(Math.random() * SURFACES.length); } while (n === surf.cur);
+      surf.prev = surf.cur; surf.cur = n; surf.since = time;
+    }
+    var f = (time - surf.since) / 1.8;
+    if (f < 1 && surf.prev >= 0) { drawSurface(SURFACES[surf.prev], alpha * (1 - f)); drawSurface(SURFACES[surf.cur], alpha * f); }
+    else drawSurface(SURFACES[surf.cur], alpha);
   }
 
   /* ---------------- drifting formulas ---------------- */
