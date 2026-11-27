@@ -12,7 +12,7 @@
    - One orbital at a time, turning slowly in 3D, and one chemical formula at a
      time, each in a margin beside the text, each coming and going on its own
      clock (an orbital stays 10 to 16 seconds, a formula 7 to 12). Each new one
-     takes a random side, but never three times in a row the same side; when the
+     takes a random side, but never more than twice in a row the same side; when the
      other one is on that side, it takes the other half of the screen.
    - Each formula shows its kind (molecule, strong or weak acid or base, oxide,
      cation, anion, salt…), its name and its molar mass, as in a reference
@@ -111,31 +111,38 @@
     var o; do { o = ORBITALS[Math.floor(Math.random() * ORBITALS.length)]; } while (o === prev);
     return o;
   }
-  // side: random, but never three times in a row on the same side
   // height: the upper or the lower half; if the other one is on the same side, the half it leaves free
+  // a side at random, but never more than twice in a row the same side, and a free half on it;
+  // false when the side it must take is full: the item then waits for a place to free up
   function settle(it, prev, others) {
-    var taken = others.filter(function (o) { return o; }).map(function (o) { return o.side * 2 + o.slot; });
-    var side = Math.random() < .5 ? 0 : 1;
-    if (prev && prev.run >= 2 && side === prev.side) side = 1 - side;
-    var free = [0, 1].filter(function (sl) { return taken.indexOf(side * 2 + sl) < 0; });
-    if (!free.length) { side = 1 - side; free = [0, 1].filter(function (sl) { return taken.indexOf(side * 2 + sl) < 0; }); }
+    var taken = others.filter(function (o) { return o && !o.wait; }).map(function (o) { return o.side * 2 + o.slot; });
+    function freeOn(sd) { return [0, 1].filter(function (sl) { return taken.indexOf(sd * 2 + sl) < 0; }); }
+    var forced = prev && prev.run >= 2, side = forced ? 1 - prev.side : (Math.random() < .5 ? 0 : 1), free = freeOn(side);
+    if (!free.length) { if (forced) return false; side = 1 - side; free = freeOn(side); if (!free.length) return false; }
     it.side = side; it.run = prev && prev.side === side ? prev.run + 1 : 1;
-    it.slot = free[Math.floor(Math.random() * free.length)];   // upper or lower half, whichever is free
+    it.slot = free[Math.floor(Math.random() * free.length)];
     it.y = it.slot ? rnd(.62, .68) : rnd(.25, .31);
+    return true;
   }
+  function place(it, prev, others) { it.prev = prev; it.others = others; it.wait = !settle(it, prev, others()); if (!it.wait) it.prev = null; return it; }
+  function retry(it) { // a waiting item tries again; it fades in from the moment it finds its place
+    if (!it.wait || time < it.t0) return;
+    if (settle(it, it.prev, it.others())) { it.wait = false; it.prev = null; it.t0 = time; } else it.t0 = time + .5;
+  }
+
   function newOrbital(t0) {
     var o = pick(orb && orb.o), S = sampler(o); grow(S, 25);
     var it = { kind: 'orb', o: o, S: S, pts: S.pts, t0: t0, life: rnd(10, 16), spin: rnd(.1, .22) * (Math.random() < .5 ? -1 : 1), tilt: rnd(.3, .9), ph: rnd(0, 6.283) };
-    settle(it, orb, [form, elem]); return it;
+    return place(it, orb, function () { return [form, elem]; });
   }
   function newElement(t0) {
     var e; do { e = ELEMENTS[Math.floor(Math.random() * ELEMENTS.length)]; } while (elem && e === elem.e);
     var it = { kind: 'elem', e: e, t0: t0, life: rnd(8, 13) };
-    settle(it, elem, [orb, form]); return it;
+    return place(it, elem, function () { return [orb, form]; });
   }
   function newFormula(t0) {
     var it = { kind: 'form', cmp: pickCompound(form && form.cmp), t0: t0, life: rnd(7, 12) };
-    settle(it, form, [orb, elem]); return it;
+    return place(it, form, function () { return [orb, elem]; });
   }
   function places() { // the left margin and the right one; the height is chosen afresh for each appearance
     var m = document.querySelector('main'), r = m ? m.getBoundingClientRect() : { left: W * .25, right: W * .75 };
@@ -470,7 +477,8 @@
     if (!reduce && time > orb.t0 + orb.life) orb = newOrbital(time + rnd(1, 3.5));
     if (!reduce && time > form.t0 + form.life) form = newFormula(time + rnd(1, 4));
     if (!reduce && time > elem.t0 + elem.life) elem = newElement(time + rnd(1.5, 5));
-    function fade(it) { var age = time - it.t0; return reduce ? 1 : Math.min(1, age / FADE, (it.life - age) / FADE); }
+    if (!reduce) { retry(orb); retry(form); retry(elem); }
+    function fade(it) { var age = time - it.t0; return it.wait ? 0 : reduce ? 1 : Math.min(1, age / FADE, (it.life - age) / FADE); }
     var ko = fade(orb), kf = fade(form);
     if (ko > 0) drawCloud(orb, at(P[orb.side], orb.y), baseAlpha * ko);
     if (kf > 0) drawFormula(form.cmp, at(P[form.side], form.y), baseAlpha * kf);
