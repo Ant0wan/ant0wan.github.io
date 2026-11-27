@@ -23,9 +23,10 @@
     <div class="legend-item"><span class="swatch" style="background:var(--c-blue)"></span>Volume fraction <span class="limits">V/V₀ (dimensionless)</span></div>
     <div class="legend-item"><span class="swatch" style="background:var(--c-amber)"></span>Reference points <span class="limits">10 m grid + 3, 5, 6, 12, 15, 21 m</span></div>
   </div>
+  <p class="tips"><span>Move along the curve to read the values</span><span>Ctrl/Shift + scroll or pinch to zoom</span><span>Drag to move</span><span>Double-click to reset</span></p>
   <figure class="fig">
     <canvas id="chart" role="img" aria-label="Volume fraction versus depth"></canvas>
-    <figcaption><b>Figure 1.2.</b> Fraction of its surface volume that a gas occupies at depth, assuming constant temperature and an ideal gas. At 10 m the volume has already halved; most of the change happens in the first 30 m.</figcaption>
+    <figcaption><b>Figure 1.2.</b> Fraction of its surface volume that a gas occupies at depth, assuming constant temperature and an ideal gas. At 10 m the volume has already halved; most of the change happens in the first 30 m. Zoom in to magnify a range of depths, or zoom out to follow the curve down to 1000 m.</figcaption>
   </figure>
   <div class="pager"><a href="ppo2.html">&larr; Figure 1.1</a><a href="oxygen-chart.html">Figure 1.3 &rarr;</a></div>
 </main>
@@ -34,223 +35,204 @@
   const canvas = document.getElementById('chart');
   const ctx = canvas.getContext('2d');
   let C = themeColors();
+  const FONT = '"Latin Modern Roman", "Computer Modern", "Times New Roman", serif';
 
   // ---------- PHYSICAL CONSTANTS ----------
   const SURFACE_PRESSURE_BAR = 1.0;   // 1 bar at surface
   const MSW_PER_ATM = 10.06;          // metres of seawater per atmosphere
-  const DEPTH_MIN = 0;
-  const DEPTH_MAX = 90;
-  const FRAC_MIN = 0;
-  const FRAC_MAX = 1.0;
+  function fractionAtDepth(depth) { return SURFACE_PRESSURE_BAR / (SURFACE_PRESSURE_BAR + depth / MSW_PER_ATM); }
+
+  // ---------- VIEW (zoom / pan on the depth axis) ----------
+  const HOME = { d0: 0, d1: 90 }, MAX_DEPTH = 1000, MIN_SPAN = 1;
+  let view = { d0: HOME.d0, d1: HOME.d1 }, hover = null;
+  let fLo = 0, fHi = 1;               // vertical range, fitted to the visible curve
+  function fitY() {
+    const top = fractionAtDepth(view.d0), bot = fractionAtDepth(view.d1), pad = (top - bot) * 0.08;
+    fHi = Math.min(1, top + pad); fLo = Math.max(0, bot - pad);
+    if (fLo < 0.15 && view.d1 - view.d0 > 40) fLo = 0;   // wide views keep the zero line
+    if (view.d0 === 0) fHi = 1;
+  }
 
   // ---------- LAYOUT ----------
   let W = 0, H = 0;
   const M = { top: 24, right: 40, bottom: 54, left: 70 };
   let plotW = 0, plotH = 0;
-
-  // ---------- SCALES ----------
-  function xScale(depth) {
-    return M.left + (depth - DEPTH_MIN) / (DEPTH_MAX - DEPTH_MIN) * plotW;
-  }
-  function yScale(frac) {
-    return M.top + (FRAC_MAX - frac) / (FRAC_MAX - FRAC_MIN) * plotH;
-  }
-
-  // ---------- VOLUME FRACTION MODEL (Boyle's Law) ----------
-  function fractionAtDepth(depth) {
-    const pTotal = SURFACE_PRESSURE_BAR + depth / MSW_PER_ATM;
-    return SURFACE_PRESSURE_BAR / pTotal;
-  }
+  function xScale(d) { return M.left + (d - view.d0) / (view.d1 - view.d0) * plotW; }
+  function yScale(f) { return M.top + (fHi - f) / (fHi - fLo) * plotH; }
+  function depthAt(px) { return view.d0 + (px - M.left) / plotW * (view.d1 - view.d0); }
 
   // ---------- FRACTION FORMATTING ----------
   function fractionLabel(value) {
     if (value < 0.005) return '0';
     if (Math.abs(value - 1) < 0.005) return '1';
-
     const denominators = [2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 16];
     let best = null;
     for (const d of denominators) {
       const n = Math.round(value * d);
       if (n === 0) continue;
       const err = Math.abs(value - n / d);
-      if (err < 0.008) {
-        if (!best || err < best.err) best = { n, d, err };
-      }
+      if (err < 0.008 && (!best || err < best.err)) best = { n, d, err };
     }
     if (best) {
-      const g = gcd(best.n, best.d);
-      const num = best.n / g;
-      const den = best.d / g;
-      if (den === 1) return num.toString();
-      return num + '/' + den;
+      const g = gcd(best.n, best.d), num = best.n / g, den = best.d / g;
+      return den === 1 ? String(num) : num + '/' + den;
     }
     return value.toFixed(2);
   }
-
-  function gcd(a, b) {
-    a = Math.abs(a); b = Math.abs(b);
-    while (b) { [a, b] = [b, a % b]; }
-    return a;
-  }
+  function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { [a, b] = [b, a % b]; } return a; }
+  function niceStep(span, maxTicks, steps) { for (const s of steps) if (span / s <= maxTicks) return s; return steps[steps.length - 1]; }
 
   // ---------- RESIZE ----------
   function resize() {
     const rect = canvas.getBoundingClientRect();
-    W = rect.width;
-    H = rect.height;
+    W = rect.width; H = rect.height;
     if (W <= 0 || H <= 0) return;
-
     const dpr = window.devicePixelRatio || 1;
-    canvas.width = W * dpr;
-    canvas.height = H * dpr;
+    canvas.width = W * dpr; canvas.height = H * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-    M.left = W < 600 ? 56 : 70;
-    M.bottom = H < 400 ? 44 : 54;
-    M.top = 24;
-    M.right = 40;
-
-    plotW = W - M.left - M.right;
-    plotH = H - M.top - M.bottom;
-
+    M.left = W < 600 ? 56 : 70; M.bottom = H < 400 ? 44 : 54; M.top = 24; M.right = 40;
+    plotW = W - M.left - M.right; plotH = H - M.top - M.bottom;
     draw();
   }
 
   // ---------- DRAW ----------
   function draw() {
     if (W <= 0 || H <= 0) return;
+    C = themeColors(); fitY();
+    ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
+    const span = view.d1 - view.d0;
 
-    C = themeColors();
-    ctx.fillStyle = C.bg;
-    ctx.fillRect(0, 0, W, H);
-
-    // filled area
-    const steps = 400;
-    ctx.beginPath();
-    ctx.moveTo(xScale(0), yScale(0));
-    for (let i = 0; i <= steps; i++) {
-      const d = DEPTH_MIN + (i / steps) * (DEPTH_MAX - DEPTH_MIN);
-      const f = fractionAtDepth(d);
-      ctx.lineTo(xScale(d), yScale(f));
+    // grid and axes
+    const wide = fLo === 0 && fHi === 1;
+    let fracTicks;
+    if (wide) fracTicks = [0, 1/8, 1/4, 3/8, 1/2, 5/8, 3/4, 7/8, 1];
+    else {
+      const st = niceStep(fHi - fLo, 9, [0.0005, 0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2]);
+      fracTicks = []; for (let f = Math.ceil(fLo / st) * st; f <= fHi + 1e-9; f += st) fracTicks.push(+f.toFixed(6));
     }
-    ctx.lineTo(xScale(DEPTH_MAX), yScale(0));
-    ctx.closePath();
-    ctx.fillStyle = withAlpha(C.blue, 0.08);
-    ctx.fill();
-
-    // curve
-    ctx.beginPath();
-    for (let i = 0; i <= steps; i++) {
-      const d = DEPTH_MIN + (i / steps) * (DEPTH_MAX - DEPTH_MIN);
-      const f = fractionAtDepth(d);
-      const px = xScale(d);
-      const py = yScale(f);
-      if (i === 0) ctx.moveTo(px, py);
-      else ctx.lineTo(px, py);
-    }
-    ctx.strokeStyle = C.blue;
-    ctx.lineWidth = 2.4;
-    ctx.stroke();
-    ctx.shadowColor = 'transparent';
-    ctx.shadowBlur = 0;
-
-    // horizontal grid lines
-    const fracTicks = [0, 1/8, 1/4, 3/8, 1/2, 5/8, 3/4, 7/8, 1];
-    ctx.lineWidth = 1;
+    const fDec = wide ? 0 : Math.max(2, Math.ceil(-Math.log10(fracTicks.length > 1 ? fracTicks[1] - fracTicks[0] : 0.01)));
+    ctx.lineWidth = 1; ctx.font = '13px ' + FONT;
     fracTicks.forEach(f => {
       const y = yScale(f);
       ctx.strokeStyle = (f === 0 || f === 1) ? C.gridStrong : C.grid;
-      ctx.beginPath();
-      ctx.moveTo(M.left, y);
-      ctx.lineTo(M.left + plotW, y);
-      ctx.stroke();
-
-      ctx.textAlign = 'right';
-      ctx.textBaseline = 'middle';
-      ctx.fillStyle = C.ink;
-      ctx.font = '13px "Latin Modern Roman", "Computer Modern", "Times New Roman", serif';
-      ctx.fillText(fractionLabel(f), M.left - 10, y);
+      ctx.beginPath(); ctx.moveTo(M.left, y); ctx.lineTo(M.left + plotW, y); ctx.stroke();
+      ctx.textAlign = 'right'; ctx.textBaseline = 'middle'; ctx.fillStyle = C.ink;
+      ctx.fillText(wide ? fractionLabel(f) : f.toFixed(fDec), M.left - 10, y);
     });
-
-    // vertical grid lines
-    for (let d = DEPTH_MIN; d <= DEPTH_MAX; d += 10) {
+    const xStep = niceStep(span, 11, [0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100, 200]);
+    const xDec = xStep < 1 ? 1 : 0;
+    for (let d = Math.ceil(view.d0 / xStep) * xStep; d <= view.d1 + 1e-9; d += xStep) {
       const x = xScale(d);
-      ctx.strokeStyle = (d === 0) ? C.gridStrong : C.grid;
-      ctx.beginPath();
-      ctx.moveTo(x, M.top);
-      ctx.lineTo(x, M.top + plotH);
-      ctx.stroke();
-
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'top';
-      ctx.fillStyle = C.ink;
-      ctx.font = '13px "Latin Modern Roman", "Computer Modern", "Times New Roman", serif';
-      ctx.fillText(d + ' m', x, M.top + plotH + 12);
+      ctx.strokeStyle = Math.abs(d) < 1e-9 ? C.gridStrong : C.grid;
+      ctx.beginPath(); ctx.moveTo(x, M.top); ctx.lineTo(x, M.top + plotH); ctx.stroke();
+      ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.fillStyle = C.ink;
+      ctx.fillText(d.toFixed(xDec) + ' m', x, M.top + plotH + 12);
     }
 
-    // axis labels
-    ctx.save();
-    ctx.translate(18, M.top + plotH / 2);
-    ctx.rotate(-Math.PI / 2);
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = C.ink;
-    ctx.font = '600 14px "Latin Modern Roman", "Computer Modern", "Times New Roman", serif';
-    ctx.fillText('Volume Fraction  V/V₀', 0, 0);
+    // curve, clipped to the plot
+    ctx.save(); ctx.beginPath(); ctx.rect(M.left - 8, M.top - 8, plotW + 16, plotH + 16); ctx.clip();
+    const steps = 400;
+    ctx.beginPath(); ctx.moveTo(xScale(view.d0), yScale(fLo));
+    for (let i = 0; i <= steps; i++) { const d = view.d0 + i / steps * span; ctx.lineTo(xScale(d), yScale(fractionAtDepth(d))); }
+    ctx.lineTo(xScale(view.d1), yScale(fLo)); ctx.closePath();
+    ctx.fillStyle = withAlpha(C.blue, 0.08); ctx.fill();
+    ctx.beginPath();
+    for (let i = 0; i <= steps; i++) { const d = view.d0 + i / steps * span, px = xScale(d), py = yScale(fractionAtDepth(d)); i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); }
+    ctx.strokeStyle = C.blue; ctx.lineWidth = 2.4; ctx.stroke();
+
+    // reference points: the depth grid (10 m or coarser) and common stop depths
+    const refStep = Math.max(10, xStep), refs = new Set();
+    for (let d = Math.ceil(view.d0 / refStep) * refStep; d <= view.d1; d += refStep) refs.add(d);
+    if (span <= 120) [3, 5, 6, 12, 15, 21].forEach(d => { if (d >= view.d0 && d <= view.d1) refs.add(d); });
+    Array.from(refs).sort((a, b) => a - b).forEach(d => {
+      const f = fractionAtDepth(d), px = xScale(d), py = yScale(f), isExtra = d % 10 !== 0;
+      ctx.beginPath(); ctx.arc(px, py, isExtra ? 4.5 : 5.5, 0, Math.PI * 2);
+      ctx.fillStyle = C.amber; ctx.fill(); ctx.strokeStyle = C.bg; ctx.lineWidth = isExtra ? 1.4 : 1.8; ctx.stroke();
+      ctx.font = '13px ' + FONT; ctx.textBaseline = 'bottom';
+      const label = `${fractionLabel(f)} @ ${d} m`, tw = ctx.measureText(label).width;
+      let tx = px - tw / 2, ty = py - 9;
+      if (tx < M.left + 2) tx = M.left + 2;
+      if (tx + tw > M.left + plotW - 2) tx = M.left + plotW - tw - 2;
+      if (ty < M.top + 2) ty = M.top + 14;
+      ctx.textAlign = 'left'; ctx.fillStyle = withAlpha(C.bg, 0.85); ctx.fillRect(tx - 3, ty - 11, tw + 6, 16);
+      ctx.fillStyle = C.amber; ctx.fillText(label, tx, ty + 2);
+    });
     ctx.restore();
 
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
-    ctx.fillStyle = C.ink;
-    ctx.font = '600 14px "Latin Modern Roman", "Computer Modern", "Times New Roman", serif';
-    ctx.fillText('Depth (m)', M.left + plotW / 2, M.top + plotH + 30);
-
-    // reference points
-    const refDepths = new Set();
-    for (let d = 0; d <= DEPTH_MAX; d += 10) refDepths.add(d);
-    [3, 5, 6, 12, 15, 21].forEach(d => refDepths.add(d));
-
-    const sortedDepths = Array.from(refDepths).sort((a, b) => a - b);
-
-    sortedDepths.forEach(d => {
-      const f = fractionAtDepth(d);
-      const px = xScale(d);
-      const py = yScale(f);
-      const isExtra = ![0, 10, 20, 30, 40, 50, 60, 70, 80, 90].includes(d);
-
-      ctx.beginPath();
-      ctx.arc(px, py, isExtra ? 4.5 : 5.5, 0, Math.PI * 2);
-      ctx.fillStyle = C.amber;
-      ctx.fill();
-      ctx.strokeStyle = C.bg;
-      ctx.lineWidth = isExtra ? 1.4 : 1.8;
-      ctx.stroke();
-
-      ctx.font = '13px "Latin Modern Roman", "Computer Modern", "Times New Roman", serif';
-      ctx.textBaseline = 'bottom';
-      const label = `${fractionLabel(f)} @ ${d} m`;
-      const textWidth = ctx.measureText(label).width;
-
-      let tx = px - textWidth / 2;
-      let ty = py - 9;
-
-      if (tx < M.left + 2) tx = M.left + 2;
-      if (tx + textWidth > M.left + plotW - 2) tx = M.left + plotW - textWidth - 2;
-      if (ty < M.top + 2) ty = M.top + 14;
-
-      ctx.textAlign = 'left';
-      ctx.fillStyle = withAlpha(C.bg, 0.85);
-      ctx.fillRect(tx - 3, ty - 11, textWidth + 6, 16);
-      ctx.fillStyle = C.amber;
-      ctx.fillText(label, tx, ty + 2);
-    });
-
-    // annotation
-    ctx.font = '12px "Latin Modern Roman", "Computer Modern", "Times New Roman", serif';
-    ctx.textAlign = 'left';
-    ctx.fillStyle = C.muted;
+    // axis labels
+    ctx.save(); ctx.translate(18, M.top + plotH / 2); ctx.rotate(-Math.PI / 2);
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = C.ink;
+    ctx.font = '600 14px ' + FONT; ctx.fillText('Volume Fraction  V/V₀', 0, 0); ctx.restore();
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.fillStyle = C.ink;
+    ctx.font = '600 14px ' + FONT; ctx.fillText('Depth (m)', M.left + plotW / 2, M.top + plotH + 30);
+    ctx.font = '12px ' + FONT; ctx.textAlign = 'left'; ctx.fillStyle = C.muted;
     ctx.fillText(`Boyle's Law: V/V₀ = 1/(1 + depth/10.06)`, M.left + 8, M.top + 14);
+
+    // pointer readout
+    if (hover != null && hover >= view.d0 && hover <= view.d1) {
+      const f = fractionAtDepth(hover), px = xScale(hover), py = yScale(f);
+      ctx.strokeStyle = C.ink; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(px, M.top); ctx.lineTo(px, M.top + plotH); ctx.moveTo(M.left, py); ctx.lineTo(M.left + plotW, py); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.beginPath(); ctx.arc(px, py, 6, 0, Math.PI * 2); ctx.fillStyle = C.blue; ctx.fill(); ctx.strokeStyle = C.bg; ctx.lineWidth = 2; ctx.stroke();
+      const P = SURFACE_PRESSURE_BAR + hover / MSW_PER_ATM, dd = span < 10 ? 2 : 1;
+      const lines = [`Depth ${hover.toFixed(dd)} m`, `Pressure ${P.toFixed(3)} atm`, `V/V₀ = ${f.toFixed(4)} (${(f * 100).toFixed(2)} %)`];
+      ctx.font = '13px ' + FONT;
+      const bw = Math.max.apply(null, lines.map(l => ctx.measureText(l).width)) + 16, bh = lines.length * 18 + 10;
+      let bx = px + 14, by = py + 14;
+      if (bx + bw > M.left + plotW) bx = px - bw - 14;
+      if (by + bh > M.top + plotH) by = py - bh - 14;
+      ctx.fillStyle = withAlpha(C.bg, 0.92); ctx.fillRect(bx, by, bw, bh);
+      ctx.strokeStyle = C.gridStrong; ctx.lineWidth = 1; ctx.strokeRect(bx, by, bw, bh);
+      ctx.fillStyle = C.ink; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+      lines.forEach((l, i) => ctx.fillText(l, bx + 8, by + 6 + i * 18));
+    }
   }
+
+  // ---------- ZOOM AND MOVE ----------
+  function clampView() {
+    let span = Math.min(MAX_DEPTH, Math.max(MIN_SPAN, view.d1 - view.d0));
+    if (view.d0 < 0) view.d0 = 0;
+    view.d1 = view.d0 + span;
+    if (view.d1 > MAX_DEPTH) { view.d1 = MAX_DEPTH; view.d0 = MAX_DEPTH - span; }
+  }
+  function zoomAt(factor, depth) {
+    view.d0 = depth - (depth - view.d0) * factor; view.d1 = depth + (view.d1 - depth) * factor; clampView(); draw();
+  }
+  function localX(e) { return e.clientX - canvas.getBoundingClientRect().left; }
+  canvas.addEventListener('wheel', e => {
+    if (!(e.ctrlKey || e.shiftKey)) return;
+    e.preventDefault();
+    const x = Math.min(M.left + plotW, Math.max(M.left, localX(e)));
+    zoomAt(Math.exp((e.deltaY || e.deltaX) * 0.0015), depthAt(x));
+  }, { passive: false });
+  const pts = {}; let drag = null, pinch = null;
+  canvas.addEventListener('pointerdown', e => {
+    canvas.setPointerCapture(e.pointerId); pts[e.pointerId] = localX(e);
+    const ids = Object.keys(pts);
+    if (ids.length === 2) { pinch = { dist: Math.abs(pts[ids[0]] - pts[ids[1]]) || 1, span: view.d1 - view.d0 }; drag = null; }
+    else drag = localX(e);
+    hover = depthAt(localX(e)); draw();
+  });
+  canvas.addEventListener('pointermove', e => {
+    const x = localX(e);
+    if (pts[e.pointerId] != null) {
+      pts[e.pointerId] = x;
+      const ids = Object.keys(pts);
+      if (pinch && ids.length === 2) {
+        const a = pts[ids[0]], b = pts[ids[1]], mid = depthAt((a + b) / 2), span = pinch.span * pinch.dist / (Math.abs(a - b) || 1);
+        view.d0 = mid - span / 2; view.d1 = mid + span / 2; clampView();
+      } else if (drag != null) {
+        const dd = (x - drag) / plotW * (view.d1 - view.d0); view.d0 -= dd; view.d1 -= dd; clampView(); drag = x;
+      }
+    }
+    hover = x >= M.left && x <= M.left + plotW ? depthAt(x) : null; draw();
+  });
+  function up(e) { delete pts[e.pointerId]; pinch = null; drag = null; }
+  canvas.addEventListener('pointerup', up); canvas.addEventListener('pointercancel', up);
+  canvas.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') { hover = null; draw(); } });
+  canvas.addEventListener('dblclick', () => { view = { d0: HOME.d0, d1: HOME.d1 }; draw(); });
+  canvas.style.touchAction = 'none'; canvas.style.cursor = 'crosshair';
 
   // ---------- INIT ----------
   window.addEventListener('resize', resize);
