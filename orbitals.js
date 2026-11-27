@@ -12,6 +12,12 @@
    - One orbital at a time, in a margin beside the text, turning slowly in 3D.
      It condenses, stays about twenty seconds, fades away, and after a short
      pause the next one, picked at random, appears in the other margin.
+   - At the same time, in the opposite margin, a chemical formula appears with
+     its kind (element, molecule, strong or weak acid or base, oxide, cation,
+     anion, salt…),
+     name and molar mass, as in a reference table (NH₄⁺ ammonium,
+     CaCO₃ calcium carbonate, C₆H₁₂O₆ glucose…), picked
+     at random among some 160 elements, molecules, acids, bases, ions and salts, and fades away with the orbital.
    Very faint, no pointer events, paused in hidden tabs, a still frame for
    visitors who prefer reduced motion. Add ?orbitals=debug to see it clearly. */
 (function () {
@@ -104,18 +110,155 @@
     var used = slots.map(function (s) { return s.cloud && s.cloud.o; });
     var o = pick(used);
     var S = sampler(o); grow(S, 25);
-    return { o: o, S: S, pts: S.pts, t0: t0, life: LIFE + rnd(-4, 6), spin: rnd(.1, .22) * (Math.random() < .5 ? -1 : 1), tilt: rnd(.3, .9), ph: rnd(0, 6.283) };
+    var prevC = slots[0] && slots[0].cloud ? slots[0].cloud.cmp : null;
+    return { o: o, cmp: pickCompound(prevC), S: S, pts: S.pts, t0: t0, life: LIFE + rnd(-4, 6), spin: rnd(.1, .22) * (Math.random() < .5 ? -1 : 1), tilt: rnd(.3, .9), ph: rnd(0, 6.283) };
   }
   function places() { // the two places an orbital can appear: the left margin or the right one
     var m = document.querySelector('main'), r = m ? m.getBoundingClientRect() : { left: W * .25, right: W * .75 };
     var lw = r.left, rw = W - r.right, sz = function (w) { return Math.max(60, Math.min(w * .38, H * .2)); };
     return [
-      { x: lw / 2, y: H * .36, s: sz(lw) },
-      { x: r.right + rw / 2, y: H * .56, s: sz(rw) }
+      { x: lw / 2, y: H * .36, s: sz(lw), w: lw },
+      { x: r.right + rw / 2, y: H * .56, s: sz(rw), w: rw }
     ];
   }
 
   var FONT = "'Latin Modern Roman', 'CMU Serif', 'STIX Two Text', Georgia, serif";
+
+  /* ---------------- chemical formulas, shown with each orbital in the other margin ---------------- */
+
+  // formula: digits after a symbol or a bracket become subscripts, ^… is the charge
+  var COMPOUNDS = [
+    ['H2O', 'water'], ['CO2', 'carbon dioxide'], ['CH4', 'methane'], ['NH3', 'ammonia'], ['NH4^+', 'ammonium'],
+    ['CaCO3', 'calcium carbonate'], ['NaCl', 'sodium chloride'], ['H2SO4', 'sulfuric acid'], ['HNO3', 'nitric acid'],
+    ['HCl', 'hydrochloric acid'], ['NaOH', 'sodium hydroxide'], ['C6H12O6', 'glucose'], ['C2H5OH', 'ethanol'],
+    ['CH3COOH', 'acetic acid'], ['C6H6', 'benzene'], ['O3', 'ozone'], ['H2O2', 'hydrogen peroxide'],
+    ['NaHCO3', 'sodium bicarbonate'], ['KMnO4', 'potassium permanganate'], ['CuSO4·5H2O', 'copper sulfate pentahydrate'],
+    ['Fe2O3', 'iron(III) oxide'], ['Fe3O4', 'magnetite'], ['SiO2', 'silicon dioxide'], ['CaSO4·2H2O', 'gypsum'],
+    ['PO4^3-', 'phosphate'], ['SO4^2-', 'sulfate'], ['NO3^-', 'nitrate'], ['CO3^2-', 'carbonate'], ['OH^-', 'hydroxide'],
+    ['H3O^+', 'hydronium'], ['SO2', 'sulfur dioxide'], ['N2O', 'nitrous oxide'], ['NO2', 'nitrogen dioxide'],
+    ['CO', 'carbon monoxide'], ['CH3OH', 'methanol'], ['(CH3)2CO', 'acetone'], ['CO(NH2)2', 'urea'],
+    ['C8H10N4O2', 'caffeine'], ['C9H8O4', 'aspirin'], ['C12H22O11', 'sucrose'], ['C2H4', 'ethylene'],
+    ['C2H2', 'acetylene'], ['C3H8', 'propane'], ['C8H18', 'octane'], ['CH2O', 'formaldehyde'],
+    ['NH4NO3', 'ammonium nitrate'], ['Ca(OH)2', 'calcium hydroxide'], ['CaO', 'quicklime'], ['MgSO4', 'magnesium sulfate'],
+    ['KNO3', 'potassium nitrate'], ['Na2CO3', 'sodium carbonate'], ['AgNO3', 'silver nitrate'], ['H3PO4', 'phosphoric acid'],
+    ['HF', 'hydrofluoric acid'], ['CHCl3', 'chloroform'], ['N2', 'nitrogen'], ['O2', 'oxygen'], ['Al2O3', 'alumina'],
+    ['TiO2', 'titanium dioxide'], ['NaClO', 'sodium hypochlorite'], ['C10H8', 'naphthalene'], ['C6H5OH', 'phenol'],
+    ['HCOOH', 'formic acid'], ['C3H5(OH)3', 'glycerol'], ['Mg(OH)2', 'magnesium hydroxide'], ['BaSO4', 'barium sulfate'],
+    // acids
+    ['HBr', 'hydrobromic acid'], ['HI', 'hydroiodic acid'], ['HClO4', 'perchloric acid'], ['HClO', 'hypochlorous acid'],
+    ['H2CO3', 'carbonic acid'], ['H2SO3', 'sulfurous acid'], ['HNO2', 'nitrous acid'], ['HCN', 'hydrocyanic acid'],
+    ['H3BO3', 'boric acid'], ['H2C2O4', 'oxalic acid'], ['C6H8O7', 'citric acid'], ['C3H6O3', 'lactic acid'],
+    ['C6H5COOH', 'benzoic acid'], ['C6H8O6', 'ascorbic acid (vitamin C)'],
+    // bases
+    ['KOH', 'potassium hydroxide'], ['LiOH', 'lithium hydroxide'], ['Ba(OH)2', 'barium hydroxide'], ['CsOH', 'caesium hydroxide'],
+    ['Al(OH)3', 'aluminium hydroxide'], ['Fe(OH)3', 'iron(III) hydroxide'], ['Cu(OH)2', 'copper(II) hydroxide'],
+    ['Zn(OH)2', 'zinc hydroxide'], ['CH3NH2', 'methylamine'], ['C5H5N', 'pyridine'], ['C6H5NH2', 'aniline'],
+    // cations
+    ['H^+', 'hydrogen ion (proton)'], ['Li^+', 'lithium ion'], ['Na^+', 'sodium ion'], ['K^+', 'potassium ion'], ['Ag^+', 'silver ion'],
+    ['Mg^2+', 'magnesium ion'], ['Ca^2+', 'calcium ion'], ['Ba^2+', 'barium ion'], ['Zn^2+', 'zinc ion'], ['Cu^2+', 'copper(II) ion'],
+    ['Fe^2+', 'iron(II) ion'], ['Fe^3+', 'iron(III) ion'], ['Al^3+', 'aluminium ion'], ['Pb^2+', 'lead(II) ion'],
+    // anions
+    ['F^-', 'fluoride'], ['Cl^-', 'chloride'], ['Br^-', 'bromide'], ['I^-', 'iodide'], ['O^2-', 'oxide'], ['S^2-', 'sulfide'],
+    ['O2^2-', 'peroxide'], ['CN^-', 'cyanide'], ['SCN^-', 'thiocyanate'], ['HCO3^-', 'hydrogen carbonate'], ['HSO4^-', 'hydrogen sulfate'],
+    ['SO3^2-', 'sulfite'], ['S2O3^2-', 'thiosulfate'], ['NO2^-', 'nitrite'], ['ClO^-', 'hypochlorite'], ['ClO3^-', 'chlorate'],
+    ['ClO4^-', 'perchlorate'], ['MnO4^-', 'permanganate'], ['CrO4^2-', 'chromate'], ['Cr2O7^2-', 'dichromate'],
+    ['CH3COO^-', 'acetate'], ['C2O4^2-', 'oxalate'], ['HPO4^2-', 'hydrogen phosphate'], ['H2PO4^-', 'dihydrogen phosphate'],
+    ['SiO3^2-', 'silicate'],
+    // salts
+    ['KCl', 'potassium chloride'], ['CaCl2', 'calcium chloride'], ['MgCl2', 'magnesium chloride'], ['BaCl2', 'barium chloride'],
+    ['NaBr', 'sodium bromide'], ['KI', 'potassium iodide'], ['NaF', 'sodium fluoride'], ['CaF2', 'calcium fluoride (fluorite)'],
+    ['Na2SO4', 'sodium sulfate'], ['K2SO4', 'potassium sulfate'], ['(NH4)2SO4', 'ammonium sulfate'], ['NH4Cl', 'ammonium chloride'],
+    ['Na3PO4', 'trisodium phosphate'], ['Ca3(PO4)2', 'calcium phosphate'], ['FeSO4', 'iron(II) sulfate'], ['FeCl3', 'iron(III) chloride'],
+    ['ZnSO4', 'zinc sulfate'], ['ZnCl2', 'zinc chloride'], ['CuCl2', 'copper(II) chloride'], ['AgCl', 'silver chloride'],
+    ['PbI2', 'lead(II) iodide'], ['K2Cr2O7', 'potassium dichromate'], ['KClO3', 'potassium chlorate'], ['NaNO2', 'sodium nitrite'],
+    ['Na2S2O3', 'sodium thiosulfate'], ['CH3COONa', 'sodium acetate'], ['Li2CO3', 'lithium carbonate'], ['MgCO3', 'magnesium carbonate'],
+    ['KAl(SO4)2·12H2O', 'potassium alum'], ['CaC2O4', 'calcium oxalate'], ['NaCN', 'sodium cyanide'], ['KSCN', 'potassium thiocyanate'],
+    ['Na2SiO3', 'sodium silicate'], ['FeS2', 'iron disulfide (pyrite)']
+  ];
+  function tokens(f) { // [[text, 0 normal | 1 subscript | 2 superscript]]
+    var out = [], i = 0, buf = '', mode = 0;
+    function flush() { if (buf) out.push([buf, mode]); buf = ''; }
+    while (i < f.length) {
+      var ch = f[i];
+      if (ch === '^') { flush(); mode = 2; i++; continue; }
+      if (mode === 2) { buf += ch === '-' ? '−' : ch; i++; continue; }
+      var isDigit = ch >= '0' && ch <= '9', prev = f[i - 1] || '';
+      var sub = isDigit && (/[A-Za-z)]/.test(prev) || (mode === 1));
+      if (sub && mode !== 1) { flush(); mode = 1; }
+      if (!sub && mode === 1) { flush(); mode = 0; }
+      buf += ch; i++;
+    }
+    flush();
+    return out;
+  }
+  // what kind of species it is, shown above the formula
+  var KIND = {
+    'N2': 'element', 'O2': 'element', 'O3': 'element · allotrope of oxygen',
+    'NH3': 'weak base', 'CH3NH2': 'organic base · weak', 'C5H5N': 'organic base · weak', 'C6H5NH2': 'organic base · weak',
+    'Al(OH)3': 'amphoteric hydroxide', 'Zn(OH)2': 'amphoteric hydroxide',
+    'Fe2O3': 'oxide', 'Fe3O4': 'oxide · mineral', 'SiO2': 'oxide', 'CaO': 'oxide', 'Al2O3': 'oxide', 'TiO2': 'oxide',
+    'CaCO3': 'salt', 'NaCl': 'salt', 'NaHCO3': 'salt', 'KMnO4': 'salt', 'NH4NO3': 'salt', 'MgSO4': 'salt', 'KNO3': 'salt',
+    'Na2CO3': 'salt', 'AgNO3': 'salt', 'BaSO4': 'salt', 'NaClO': 'salt', 'FeS2': 'mineral'
+  };
+  var STRONG_ACIDS = ['HCl', 'HBr', 'HI', 'HNO3', 'H2SO4', 'HClO4'], STRONG_BASES = ['NaOH', 'KOH', 'LiOH', 'CsOH', 'Ba(OH)2', 'Ca(OH)2'];
+  var SALTS_FROM = 'KCl';   // every entry from here to the end of the list is a salt
+  function carbon(f) { return /C(?![a-z])/.test(f); }   // C, but not Cl, Ca, Cu, Cr, Cs
+  function kind(c) {
+    var f = c[0];
+    if (KIND[f]) return KIND[f];
+    if (/\^.*\+/.test(f)) return /^[A-Z][a-z]?\^/.test(f) ? 'cation' : 'polyatomic cation';
+    if (/\^.*-/.test(f)) return /^[A-Z][a-z]?\^/.test(f) ? 'anion' : 'polyatomic anion';
+    if (COMPOUNDS.indexOf(c) >= COMPOUNDS.findIndex(function (q) { return q[0] === SALTS_FROM; })) return f.indexOf('·') > 0 ? 'salt · hydrate' : 'salt';
+    if (f.indexOf('·') > 0) return 'salt · hydrate';
+    if (/acid/.test(c[1])) return STRONG_ACIDS.indexOf(f) >= 0 ? 'strong acid' : carbon(f) && f !== 'HCN' && f !== 'H2CO3' ? 'organic acid · weak' : 'weak acid';
+    if (/hydroxide/.test(c[1])) return STRONG_BASES.indexOf(f) >= 0 ? 'strong base' : 'weak base';
+    if (carbon(f) && /H/.test(f)) return 'organic molecule';
+    return 'molecule';
+  }
+  function pickCompound(prev) { var c; do { c = COMPOUNDS[Math.floor(Math.random() * COMPOUNDS.length)]; } while (c === prev); return c; }
+  // molar mass from the formula: brackets, hydrates (·5H2O), the charge ignored
+  var MASS = { H: 1.008, C: 12.011, N: 14.007, O: 15.999, F: 18.998, Na: 22.990, Mg: 24.305, Al: 26.982, Si: 28.085, P: 30.974,
+               S: 32.06, Cl: 35.45, K: 39.098, Ca: 40.078, Ti: 47.867, Mn: 54.938, Fe: 55.845, Cu: 63.546, Ag: 107.868, Ba: 137.327,
+               Li: 6.94, B: 10.81, Cs: 132.905, Cr: 51.996, Zn: 65.38, Br: 79.904, I: 126.904, Pb: 207.2 };
+  function molarMass(f) {
+    f = f.split('^')[0];
+    return f.split('·').reduce(function (sum, part) {
+      var coef = 1, m = /^(\d+)(.*)$/.exec(part); if (m) { coef = +m[1]; part = m[2]; }
+      var i = 0;
+      function group() {
+        var t = 0;
+        while (i < part.length && part[i] !== ')') {
+          var v;
+          if (part[i] === '(') { i++; v = group(); i++; }
+          else { var e = /^[A-Z][a-z]?/.exec(part.slice(i))[0]; i += e.length; v = MASS[e] || 0; }
+          var n = /^\d+/.exec(part.slice(i)); if (n) { i += n[0].length; v *= +n[0]; }
+          t += v;
+        }
+        return t;
+      }
+      return sum + coef * group();
+    }, 0);
+  }
+  function drawTokens(tk, cx, y, fs, italic) { // a line of normal / subscript / superscript pieces, centred on cx
+    var w = 0, st = (italic ? 'italic ' : '');
+    function font(m) { return st + (m ? fs * .66 : fs) + 'px ' + FONT; }
+    tk.forEach(function (t) { ctx.font = font(t[1]); t.w = ctx.measureText(t[0]).width; w += t.w; });
+    var x = cx - w / 2;
+    tk.forEach(function (t) { ctx.font = font(t[1]); ctx.fillText(t[0], x, y + (t[1] === 1 ? fs * .24 : t[1] === 2 ? -fs * .4 : 0)); x += t.w; });
+  }
+  function drawFormula(cmp, p, a) { // as in a reference table: formula, name, molar mass
+    var fs = Math.max(15, Math.min(22, p.w * .055)), y = p.y;
+    ctx.globalAlpha = Math.min(1, a * 2.2); ctx.fillStyle = ink; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    ctx.font = (fs * .46) + 'px ' + FONT; ctx.textAlign = 'center'; if ('letterSpacing' in ctx) ctx.letterSpacing = (fs * .12) + 'px';
+    ctx.fillText(kind(cmp).toUpperCase(), p.x, y - fs * 1.05); if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+    ctx.textAlign = 'left';
+    drawTokens(tokens(cmp[0]), p.x, y, fs, false);
+    ctx.font = 'italic ' + (fs * .7) + 'px ' + FONT; ctx.textAlign = 'center';
+    ctx.fillText(cmp[1], p.x, y + fs * 1.25);
+    ctx.textAlign = 'left';
+    drawTokens([['M = ' + molarMass(cmp[0]).toFixed(2) + ' g·mol', 0], ['−1', 2]], p.x, y + fs * 2.2, fs * .58, true);
+  }
+
   function drawLabel(o, p, a) { // the name under the cloud, e.g. 3d with xz as a subscript, and its quantum numbers
     var fs = Math.max(12, Math.min(20, p.s * .16)), y = p.y + p.s * 1.12 + fs;
     ctx.globalAlpha = Math.min(1, a * 2.2); ctx.fillStyle = ink; ctx.textBaseline = 'alphabetic';
@@ -165,7 +308,7 @@
       }
       var k = Math.min(1, age / FADE, (c.life - age) / FADE);
       if (reduce) k = 1;
-      if (k > 0) drawCloud(c, P[s.side], baseAlpha * k);
+      if (k > 0) { drawCloud(c, P[s.side], baseAlpha * k); drawFormula(c.cmp, P[1 - s.side], baseAlpha * k); }
     });
     ctx.globalAlpha = 1;
   }
