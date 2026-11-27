@@ -20,6 +20,23 @@
    the "fountain effect": the school splits around the shark and closes up
    behind it). After the shark leaves, the school often balls up for a while.
 
+   Tuna: about every 20 s on average, a band of Atlantic bluefin tuna races
+   through, much faster than anything else, on a curved 3D path that swings in
+   depth and height: across the view, dipping towards the viewer and back, or
+   out of the far background and banking away to a side, or the reverse, into
+   the distance. They stay behind or among the school, never close. They keep a tight formation (a parabola with trailing wings,
+   an echelon, or a loose cluster), swim with the stiff body and fast-beating
+   crescent tail of thunniform swimmers, and the school scatters from their
+   path if they cut through it.
+
+   Swordfish: about once a minute, a swordfish, extremely fast and beating its
+   tail hard, races in at the depth of the
+   school, picks a fish ahead of it and charges; when its bill reaches the
+   prey it slashes its head from side to side, as swordfish do, and the fish
+   is stunned: it stops, rolls onto its side and sinks slowly. The swordfish
+   carries on, swings round in a wide turn, comes back to swallow it and
+   leaves into the distance. It never goes after the tuna.
+
    Rendering: bodies are projected from their 3D orientation, so they
    foreshorten when they turn towards or away from you, shrink and fade with
    distance, and flash faintly when a silver flank faces the viewer.
@@ -35,9 +52,9 @@
   // seamounts and volcanic vents: built but switched off for now; set to true to bring them back
   // (or add ?seamounts=1 to a page URL to preview them)
   var SEAMOUNTS = false || /[?&]seamounts=1/.test(location.search);
-  var cv, ctx, W = 0, H = 0, dpr = 1, fish = [], school, shark, hammer;
+  var cv, ctx, W = 0, H = 0, dpr = 1, fish = [], school, shark, hammer, tunas, sword;
   var L = 18, R0 = 120, RB = 60, F = 1000, ZD = 900, SP = 30; // fish length, school radius loose/balled, focal length, depth, spacing
-  var fishFill = '#4f6f8f', sharkFill = '#56636f', baseAlpha = 0.1;
+  var fishFill = '#4f6f8f', sharkFill = '#56636f', tunaFill = '#3e5872', baseAlpha = 0.1;
 
   var MODES = {
     //       separation align cohesion anchor wander  thrust (u/s^2)  burst s       glide s
@@ -63,6 +80,7 @@
     var dark = document.documentElement.getAttribute('data-theme') === 'dark';
     fishFill = dark ? '#a9c3d8' : '#4f6f8f';
     sharkFill = dark ? '#8e9ba7' : '#56636f';
+    tunaFill = dark ? '#9db4ca' : '#3e5872';
     baseAlpha = debug ? 0.6 : dark ? 0.07 : 0.09;
   }
 
@@ -75,6 +93,8 @@
       if (school.tx !== undefined) { school.tx *= sx; school.ty *= sy; }
       if (shark.active) { shark.x *= sx; shark.y *= sy; }
       if (hammer.active) { hammer.x *= sx; hammer.y *= sy; }
+      if (tunas.active) tunas.active = false;   // a resize mid-crossing: let this band go
+      if (sword.active) { sword.x *= sx; sword.y *= sy; }
     }
     W = w; H = h;
     dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -155,6 +175,8 @@
     }
     shark = { active: false, next: 5, ph: 0 };
     hammer = { active: false, next: debug ? 20 : rand(30, 55), ph: 0 };
+    tunas = { active: false, next: debug ? 4 : rand(10, 30), band: [] };
+    sword = { active: false, next: debug ? 6 : rand(30, 60), ph: 0 };
   }
 
   function stepSchool(dt) {
@@ -200,6 +222,13 @@
       if (f.dead) {
         f.respawn -= dt;
         if (f.respawn <= 0) { f.dead = false; edgeSpawn(f); }
+        continue;
+      }
+      if (f.stunned > 0) { // slashed by the swordfish: no more swimming, it rolls onto its side
+        f.stunned -= dt; f.bt = 0; f.burst = false;
+        f.roll = Math.min(1.4, (f.roll || 0) + dt * 1.2);
+        f.pitch += clamp(0.35 - f.pitch, -0.3 * dt, 0.3 * dt);
+        if (f.stunned <= 0) f.roll = 0;
         continue;
       }
       var sepX = 0, sepY = 0, sepZ = 0, aliX = 0, aliY = 0, aliZ = 0, cx = 0, cy = 0, cz = 0, cnt = 0, catching = false;
@@ -270,6 +299,25 @@
           if (pd < (0.7 + 0.9 * fear) * Ls || (shark.lunge > 0 && pd < (1.2 + 0.8 * fear) * Ls)) startle = true;
         }
       }
+      // the swordfish: get away from it, startle when it is close or slashing
+      if (sword.active && sword.phase !== 'leave') {
+        var vx0 = f.x - sword.x, vy0 = f.y - sword.y, vz0 = f.z - sword.z, vd = Math.hypot(vx0, vy0, vz0) || 1, vR = 1.7 * sword.len;
+        if (vd < vR) {
+          var vw = (vR - vd) / vR * 6;
+          wx += vx0 / vd * vw; wy += vy0 / vd * vw * 0.6; wz += vz0 / vd * vw;
+          if (vd < (sword.phase === 'slash' ? 1.0 : 0.6) * sword.len) startle = true;
+        }
+      }
+      // tuna racing through: get off their path, startle when one is about to pass
+      if (tunas.active) for (j = 0; j < tunas.band.length; j++) {
+        var tu = tunas.band[j], qx = f.x - tu.x, qy = f.y - tu.y, qz = f.z - tu.z, qd = Math.hypot(qx, qy, qz) || 1, qR = 1.6 * tu.len;
+        if (qd < qR) {
+          var qa = (qx * tu.fx + qy * tu.fy + qz * tu.fz) / qd, lx2 = qx / qd - tu.fx * qa, ly2 = qy / qd - tu.fy * qa, lz2 = qz / qd - tu.fz * qa, ll2 = Math.hypot(lx2, ly2, lz2) || 1;
+          var qw = (qR - qd) / qR * 6;
+          wx += (qx / qd * 0.4 + lx2 / ll2) * qw; wy += (qy / qd * 0.4 + ly2 / ll2) * qw * 0.6; wz += (qz / qd * 0.4 + lz2 / ll2) * qw;
+          if (qd < 0.8 * tu.len) startle = true;
+        }
+      }
       if (startle && f.panic <= 0 && (f.calm <= 0 || !catching)) {
         f.panic = rand(0.8, 1.5) * (1 + fear); f.panicAge = 0;
         f.bt = rand(0.25, 0.4);
@@ -324,6 +372,7 @@
       if (f.burst) { f.burst = false; f.bt -= dt; }
       f.s += ((f.bt > 0 ? f.thrust : 0) - drag * f.s) * dt;
       if (f.s < 0) f.s = 0;
+      if (f.stunned > 0) { f.y += 0.35 * L * dt; f.ph += dt * 0.5; }   // sinking slowly
       var c = Math.cos(f.pitch);
       f.x += c * Math.cos(f.yaw) * f.s * dt;
       f.y += Math.sin(f.pitch) * f.s * dt;
@@ -698,6 +747,211 @@
     }
   }
 
+  /* ---------------- bluefin tuna ---------------- */
+  // A band of bluefin tuna racing along a curved 3D path (a cubic Bezier) that swings in depth and
+  // height as it goes: across the view with a dip towards the viewer and back, or out of the far
+  // background (fading in) then banking away to one side, or the reverse, vanishing into the distance.
+  // They never come closer than a third of the depth of the scene. Each tuna holds a place in the
+  // band's own frame (along, sideways, up), with a little wobble. Speed is constant along the path.
+  function bez(P, u) { // position and tangent on the cubic; straight lines beyond its ends
+    if (u < 0 || u > 1) {
+      var e = u < 0 ? 0 : 1, q = bez(P, e);
+      return [q[0] + q[3] * (u - e), q[1] + q[4] * (u - e), q[2] + q[5] * (u - e), q[3], q[4], q[5]];
+    }
+    var m = 1 - u, a = m * m * m, b = 3 * m * m * u, c = 3 * m * u * u, d = u * u * u, out = [];
+    for (var k = 0; k < 3; k++) out.push(a * P[0][k] + b * P[1][k] + c * P[2][k] + d * P[3][k]);
+    for (k = 0; k < 3; k++) out.push(3 * m * m * (P[1][k] - P[0][k]) + 6 * m * u * (P[2][k] - P[1][k]) + 3 * u * u * (P[3][k] - P[2][k]));
+    return out;
+  }
+  function spawnTunas() {
+    var T = tunas, side = Math.random() < 0.5 ? -1 : 1, r = Math.random(), P;
+    var zNear = 0.35 * ZD, zFar = 2.6 * ZD;
+    var off = function (s, y, z) { return unproject(s < 0 ? -0.3 * W : 1.3 * W, y * H, z); };
+    var pt = function (x, y, z) { return unproject(x * W, y * H, z); };
+    T.fadeIn = T.fadeOut = false;
+    if (r < 0.45) {        // across, swinging towards the viewer and back (or away and back), rising or sinking
+      var zA = rand(0.9, 2.4) * ZD, zD = rand(0.9, 2.4) * ZD, dip = Math.random() < 0.6;
+      P = [off(side, rand(0.25, 0.75), zA),
+           pt(side < 0 ? 0.3 : 0.7, rand(0.2, 0.8), dip ? rand(0.25, 0.5) * ZD : rand(2.2, 2.6) * ZD),
+           pt(side < 0 ? 0.7 : 0.3, rand(0.2, 0.8), dip ? rand(0.3, 0.9) * ZD : rand(1.6, 2.6) * ZD),
+           off(-side, rand(0.25, 0.75), zD)];
+      T.kind = 'across';
+    } else {               // out of the far background, banking out to a side; or the reverse
+      var cx = rand(0.3, 0.7), cy = rand(0.3, 0.7);
+      P = [pt(cx, cy, 3.4 * ZD),
+           pt(cx + rand(-0.15, 0.15), cy + rand(-0.15, 0.15), rand(1.6, 2.0) * ZD),
+           pt(side < 0 ? 0.25 : 0.75, rand(0.25, 0.75), rand(0.3, 0.7) * ZD),
+           off(side, rand(0.25, 0.75), rand(0.5, 1.4) * ZD)];
+      if (r < 0.75) { T.kind = 'emerging'; T.fadeIn = true; }
+      else { P.reverse(); T.kind = 'vanishing'; T.fadeOut = true; }
+    }
+    P.forEach(function (q) { q[2] = clamp(q[2], zNear, zFar + ZD); });
+    T.path = P;
+    // arc length table, so the band moves at a constant speed along the curve
+    var tab = [0], prev = bez(P, 0), tot = 0;
+    for (var i = 1; i <= 120; i++) { var q = bez(P, i / 120); tot += Math.hypot(q[0] - prev[0], q[1] - prev[1], q[2] - prev[2]); tab.push(tot); prev = q; }
+    T.tab = tab; T.total = tot;
+    T.speed = rand(0.8, 1.2) * (W / scaleAt(ZD)) / 4.5;   // about 4.5 s to cross the view at mid depth
+    var n = Math.round(rand(7, 16)), len = rand(4, 5.2) * L, form = Math.random();
+    T.dist = -n * 0.5 * len; T.age = 0; T.active = true;
+    T.band = [];
+    for (i = 0; i < n; i++) {
+      var w = n > 1 ? i / (n - 1) * 2 - 1 : 0, lat, along;
+      if (form < 0.45) { lat = w * n * 0.45 * len; along = -w * w * 1.2 * len; }      // a parabola, wings trailing
+      else if (form < 0.75) { lat = w * n * 0.35 * len; along = -(w + 1) * 0.9 * len; } // an echelon
+      else { lat = rand(-1, 1) * n * 0.25 * len; along = rand(-1, 1) * n * 0.25 * len; } // a loose cluster
+      T.band.push({ tuna: true, off: [along + rand(-0.3, 0.3) * len, lat + rand(-0.2, 0.2) * len, rand(-0.5, 0.5) * len],
+                    len: len * rand(0.85, 1.15), ph: rand(0, 6.3), beat: rand(14, 19), wob: rand(0, 6.3), fade: 1,
+                    x: 0, y: 0, z: 0, yaw: 0, pitch: 0, fx: 1, fy: 0, fz: 0 });
+    }
+  }
+  function uAt(T, d) { // path parameter at distance d along it (linear beyond the ends)
+    if (d <= 0) return d / (T.total || 1);
+    if (d >= T.total) return 1 + (d - T.total) / (T.total || 1);
+    var lo = 0, hi = T.tab.length - 1;
+    while (hi - lo > 1) { var mid = (lo + hi) >> 1; if (T.tab[mid] < d) lo = mid; else hi = mid; }
+    return (lo + (d - T.tab[lo]) / ((T.tab[hi] - T.tab[lo]) || 1)) / (T.tab.length - 1);
+  }
+  function stepTunas(dt) {
+    var T = tunas;
+    if (!T.active) {
+      T.next -= dt;
+      if (T.next <= 0) spawnTunas();
+      return;
+    }
+    T.age += dt; T.dist += T.speed * dt;
+    var shown = false;
+    T.band.forEach(function (t) {
+      var d = T.dist + t.off[0], q = bez(T.path, uAt(T, d)), g = Math.hypot(q[3], q[4], q[5]) || 1;
+      var fx = q[3] / g, fy = q[4] / g, fz = q[5] / g, sl = Math.hypot(fx, fz) || 1, sx = -fz / sl, sz = fx / sl;
+      var lat = t.off[1] + Math.sin(T.age * 0.8 + t.wob) * 0.15 * t.len, up = t.off[2] + Math.sin(T.age * 1.1 + t.wob * 1.7) * 0.1 * t.len;
+      t.x = q[0] + sx * lat; t.y = q[1] + up; t.z = Math.max(0.3 * ZD, q[2] + sz * lat);
+      t.fx = fx; t.fy = fy; t.fz = fz;
+      t.yaw = Math.atan2(fz, fx) + 0.04 * Math.sin(T.age * 1.3 + t.wob);
+      t.pitch = clamp(Math.asin(clamp(fy, -1, 1)), -0.5, 0.5);
+      t.ph += dt * t.beat;
+      // out of the haze, or into it: fade over the far fifth of the path
+      var k = d / (T.total || 1);
+      t.fade = T.fadeIn ? clamp(k / 0.2, 0, 1) : T.fadeOut ? clamp((1 - k) / 0.2, 0, 1) : 1;
+      var p = project(t.x, t.y, t.z);
+      if (t.fade > 0.01 && p[0] > -0.25 * W && p[0] < 1.25 * W && p[1] > -0.3 * H && p[1] < 1.3 * H) shown = true;
+    });
+    if ((T.dist > T.total * 0.5 && !shown) || T.age > 40) {
+      T.active = false;
+      T.next = debug ? rand(4, 8) : rand(10, 30); // about every 20 s on average
+    }
+  }
+
+  /* ---------------- swordfish ---------------- */
+  // approach -> charge (a fish ahead) -> slash (head swept from side to side; the fish is stunned)
+  // -> turn (carries on, swings round) -> eat (back to the stunned fish) -> leave (into the distance)
+  function spawnSword() {
+    var S = sword, side = Math.random() < 0.5 ? -1 : 1;
+    var z = clamp(school.z + rand(-0.3, 0.3) * ZD, 0.1 * ZD, 0.95 * ZD);
+    var p = unproject(side < 0 ? -0.3 * W : 1.3 * W, rand(0.3, 0.7) * H, z);
+    S.active = true; S.side = side; S.len = 6.5 * L;
+    S.x = p[0]; S.y = p[1]; S.z = p[2];
+    S.course = side < 0 ? rand(-0.3, 0.3) : Math.PI + rand(-0.3, 0.3); S.yaw = S.course; S.pitch = 0;
+    S.s = 1.8 * S.len; S.age = 0; S.phase = 'approach'; S.phaseT = 0; S.prey = null; S.slash = 0; S.tries = 0;
+  }
+  function stepSword(dt) {
+    var S = sword;
+    if (!S.active) {
+      S.next -= dt;
+      if (shark.active) S.next = Math.max(S.next, 4);   // not while the shark is hunting
+      if (S.next <= 0) spawnSword();
+      return;
+    }
+    var Ls = S.len, i, f;
+    S.age += dt; S.phaseT += dt;
+    var cp = Math.cos(S.pitch), fx = cp * Math.cos(S.course), fy = Math.sin(S.pitch), fz = cp * Math.sin(S.course);
+    S.fx = fx; S.fy = fy; S.fz = fz;
+    var tip = [S.x + fx * 0.85 * Ls, S.y + fy * 0.85 * Ls, S.z + fz * 0.85 * Ls];
+    var tx, ty, tz, speed = 1.9, rate = 1.6, tail = 16;   // a swordfish is among the fastest fish: all in body lengths per second
+    if (S.phase === 'approach') {
+      // towards the school's centre; then the nearest fish well ahead becomes the prey
+      var cx = 0, cy = 0, cz = 0, cnt = 0, best = null, bd = Infinity;
+      for (i = 0; i < fish.length; i++) {
+        f = fish[i]; if (f.dead || f.stunned > 0) continue;
+        cx += f.x; cy += f.y; cz += f.z; cnt++;
+        var dx = f.x - S.x, dy = f.y - S.y, dz = f.z - S.z, d = Math.hypot(dx, dy, dz) || 1;
+        if (d < bd && (dx * fx + dy * fy + dz * fz) / d > 0.6 && Math.abs(dy) < 0.45 * d) { bd = d; best = f; }   // ahead, and not far above or below
+      }
+      if (!cnt) { S.phase = 'leave'; }
+      else {
+        tx = cx / cnt; ty = cy / cnt; tz = cz / cnt;
+        if (best && bd < 2.6 * Ls && bd > 0.9 * Ls) { S.phase = 'charge'; S.prey = best; S.phaseT = 0; }   // far enough ahead to be reached at speed
+        if (S.age > 20) S.phase = 'leave';
+      }
+    }
+    if (S.phase === 'charge') {
+      var pr = S.prey;
+      if (!pr || pr.dead || S.phaseT > 1.8) {   // missed it: overshot, or it is inside its turning circle; pick another
+        S.tries = (S.tries || 0) + 1; S.prey = null; S.phaseT = 0;
+        S.phase = S.tries < 3 ? 'approach' : 'leave';
+      }
+      else {
+        tx = pr.x; ty = pr.y; tz = pr.z; speed = 4.6; rate = 3.6; tail = 26;
+        if (Math.hypot(pr.x - tip[0], pr.y - tip[1], pr.z - tip[2]) < 0.4 * Ls) {
+          S.phase = 'slash'; S.phaseT = 0;
+          pr.stunned = 9; pr.s *= 0.2; pr.panic = 0;
+        }
+      }
+    }
+    if (S.phase === 'slash') {
+      // the head sweeps from side to side a few times; momentum carries the fish on
+      S.slash = 0.45 * Math.sin(S.phaseT * 20) * Math.max(0, 1 - S.phaseT / 0.8);
+      tx = S.x + fx * Ls; ty = S.y; tz = S.z + fz * Ls; speed = 3.2; rate = 0.3; tail = 20;
+      if (S.phaseT > 0.8) { S.phase = 'turn'; S.phaseT = 0; S.slash = 0; S.dir = Math.random() < 0.5 ? 1 : -1; }
+    }
+    if (S.phase === 'turn') {
+      // carry on for a moment, then swing round in a wide turn back towards the stunned fish
+      var pq = S.prey;
+      if (!pq || pq.dead || !(pq.stunned > 0)) S.phase = 'leave';
+      else if (S.phaseT < 0.6) { tx = S.x + fx * Ls; ty = S.y; tz = S.z + fz * Ls; speed = 2.6; rate = 0.8; tail = 18; }
+      else {
+        tx = pq.x; ty = pq.y; tz = pq.z; speed = 2.2; rate = 2.4; tail = 18;
+        var ex = pq.x - S.x, ey = pq.y - S.y, ez = pq.z - S.z, ed = Math.hypot(ex, ey, ez) || 1;
+        if ((ex * fx + ey * fy + ez * fz) / ed > 0.7) { S.phase = 'eat'; S.phaseT = 0; }
+        if (S.phaseT > 12) S.phase = 'leave';
+      }
+    }
+    if (S.phase === 'eat') {
+      var pe = S.prey;
+      if (!pe || pe.dead || !(pe.stunned > 0) || S.phaseT > 6) S.phase = 'leave';
+      else {
+        tx = pe.x; ty = pe.y; tz = pe.z; speed = 2.0; rate = 3.0; tail = 18;
+        var mouth = [S.x + fx * 0.5 * Ls, S.y + fy * 0.5 * Ls, S.z + fz * 0.5 * Ls];
+        if (Math.hypot(pe.x - mouth[0], pe.y - mouth[1], pe.z - mouth[2]) < 0.3 * Ls) {
+          pe.dead = true; pe.stunned = 0; pe.roll = 0; pe.respawn = rand(15, 30);
+          S.phase = 'leave'; S.phaseT = 0;
+        }
+      }
+    }
+    if (S.phase === 'leave') {
+      var e = unproject(S.side < 0 ? 1.7 * W : -0.7 * W, H / 2, 1.6 * ZD);
+      tx = e[0]; ty = S.y; tz = e[2]; speed = 3.0; rate = 1.2; tail = 22;
+    }
+    if (tx === undefined) { tx = S.x + fx * Ls; ty = S.y; tz = S.z + fz * Ls; }   // between two phases: straight on
+    var gx = tx - S.x, gy = ty - S.y, gz = tz - S.z;
+    S.course = wrapAngle(S.course + clamp(wrapAngle(Math.atan2(gz, gx) - S.course) * dt * 2.5, -rate * dt, rate * dt));
+    var charging = S.phase === 'charge' || S.phase === 'eat', pm = charging ? 0.8 : 0.45, pr2 = charging ? 2.5 : 0.7;
+    var wantPitch = clamp(Math.atan2(gy, Math.hypot(gx, gz)) * (charging ? 1 : 0.8), -pm, pm);
+    S.pitch += clamp((wantPitch - S.pitch) * dt * (charging ? 6 : 2), -pr2 * dt, pr2 * dt);
+    S.s += (speed * Ls - S.s) * Math.min(1, dt * (S.phase === 'charge' ? 5 : 2.5));
+    S.x += fx * S.s * dt; S.y += fy * S.s * dt; S.z += fz * S.s * dt;
+    S.z = Math.max(S.z, -0.1 * ZD);
+    S.yaw = S.course + S.slash;
+    S.ph += dt * tail;
+    S.amp = S.phase === 'charge' ? 0.75 : S.phase === 'slash' ? 0.5 : 0.55;   // strong, wide tail beats
+    if (S.phase === 'charge' || S.phase === 'slash') school.alarm = 3;
+    var p = project(S.x, S.y, S.z);
+    if (S.phase === 'leave' && (p[0] < -0.4 * W || p[0] > 1.4 * W || S.age > 60)) {
+      S.active = false;
+      S.next = debug ? rand(8, 12) : rand(45, 75); // about once a minute
+    }
+  }
+
   /* ---------------- drawing ---------------- */
 
   // body profile along its length, t = 0 at the snout, 1 at the tail base
@@ -744,6 +998,44 @@
       [[0.22, -0.04, 0.035], [0.04, -0.12, 0.18], [0.09, -0.05, 0.04]],              // pectoral fins
       [[0.22, -0.04, -0.035], [0.04, -0.12, -0.18], [0.09, -0.05, -0.04]],
       [[-0.12, -0.05, 0], [-0.17, -0.1, 0], [-0.18, -0.045, 0]]                      // pelvic / anal
+    ]
+  };
+
+  // an Atlantic bluefin tuna: fusiform body, very narrow caudal peduncle, tall crescent (lunate) tail,
+  // low first dorsal, sickle-shaped second dorsal and anal fins, short pectorals, a row of finlets
+  var TUNA = {
+    profile: makeProfile(12, 0.42, 0.1, 0.01, 0.78, 0.62),
+    caudal: [[0, 0.018], [0.1, 0.2], [0.125, 0.195], [0.07, 0.065], [0.055, 0], [0.07, -0.065], [0.125, -0.195], [0.1, -0.2], [0, -0.018]],
+    fins: [
+      [[0.18, 0.08, 0], [0.12, 0.135, 0], [0.04, 0.11, 0], [-0.02, 0.085, 0]],          // first dorsal
+      [[-0.04, 0.085, 0], [-0.1, 0.19, 0], [-0.125, 0.18, 0], [-0.11, 0.07, 0]],         // second dorsal
+      [[-0.05, -0.08, 0], [-0.11, -0.18, 0], [-0.135, -0.17, 0], [-0.12, -0.065, 0]],    // anal
+      [[0.3, -0.01, 0.05], [0.16, -0.05, 0.14], [0.21, -0.02, 0.05]],                    // pectoral fins
+      [[0.3, -0.01, -0.05], [0.16, -0.05, -0.14], [0.21, -0.02, -0.05]]
+    ]
+  };
+  (function finlets() { // small triangles along the back and the belly, between the second dorsal / anal fins and the tail
+    for (var j = 0; j < 6; j++) {
+      var a = -0.15 - 0.026 * j, t = (0.5 - a) / 0.8, u = 0.5 + (t - 0.42) / 0.58 * 0.5;
+      var h = 0.1 * Math.pow(Math.sin(Math.PI * clamp(u, 0, 1)), 0.62) + 0.01;
+      TUNA.fins.push([[a + 0.008, h - 0.004, 0], [a - 0.012, h + 0.03, 0], [a - 0.016, h - 0.004, 0]]);
+      TUNA.fins.push([[a + 0.008, -h + 0.004, 0], [a - 0.012, -h - 0.03, 0], [a - 0.016, -h + 0.004, 0]]);
+    }
+  })();
+
+  // a swordfish: a long flat bill (a third of its length), a robust body, a tall rigid crescent
+  // first dorsal, long sickle pectorals, tiny second dorsal and anal fins, a large crescent tail
+  var SWORD = {
+    profile: makeProfile(12, 0.34, 0.085, 0.01, 0.85, 0.7),
+    caudal: [[0, 0.02], [0.12, 0.27], [0.15, 0.26], [0.08, 0.07], [0.065, 0], [0.08, -0.07], [0.15, -0.26], [0.12, -0.27], [0, -0.02]],
+    fins: [
+      [[0.48, 0.014, 0], [0.86, 0.002, 0], [0.86, -0.002, 0], [0.48, -0.012, 0]],            // the bill, seen from the side
+      [[0.48, 0, 0.02], [0.86, 0, 0.003], [0.86, 0, -0.003], [0.48, 0, -0.02]],               // and flat, seen from above
+      [[0.31, 0.07, 0], [0.27, 0.25, 0], [0.22, 0.26, 0], [0.2, 0.15, 0], [0.12, 0.075, 0]], // first dorsal
+      [[0.3, -0.05, 0.04], [0.1, -0.17, 0.15], [0.2, -0.06, 0.04]],                          // pectoral fins
+      [[0.3, -0.05, -0.04], [0.1, -0.17, -0.15], [0.2, -0.06, -0.04]],
+      [[-0.19, 0.03, 0], [-0.22, 0.07, 0], [-0.24, 0.025, 0]],                               // second dorsal
+      [[-0.17, -0.03, 0], [-0.21, -0.075, 0], [-0.23, -0.025, 0]]                            // second anal
     ]
   };
 
@@ -839,10 +1131,18 @@
     for (var i = 0; i < fish.length; i++) if (!fish[i].dead) list.push(fish[i]);
     if (shark.active) list.push(shark);
     if (hammer.active) list.push(hammer);
+    if (tunas.active) for (i = 0; i < tunas.band.length; i++) list.push(tunas.band[i]);
+    if (sword.active) list.push(sword);
     list.sort(function (a, b) { return b.z - a.z; }); // far first
     for (i = 0; i < list.length; i++) {
       var e = list[i];
-      if (e === hammer) {
+      if (e === sword) {
+        ctx.fillStyle = sharkFill;
+        drawBody(e, e.len, SWORD, e.amp || 0.55, baseAlpha * 1.15);
+      } else if (e.tuna) {
+        ctx.fillStyle = tunaFill;
+        drawBody(e, e.len, TUNA, 0.16, baseAlpha * 1.1 * e.fade);   // thunniform: a stiff body, the tail does the work
+      } else if (e === hammer) {
         ctx.fillStyle = sharkFill;
         drawBody(e, e.len, HAMMER, 0.25, baseAlpha);
       } else if (e === shark) {
@@ -856,7 +1156,7 @@
     ctx.globalAlpha = 1;
   }
 
-  function step(dt) { stepSchool(dt); stepShark(dt); stepHammer(dt); stepFish(dt); if (SEAMOUNTS) stepVents(dt); }
+  function step(dt) { stepSchool(dt); stepShark(dt); stepHammer(dt); stepTunas(dt); stepSword(dt); stepFish(dt); if (SEAMOUNTS) stepVents(dt); }
 
   var last = 0;
   function frame(t) {
