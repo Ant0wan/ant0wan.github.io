@@ -9,15 +9,14 @@
      Under each cloud, its name (2p_x, 3d_z², 4f_xyz…) and its quantum numbers. The two
      phases of the wavefunction are told apart by the tone of the points: the
      lobes where ψ > 0 are a little darker than those where ψ < 0.
-   - One orbital at a time, in a margin beside the text, turning slowly in 3D.
-     It condenses, stays about twenty seconds, fades away, and after a short
-     pause the next one, picked at random, appears in the other margin.
-   - At the same time, in the opposite margin, a chemical formula appears with
-     its kind (element, molecule, strong or weak acid or base, oxide, cation,
-     anion, salt…),
-     name and molar mass, as in a reference table (NH₄⁺ ammonium,
-     CaCO₃ calcium carbonate, C₆H₁₂O₆ glucose…), picked
-     at random among some 160 elements, molecules, acids, bases, ions and salts, and fades away with the orbital.
+   - One orbital at a time, turning slowly in 3D, and one chemical formula at a
+     time, each in a margin beside the text, each coming and going on its own
+     clock (an orbital stays 10 to 16 seconds, a formula 7 to 12). Each new one
+     takes a random side, but never three times in a row the same side; when the
+     other one is on that side, it takes the other half of the screen.
+   - Each formula shows its kind (element, molecule, strong or weak acid or
+     base, oxide, cation, anion, salt…), its name and its molar mass, as in a
+     reference table, picked at random among some 160 entries.
    Very faint, no pointer events, paused in hidden tabs, a still frame for
    visitors who prefer reduced motion. Add ?orbitals=debug to see it clearly. */
 (function () {
@@ -99,28 +98,41 @@
     }
   }
 
-  /* ---------------- the three clouds ---------------- */
+  /* ---------------- one orbital and one formula, each with its own life ---------------- */
 
-  var LIFE = 24, FADE = 3.5, GAP = 2.5, slots = [];
-  function pick(exclude) {
-    var o; do { o = ORBITALS[Math.floor(Math.random() * ORBITALS.length)]; } while (exclude.indexOf(o) >= 0);
+  // one orbital and one formula at most, each coming and going on its own clock
+  var FADE = 2.2, orb = null, form = null;
+  function pick(prev) {
+    var o; do { o = ORBITALS[Math.floor(Math.random() * ORBITALS.length)]; } while (o === prev);
     return o;
   }
-  function newCloud(slot, t0) {
-    var used = slots.map(function (s) { return s.cloud && s.cloud.o; });
-    var o = pick(used);
-    var S = sampler(o); grow(S, 25);
-    var prevC = slots[0] && slots[0].cloud ? slots[0].cloud.cmp : null;
-    return { o: o, cmp: pickCompound(prevC), S: S, pts: S.pts, t0: t0, life: LIFE + rnd(-4, 6), spin: rnd(.1, .22) * (Math.random() < .5 ? -1 : 1), tilt: rnd(.3, .9), ph: rnd(0, 6.283) };
+  // side: random, but never three times in a row on the same side
+  // height: the upper or the lower half; if the other one is on the same side, the half it leaves free
+  function settle(it, prev, other) {
+    var side = Math.random() < .5 ? 0 : 1;
+    if (prev && prev.run >= 2 && side === prev.side) side = 1 - side;
+    it.side = side; it.run = prev && prev.side === side ? prev.run + 1 : 1;
+    it.slot = other && other.side === side ? 1 - other.slot : (Math.random() < .5 ? 0 : 1);   // upper or lower half
+    it.y = it.slot ? rnd(.62, .68) : rnd(.25, .31);
   }
-  function places() { // the two places an orbital can appear: the left margin or the right one
+  function newOrbital(t0) {
+    var o = pick(orb && orb.o), S = sampler(o); grow(S, 25);
+    var it = { kind: 'orb', o: o, S: S, pts: S.pts, t0: t0, life: rnd(10, 16), spin: rnd(.1, .22) * (Math.random() < .5 ? -1 : 1), tilt: rnd(.3, .9), ph: rnd(0, 6.283) };
+    settle(it, orb, form); return it;
+  }
+  function newFormula(t0) {
+    var it = { kind: 'form', cmp: pickCompound(form && form.cmp), t0: t0, life: rnd(7, 12) };
+    settle(it, form, orb); return it;
+  }
+  function places() { // the left margin and the right one; the height is chosen afresh for each appearance
     var m = document.querySelector('main'), r = m ? m.getBoundingClientRect() : { left: W * .25, right: W * .75 };
     var lw = r.left, rw = W - r.right, sz = function (w) { return Math.max(60, Math.min(w * .38, H * .2)); };
     return [
-      { x: lw / 2, y: H * .36, s: sz(lw), w: lw },
-      { x: r.right + rw / 2, y: H * .56, s: sz(rw), w: rw }
+      { x: lw / 2, s: sz(lw), w: lw },
+      { x: r.right + rw / 2, s: sz(rw), w: rw }
     ];
   }
+  function at(p, yFrac) { return { x: p.x, y: H * yFrac, s: p.s, w: p.w }; }
 
   var FONT = "'Latin Modern Roman', 'CMU Serif', 'STIX Two Text', Georgia, serif";
 
@@ -249,7 +261,7 @@
   function drawFormula(cmp, p, a) { // as in a reference table: formula, name, molar mass
     var fs = Math.max(15, Math.min(22, p.w * .055)), y = p.y;
     ctx.globalAlpha = Math.min(1, a * 2.2); ctx.fillStyle = ink; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
-    ctx.font = (fs * .46) + 'px ' + FONT; ctx.textAlign = 'center'; if ('letterSpacing' in ctx) ctx.letterSpacing = (fs * .12) + 'px';
+    ctx.font = (fs * .46) + 'px ' + FONT; ctx.textAlign = 'center'; if ('letterSpacing' in ctx) ctx.letterSpacing = (fs * .12) + 'px';   // its kind, in small spaced capitals
     ctx.fillText(kind(cmp).toUpperCase(), p.x, y - fs * 1.05); if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
     ctx.textAlign = 'left';
     drawTokens(tokens(cmp[0]), p.x, y, fs, false);
@@ -300,16 +312,14 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, W, H);
     var P = places();
-    slots.forEach(function (s) { if (s.cloud.S.pts.length < N_POINTS) grow(s.cloud.S, reduce ? 400 : 5); });
-    slots.forEach(function (s) {
-      var c = s.cloud, age = time - c.t0;
-      if (!reduce && age > c.life) {             // gone: after a short empty pause, the next one, in the other margin
-        s.side = 1 - s.side; s.cloud = newCloud(s, time + GAP); c = s.cloud; age = time - c.t0;
-      }
-      var k = Math.min(1, age / FADE, (c.life - age) / FADE);
-      if (reduce) k = 1;
-      if (k > 0) { drawCloud(c, P[s.side], baseAlpha * k); drawFormula(c.cmp, P[1 - s.side], baseAlpha * k); }
-    });
+    if (orb.S.pts.length < N_POINTS) grow(orb.S, reduce ? 400 : 5);
+    // when one is gone, its successor comes after a pause of its own
+    if (!reduce && time > orb.t0 + orb.life) orb = newOrbital(time + rnd(1, 3.5));
+    if (!reduce && time > form.t0 + form.life) form = newFormula(time + rnd(1, 4));
+    function fade(it) { var age = time - it.t0; return reduce ? 1 : Math.min(1, age / FADE, (it.life - age) / FADE); }
+    var ko = fade(orb), kf = fade(form);
+    if (ko > 0) drawCloud(orb, at(P[orb.side], orb.y), baseAlpha * ko);
+    if (kf > 0) drawFormula(form.cmp, at(P[form.side], form.y), baseAlpha * kf);
     ctx.globalAlpha = 1;
   }
 
@@ -331,7 +341,7 @@
     if (!ctx) return;
     readColor(); resize();
     // two different orbitals to start with, half a life apart so they never change together
-    slots.push({ side: Math.random() < .5 ? 0 : 1 }); slots[0].cloud = newCloud(slots[0], 0); slots[0].cloud.t0 = -FADE;   // one orbital at a time
+    orb = newOrbital(-FADE); form = newFormula(rnd(.5, 3));   // one orbital and one formula, out of step
     window.addEventListener('resize', function () { resize(); if (reduce) draw(); });
     window.addEventListener('themechange', function () { readColor(); if (reduce) draw(); });
     document.addEventListener('visibilitychange', function () { last = 0; });
