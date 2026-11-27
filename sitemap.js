@@ -10,7 +10,7 @@
     { id: 'home', label: 'Home', href: 'index.html', r: 9 },
     { id: 'dv', label: 'Diving', href: 'diving.html', r: 7, p: 'home' },
     { id: 'mt', label: 'Mathematics', href: 'mathematics.html', r: 7, p: 'home' },
-    { id: 'py', label: 'Physics', href: 'physics.html', r: 7, p: 'home' },
+    // { id: 'py', label: 'Physics', href: 'physics.html', r: 7, p: 'home' },   // hidden for now
     { id: 'cm', label: 'Chemistry', href: 'chemistry.html', r: 7, p: 'home' },
     { id: 'bi', label: 'Biology', href: 'biology.html', r: 7, p: 'home' },
     { id: 'ge', label: 'Geology', href: 'geology.html', r: 7, p: 'home' },
