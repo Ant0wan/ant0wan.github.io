@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Cost of GUE Courses — Antoine Barthelemy</title>
+  <meta name="description" content="Interactive estimate of the cost of each Global Underwater Explorers (GUE) course: instruction days, registration and breathing gas.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <script>(function(){var t=null,q=/[?&]theme=(dark|light)/.exec(location.search);if(q)t=q[1];try{if(!t)t=localStorage.getItem('theme')}catch(e){}if(!t){var m=/(?:^|;)theme=(dark|light)/.exec(window.name);if(m)t=m[1]}if(!t&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)t='dark';document.documentElement.setAttribute('data-theme',t||'light')})()</script>
+  <link rel="stylesheet" href="site.css">
+  <script src="site.js"></script>
+  <script src="fish.js" defer></script>
+  <style>
+    .gas-table tr.group td { padding-top: .9rem; font-variant: small-caps; text-transform: lowercase; letter-spacing: .06em; color: var(--muted); border-bottom: 1px solid var(--grid-strong); }
+    .gas-table select { font: inherit; font-size: .85rem; color: var(--ink); background: var(--bg); border: 1px solid var(--grid-strong); padding: .05rem .2rem; border-radius: 0; max-width: 15rem; }
+    .gas-table input[type="checkbox"] { width: auto; accent-color: var(--ink); }
+    .gas-table .abbr { font-size: .75rem; font-style: italic; color: var(--muted); }
+    .gas-used { text-align: center; font-size: .9rem; color: var(--muted); margin: .4rem 0 0; }
+  </style>
+</head>
+<body>
+<button id="theme-toggle" type="button" aria-label="Switch to dark mode"><span class="theme-icon" aria-hidden="true"></span></button>
+<main class="page">
+  <h1 class="paper-title">The Cost of GUE Courses</h1>
+  <div class="byline">An interactive estimate of instruction, registration and gas</div>
+  <div class="abstract"><strong>Abstract</strong>
+    Global Underwater Explorers (GUE) teaches a fixed curriculum, from its Fundamentals course to trimix, rebreather and cave diving. This page estimates what each course costs: a daily instruction rate times the course length, a one-time registration fee, and the breathing gas used on the course dives. Course lengths and minimum dives are those published by GUE. The gas is priced with the values set on <a href="gas-cost.html">The Cost of GUE Standard Gas Mixes</a>. Tick courses to add up a training path. Your values are saved in this browser.
+  </div>
+
+  <div class="eq">
+    <span>cost = <i>d</i>&thinsp;<i>r</i> + <i>R</i> + &sum;<sub><i>i</i>=1</sub><sup><i>n</i></sup>&thinsp;&sum;<sub><i>k</i></sub>&thinsp;<i>g</i><sub><i>i</i>,<i>k</i></sub></span><span class="tag">(1)</span>
+    <span class="param"><i>d</i> = course days, <i>r</i> = instruction rate per day, <i>R</i> = registration fee, <i>n</i> = open-water dives, <i>g</i><sub><i>i</i>,<i>k</i></sub> = cost of the gas in cylinder <i>k</i> on dive <i>i</i> (back gas, stages, diluent), priced as on the gas page: blend or premix, plus the fill fee</span>
+  </div>
+
+  <h2 class="section">Prices</h2>
+  <div class="controls">
+    <label class="field"><span>Instruction <span class="unit">/ day</span></span><input data-k="rate" type="number" min="0" step="10"></label>
+    <label class="field"><span>Registration <span class="unit">/ course</span></span><input data-k="reg" type="number" min="0" step="10"></label>
+    <label class="field"><span>Gas</span><select id="gasOn"><option value="1">Included</option><option value="0">Not included</option></select></label>
+    <button type="button" id="reset" class="btn">Reset all</button>
+  </div>
+  <p class="gas-used" id="gasUsed"></p>
+
+  <h2 class="section">GUE courses</h2>
+  <div class="table-wrap">
+    <table class="gas-table">
+      <thead>
+        <tr>
+          <th></th><th>Course</th><th class="n">Days</th><th class="n">Dives</th><th>Gas per dive</th>
+          <th class="n">Instruction</th><th class="n">Gas</th><th class="n">Total</th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+      <tfoot><tr><td colspan="7" class="n">Total for ticked courses</td><td class="n" id="total">—</td></tr></tfoot>
+    </table>
+  </div>
+  <figcaption><b>Table 1.2.2.</b> Estimated cost of each GUE course. <i>Days</i> is the length GUE states for the course. <i>Dives</i> is the minimum number of open-water dives in the GUE course description; pool sessions are not counted. The Underwater Cave Survey course states 10 diving hours but no number of dives, so 5 dives is an assumption (&dagger;). The Tech Pass, which upgrades a GUE Fundamentals recreational rating to the technical rating, has no page on gue.com; its 2 dives are as taught, and 1 day is an assumption (&Dagger;). The Gas Blender course has no dives; its gas is what the student blends, at least two S80 cylinders (11.1 L at 207 bar) of trimix, counted once. <i>Instruction</i> is days &times; daily rate plus the registration fee. <i>Gas</i> assumes every cylinder of the chosen configuration is filled once per dive, which is an upper bound: a stage that is barely used is rarely refilled, and a semi-closed RB80 uses only a fraction of its twinset. The gas configurations are my assumptions, not GUE prescriptions; change them, or the number of dives, to match your course.</figcaption>
+
+  <h2 class="section">Not included</h2>
+  <p class="tips">Travel, accommodation, site and cave entry fees, equipment rental, course materials, and the dives you must log before each course.</p>
+
+  <h2 class="section">Sources</h2>
+  <ol class="refs">
+    <li>Global Underwater Explorers. <i>Explore GUE courses</i>: course pages for each course listed, giving length in days, minimum dives, hours and prerequisites. Read November 2026. <a href="https://www.gue.com/diver-training/explore-gue-courses/" rel="noopener">gue.com/diver-training/explore-gue-courses</a>.</li>
+    <li>Global Underwater Explorers. <i>Standards and procedures</i>. <a href="https://www.gue.com/diver-training/standards-and-procedures" rel="noopener">gue.com/diver-training/standards-and-procedures</a>.</li>
+    <li>Instruction rate (CHF 260 per day) and registration fee (CHF 120 per course): assumed values. Ask your instructor for the actual price.</li>
+    <li>Gas prices: see the sources of <a href="gas-cost.html">The Cost of GUE Standard Gas Mixes</a>.</li>
+  </ol>
+  <p class="tips">The Tech 60 course is not listed: its page on gue.com could not be read.</p>
+
+  <div class="pager"><a href="plan-a-dive.html">&larr; GUE</a><span></span></div>
+</main>
+<script>
+(function () {
+  var DEFAULTS = { rate: 260, reg: 120, gasOn: 1 };
+  // gas prices are shared with gas-cost.html (its saved values, else its defaults)
+  var GAS = { cur: 'CHF', air: 5, o2: 20, he: 80, ean32: 6, tx1845: 60, fee: 4 };
+  try { var g = JSON.parse(localStorage.getItem('gue-gas-cost-v1')); if (g) Object.keys(GAS).forEach(function (k) { if (g[k] != null) GAS[k] = g[k]; }); } catch (e) {}
+
+  var MIX = {
+    air:    { o2: .21, he: 0 },
+    ean32:  { o2: .32, he: 0,   premix: 'ean32' },
+    tx3030: { o2: .30, he: .30 },
+    tx2135: { o2: .21, he: .35 },
+    tx1845: { o2: .18, he: .45, premix: 'tx1845' },
+    ean50:  { o2: .50, he: 0 },
+    o2:     { o2: 1,   he: 0 }
+  };
+  // gas configurations: cylinders [mix, water volume L, fill bar]
+  var KIT = {
+    none:  { name: 'None',                               cyl: [] },
+    air1:  { name: 'Single 12 L, air',                   cyl: [['air', 12, 232]] },
+    ean1:  { name: 'Single 12 L, EAN32',                 cyl: [['ean32', 12, 232]] },
+    ean2:  { name: 'Twinset 2×12 L, EAN32',              cyl: [['ean32', 24, 232]] },
+    tri2:  { name: 'Twinset 2×12 L, 30/30',              cyl: [['tx3030', 24, 232]] },
+    cave2: { name: 'Twinset EAN32 + EAN50 stage',        cyl: [['ean32', 24, 232], ['ean50', 11.1, 207]] },
+    t1:    { name: 'Twinset 21/35 + EAN50 stage',        cyl: [['tx2135', 24, 232], ['ean50', 11.1, 207]] },
+    t2:    { name: 'Twinset 18/45 + EAN50 + O₂ stages',  cyl: [['tx1845', 24, 232], ['ean50', 11.1, 207], ['o2', 11.1, 207]] },
+    ccr:   { name: 'CCR 2×3 L: O₂ + 21/35 diluent',      cyl: [['o2', 3, 200], ['tx2135', 3, 200]] },
+    bl2135: { name: '2× S80 of 21/35, blended',         cyl: [['tx2135', 11.1, 207], ['tx2135', 11.1, 207]] },
+    bl1845: { name: '2× S80 of 18/45, blended',         cyl: [['tx1845', 11.1, 207], ['tx1845', 11.1, 207]] }
+  };
+  // GUE courses: days and minimum open-water dives from gue.com course pages
+  var C = [
+    ['Primers'],
+    ['dry', 'Drysuit Primer', '', 1, 2, 'ean1'],
+    ['dbl', 'Doubles Primer', '', 1, 2, 'ean2'],
+    ['deep', 'Deep Primer', 'Triox', 2, 4, 'tri2'],
+    ['nav', 'Navigation Primer', '', 2, 3, 'ean1'],
+    ['resc', 'Rescue Primer', '', 2, 3, 'ean1'],
+    ['Foundational'],
+    ['bfund', 'Basic Fundamentals', '', 3, 6, 'ean1'],
+    ['tpass', 'Tech Pass', 'tech upgrade', 1, 2, 'ean2', '1‡'],
+    ['tfund', 'Technical Fundamentals', '', 4, 8, 'ean2'],
+    ['Specialty'],
+    ['dpv1', 'DPV Diver 1', '', 3, 5, 'ean2'],
+    ['doc', 'Documentation Diver', '', 4, 4, 'ean2'],
+    ['photo', 'Photogrammetry', '', 4, 3, 'ean2'],
+    ['sci', 'Scientific Diver', '', 5, 6, 'ean2'],
+    ['blend', 'Gas Blender', '', 1, 0, 'bl2135', null, false, true],
+    ['Technical'],
+    ['t1', 'Technical Diver Level 1', 'Tech 1', 6, 7, 't1'],
+    ['t2', 'Technical Diver Level 2', 'Tech 2', 6, 7, 't2'],
+    ['Rebreather'],
+    ['ccrf', 'CCR Fundamentals', '', 5, 6, 'ccr'],
+    ['ccr1', 'CCR Diver Level 1', 'CCR 1', 6, 8, 'ccr'],
+    ['ccr2', 'CCR Diver Level 2', 'CCR 2', 6, 7, 'ccr'],
+    ['rb80', 'PSCR – RB80', '', 5, 8, 't2'],
+    ['Cave'],
+    ['c1', 'Cave Diver Level 1', 'Cave 1', 6, 12, 'ean2'],
+    ['c2', 'Cave Diver Level 2', 'Cave 2', 6, 10, 'cave2'],
+    ['dpvc', 'DPV Cave', '', 5, 5, 'cave2'],
+    ['smc', 'Sidemount Cave Diver', '', 5, 10, 'ean2'],
+    ['ccrc', 'CCR Cave Diver', '', 4, 5, 'ccr'],
+    ['surv', 'Underwater Cave Survey', '', 5, 5, 'cave2', null, true]
+  ];
+
+  var KEY = 'gue-course-cost-v1', S;
+  function fresh() {
+    var s = Object.assign({}, DEFAULTS, { rows: {} });
+    C.forEach(function (c) { if (c.length > 1) s.rows[c[0]] = { n: c[4], kit: c[5], on: false }; });
+    return s;
+  }
+  try { S = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+  if (!S || !S.rows) S = fresh();
+  C.forEach(function (c) { if (c.length > 1 && !S.rows[c[0]]) S.rows[c[0]] = { n: c[4], kit: c[5], on: false }; });
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+  function num(v) { v = parseFloat(v); return isFinite(v) && v >= 0 ? v : 0; }
+  function money(x) { return GAS.cur + ' ' + Math.round(x).toLocaleString('en').replace(/,/g, ' '); }
+
+  // one fill of one cylinder, as on gas-cost.html: cheaper of blend and premix, plus fill fee
+  function fill(c) {
+    var m = MIX[c[0]], gas = c[1] * c[2];
+    var fAir = Math.max(0, 1 - m.o2 - m.he) / 0.79, fO2 = Math.max(0, m.o2 - 0.21 * fAir);
+    var blend = gas * (m.he * GAS.he + fO2 * GAS.o2 + fAir * GAS.air) / 1000;
+    if (m.premix && GAS[m.premix] > 0) blend = Math.min(blend, gas * GAS[m.premix] / 1000);
+    return blend + GAS.fee;
+  }
+  function kitCost(k) { return KIT[k].cyl.reduce(function (s, c) { return s + fill(c); }, 0); }
+
+  var opts = Object.keys(KIT).map(function (k) { return '<option value="' + k + '">' + KIT[k].name + '</option>'; }).join('');
+  var tbody = document.getElementById('rows');
+  C.forEach(function (c) {
+    var tr = document.createElement('tr');
+    if (c.length === 1) { tr.className = 'group'; tr.innerHTML = '<td colspan="8">' + c[0] + '</td>'; tbody.appendChild(tr); return; }
+    tr.id = 'r-' + c[0];
+    tr.innerHTML =
+      '<td><input type="checkbox" aria-label="Add ' + c[1] + ' to the total"></td>' +
+      '<td>' + c[1] + (c[2] ? ' <span class="abbr">' + c[2] + '</span>' : '') + '</td>' +
+      '<td class="n">' + (c[6] || c[3]) + '</td>' +
+      '<td class="n">' + (c[8] ? '—' : '<input type="number" min="0" step="1" class="qty">' + (c[7] ? '&dagger;' : '')) + '</td>' +
+      '<td><select>' + opts + '</select></td>' +
+      '<td class="n ins"></td><td class="n gas"></td><td class="n tot"></td>';
+    tbody.appendChild(tr);
+    var r = S.rows[c[0]], cb = tr.querySelector('[type=checkbox]'), n = tr.querySelector('.qty'), sel = tr.querySelector('select');
+    cb.addEventListener('change', function () { r.on = cb.checked; update(); });
+    if (n) n.addEventListener('input', function () { r.n = num(n.value); update(); });
+    sel.addEventListener('change', function () { r.kit = sel.value; update(); });
+  });
+
+  var inputs = document.querySelectorAll('[data-k]'), gasOn = document.getElementById('gasOn');
+  inputs.forEach(function (inp) { inp.addEventListener('input', function () { S[inp.dataset.k] = num(inp.value); update(); }); });
+  gasOn.addEventListener('change', function () { S.gasOn = +gasOn.value; update(); });
+  document.getElementById('reset').addEventListener('click', function () { S = fresh(); fill_(); update(); });
+
+  function fill_() {
+    inputs.forEach(function (inp) { inp.value = S[inp.dataset.k]; });
+    gasOn.value = String(S.gasOn);
+    C.forEach(function (c) {
+      if (c.length === 1) return;
+      var tr = document.getElementById('r-' + c[0]), r = S.rows[c[0]];
+      tr.querySelector('[type=checkbox]').checked = r.on;
+      var q = tr.querySelector('.qty'); if (q) q.value = r.n;
+      tr.querySelector('select').value = r.kit;
+    });
+  }
+
+  function update() {
+    var total = 0, any = false;
+    C.forEach(function (c) {
+      if (c.length === 1) return;
+      var tr = document.getElementById('r-' + c[0]), r = S.rows[c[0]];
+      var ins = c[3] * S.rate + S.reg, gas = S.gasOn ? (c[8] ? 1 : r.n) * kitCost(r.kit) : 0, tot = ins + gas;
+      tr.querySelector('.ins').textContent = money(ins);
+      tr.querySelector('.gas').textContent = S.gasOn ? money(gas) : '—';
+      tr.querySelector('.tot').textContent = money(tot);
+      tr.querySelector('select').disabled = !S.gasOn;
+      tr.classList.toggle('sel', r.on);
+      if (r.on) { total += tot; any = true; }
+    });
+    document.getElementById('total').textContent = any ? money(total) : '—';
+    document.getElementById('gasUsed').innerHTML = S.gasOn
+      ? 'Gas prices from <a href="gas-cost.html">the gas page</a>: air ' + GAS.air + ', O₂ ' + GAS.o2 + ', He ' + GAS.he + ' ' + GAS.cur + '/m³, fill fee ' + GAS.cur + ' ' + GAS.fee + ' per cylinder.'
+      : 'Gas not included.';
+    save();
+  }
+
+  fill_();
+  update();
+})();
+</script>
+<footer class="site-footer">
+  <span>&copy; 2026 Antoine Barthelemy</span>
+  <span>Figures are computed in your browser &middot; nothing is sent anywhere.</span>
+</footer>
+</body>
+</html>

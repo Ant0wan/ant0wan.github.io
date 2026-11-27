@@ -22,6 +22,7 @@
     { id: 'ox', label: 'pO₂ isopleths', href: 'oxygen-chart.html', r: 6, p: 'ph' },
     { id: 'pd', label: 'GUE', href: 'plan-a-dive.html', r: 7, p: 'dv' },
     { id: 'gc', label: 'Gas cost', href: 'gas-cost.html', r: 6.5, p: 'pd' },
+    { id: 'cc', label: 'Course cost', href: 'course-cost.html', r: 6.5, p: 'pd' },
     { id: 'ms', label: 'Raup morphospace', href: 'morphospace.html', r: 7, p: 'pa' },
     { id: 'ch', label: 'Cheatsheets', href: 'cheatsheets.html', r: 6.5, p: 'cs' },
     { id: 'lt', label: 'Literature', href: 'literature.html', r: 7, p: 'home' },
@@ -34,7 +35,7 @@
     dv: [75, 0, 130], py: [-40, -150, -120], cm: [150, -115, -45], bi: [100, 35, -150],
     ge: [-175, 95, 95], pa: [-80, 30, -150], cs: [-170, -20, 10],
     ph: [150, 40, 250], pp: [60, 130, 340], vo: [230, 120, 360], ox: [250, -30, 330],
-    pd: [-20, -85, 240], gc: [-125, -125, 300], pf: [20, -195, 320],
+    pd: [-20, -85, 240], gc: [-125, -125, 300], cc: [-95, -15, 345], pf: [20, -195, 320],
     ms: [-105, -45, -235],
     ch: [-275, -40, 90],
     ab: [-235, -150, 30],
@@ -91,6 +92,13 @@
       ctx.lineTo(.4 * S, S); ctx.lineTo(-.4 * S, S); ctx.closePath(); ctx.stroke();
       ctx.strokeRect(-.12 * S, -1.1 * S, .24 * S, .25 * S);
       ctx.font = 'bold ' + (.8 * S) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('¤', 0, .15 * S);
+    },
+    cc: function (S, t, rgb, fog) { // certificate with a price seal
+      ctx.fillStyle = soft(rgb, fog, .14); ctx.fillRect(-S, -.7 * S, 1.8 * S, 1.3 * S); ctx.strokeRect(-S, -.7 * S, 1.8 * S, 1.3 * S);
+      poly([[-.75 * S, -.35 * S], [.5 * S, -.35 * S]]); poly([[-.75 * S, -.05 * S], [.3 * S, -.05 * S]]);
+      ctx.fillStyle = 'rgba(' + rgb + ',' + fog + ')';
+      circ(.55 * S, .5 * S, .38 * S, false);
+      ctx.font = 'bold ' + (.5 * S) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('¤', .55 * S, .52 * S);
     },
     pf: function (S, t, rgb, fog) { // certification card
       ctx.fillStyle = soft(rgb, fog, .14); ctx.fillRect(-S, -.65 * S, 2 * S, 1.3 * S); ctx.strokeRect(-S, -.65 * S, 2 * S, 1.3 * S);
@@ -170,12 +178,39 @@
         poly([[-w, y], [-.16 * S, y]]); poly([[.16 * S, y], [w, y]]); }
       ctx.fillStyle = 'rgba(' + rgb + ',' + fog + ')'; circ(-.3 * S, -.62 * S, .07 * S, true); circ(.3 * S, -.62 * S, .07 * S, true);
     },
-    pd: function (S, t, rgb, fog) { // dive slate with a dive profile and the diver on it
-      ctx.fillStyle = soft(rgb, fog, .14); ctx.fillRect(-S, -.75 * S, 2 * S, 1.5 * S); ctx.strokeRect(-S, -.75 * S, 2 * S, 1.5 * S);
-      var pr = [[-.8, -.5], [-.5, .45], [.05, .45], [.3, .05], [.45, .05], [.5, -.2], [.65, -.2], [.8, -.5]];
-      poly(pr.map(function (p) { return [p[0] * S, p[1] * S]; }));
-      var u = ((t * .15) % 1 + 1) % 1 * (pr.length - 1), k = Math.min(Math.floor(u), pr.length - 2), f = u - k, a = pr[k], b = pr[k + 1];
-      ctx.fillStyle = 'rgba(' + rgb + ',' + fog + ')'; circ((a[0] + (b[0] - a[0]) * f) * S, (a[1] + (b[1] - a[1]) * f) * S, .1 * S, true);
+    pd: function (S, t, rgb, fog) { // GUE emblem: a globe with a diver riding a scooter across it
+      function blob(pts, ox) { // closed smooth outline through midpoints
+        var m = function (a, b) { return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]; }, n = pts.length, p0 = m(pts[n - 1], pts[0]);
+        ctx.moveTo((p0[0] + ox) * S, p0[1] * S);
+        for (var i = 0; i < n; i++) { var q = m(pts[i], pts[(i + 1) % n]); ctx.quadraticCurveTo((pts[i][0] + ox) * S, pts[i][1] * S, (q[0] + ox) * S, q[1] * S); }
+        ctx.closePath();
+      }
+      circ(0, 0, S);                                                    // outer ring
+      ctx.save(); ctx.beginPath(); ctx.arc(0, 0, .88 * S, 0, 6.283); ctx.clip();
+      var sp = ((t * .03) % 1 + 1) % 1 * 2;                             // continents drift as the globe turns
+      ctx.beginPath(); ctx.arc(0, 0, .88 * S, 0, 6.283);                // ocean, with the land cut out
+      [sp - 2, sp].forEach(function (o) {
+        blob([[-.6, -.95], [.3, -1], [.85, -.75], [.6, -.48], [.25, -.6], [-.1, -.52], [-.45, -.68]], o);
+        blob([[.55, -.3], [1, -.3], [1, .35], [.72, .3], [.5, .05]], o);
+        blob([[-1, .12], [-.5, .15], [-.28, .5], [-.4, 1], [-.95, .8]], o);
+        blob([[-.1, .62], [.4, .68], [.35, 1], [-.15, .95]], o);
+      });
+      ctx.fillStyle = soft(rgb, fog, .3); ctx.fill('evenodd');
+      ctx.restore();
+      var y = Math.sin(t * 1.5) * .03 * S;                              // the diver bobs slightly
+      ctx.save(); ctx.translate(0, y); ctx.fillStyle = 'rgba(' + rgb + ',' + fog + ')';
+      ctx.beginPath(); blob([[-.55, -.16], [-.3, -.42], [-.02, -.64], [.26, -.64], [.36, -.46], [.2, -.26], [-.08, -.12], [-.42, -.02]], 0); ctx.fill(); // body and tanks
+      ctx.beginPath(); ctx.ellipse(.42 * S, -.36 * S, .15 * S, .12 * S, .6, 0, 6.283); ctx.fill();                // hooded head
+      var lw = ctx.lineWidth; ctx.lineWidth = .15 * S;
+      poly([[-.45, -.1], [-.7, -.12], [-.88, -.1]].map(function (p) { return [p[0] * S, p[1] * S]; }));   // legs
+      poly([[-.32, -.05], [-.44, .18], [-.56, .28]].map(function (p) { return [p[0] * S, p[1] * S]; }));
+      ctx.lineWidth = .11 * S;
+      poly([[.22, -.26], [.3, .08], [.4, .36]].map(function (p) { return [p[0] * S, p[1] * S]; }));        // arm to the scooter
+      ctx.lineWidth = lw;
+      ctx.beginPath(); ctx.moveTo(-.86 * S, -.14 * S); ctx.lineTo(-1.08 * S, -.2 * S); ctx.lineTo(-1.02 * S, .06 * S); ctx.closePath(); ctx.fill(); // fins
+      ctx.beginPath(); ctx.moveTo(-.5 * S, .22 * S); ctx.lineTo(-.68 * S, .42 * S); ctx.lineTo(-.44 * S, .44 * S); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(.58 * S, .46 * S, .36 * S, .14 * S, -.28, 0, 6.283); ctx.fill();          // scooter
+      ctx.restore();
     },
     ms: function (S) { // shell: logarithmic spiral in a coiled outline
       ctx.beginPath(); ctx.fillStyle = soft(arguments[2], arguments[3], .16);
