@@ -14,6 +14,8 @@
   <script src="elements.js" defer></script>
   <script src="compounds.js" defer></script>
   <style>
+    .epigraph { max-width: 34rem; margin: 1.6rem auto .4rem; text-align: center; font-style: italic; font-size: 1.02rem; line-height: 1.5; }
+    .epigraph span { display: block; font-style: normal; font-size: .9rem; color: var(--muted); margin-top: .4rem; }
     main p, main li { hyphens: auto; -webkit-hyphens: auto; }
     main > p, section > p { text-align: justify; }
     .rule { border-left: 2px solid var(--ink); padding: .1rem 0 .1rem .9rem; margin: .9rem 0; }
@@ -81,10 +83,11 @@
 <button id="theme-toggle" type="button" aria-label="Switch to dark mode"><span class="theme-icon" aria-hidden="true"></span></button>
 <main class="page narrow">
   <h1 class="paper-title">Significant Figures</h1>
-  <div class="byline">Chiffres significatifs: how many digits a result deserves</div>
+  <div class="byline">Counting, rounding and computing with measured numbers</div>
   <div class="abstract"><strong>Abstract</strong>
     A measured number carries its precision in the way it is written: 2.5&nbsp;m and 2.500&nbsp;m are not the same measurement. The significant figures of a number are the digits that carry this information, and the rules below say how to count them, how to round, and how many to keep after multiplying, adding, taking a power, a root, a logarithm or an exponential, so that a result never claims more precision than its data. Tools apply the rules digit by digit and step by step, to rounding, to whole expressions and to molar masses; then twenty-two worked examples, from simple arithmetic to physics, chemistry and diving, and on to the propagation of uncertainties, which is what the rules approximate.
   </div>
+  <blockquote class="epigraph">“The lack of mathematical culture is revealed nowhere so conspicuously as in meaningless precision in numerical computations.”<span>— Carl Friedrich Gauss</span></blockquote>
 
   <h2 class="section">Contents</h2>
   <ul class="toc">
