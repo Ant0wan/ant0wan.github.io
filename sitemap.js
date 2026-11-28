@@ -7,11 +7,10 @@
 
   // ---- graph ----------------------------------------------------------
   var N = [
-    { id: 'home', label: 'Home', href: 'index.html', r: 9 },
-    { id: 'ex', label: 'Explore', href: 'explore.html', r: 7, p: 'home' },
+    { id: 'ex', label: 'Explore', href: 'explore.html', r: 8 },
     { id: 'dv', label: 'Diving', href: 'diving.html', r: 7, p: 'ex' },
     { id: 'cv', label: 'Caving', href: 'caving.html', r: 7, p: 'ex' },
-    { id: 'un', label: 'Understand', href: 'understand.html', r: 7, p: 'home' },
+    { id: 'un', label: 'Understand', href: 'understand.html', r: 8 },
     { id: 'mt', label: 'Mathematics', href: 'mathematics.html', r: 7, p: 'un' },
     // { id: 'py', label: 'Physics', href: 'physics.html', r: 7, p: 'un' },   // hidden for now
     { id: 'cm', label: 'Chemistry', href: 'chemistry.html', r: 7, p: 'un' },
@@ -38,9 +37,8 @@
   ];
   var by = {}; N.forEach(function (n) { by[n.id] = n; });
   var pos = {
-    home: [0, 0, 0],
     mt: [175, 115, -25],
-    ex: [30, 40, 60], cv: [-60, 120, 150], un: [-20, -10, -70], dv: [75, 0, 130], py: [-40, -150, -120], cm: [150, -115, -45], bi: [100, 35, -150],
+    ex: [20, 60, 120], cv: [-60, 120, 150], un: [0, -30, -60], dv: [75, 0, 130], py: [-40, -150, -120], cm: [150, -115, -45], bi: [100, 35, -150],
     ge: [-175, 95, 95], pa: [-80, 30, -150], cs: [-170, -20, 10],
     ph: [150, 40, 250], pp: [60, 130, 340], vo: [230, 120, 360], ox: [250, -30, 330],
     pd: [-20, -85, 240], gc: [-125, -125, 300], cc: [-95, -15, 345], sg: [60, -150, 300], pf: [20, -195, 320],
@@ -57,7 +55,8 @@
   var c = [0, 0, 0]; N.forEach(function (n) { n.x = pos[n.id][0]; n.y = pos[n.id][1]; n.z = pos[n.id][2]; c[0] += n.x; c[1] += n.y; c[2] += n.z; });
   N.forEach(function (n) { n.x -= c[0] / N.length; n.y -= c[1] / N.length; n.z -= c[2] / N.length; });
   var edges = N.filter(function (n) { return n.p; }).map(function (n) { return [by[n.p], n]; });
-  // branches for the running light: the path from Home to a page with no sub-pages
+  edges.push([by.ex, by.un]);   // the two parts, joined directly
+  // branches for the running light: the path from Explore or Understand to a page with no sub-pages
   var leaves = N.filter(function (n) { return !N.some(function (m) { return m.p === n.id; }); });
   function branch() {
     var n = leaves[Math.floor(Math.random() * leaves.length)], path = [n];
@@ -109,7 +108,7 @@
       ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
     });
 
-    // light running from Home out along one branch to its tip
+    // light running from Explore or Understand out along one branch to its tip
     if (!reduce && !lights.length && t >= nextLight) { // one light at a time, a short pause after it reaches the tip
       var path = branch(); lights.push({ path: path, t0: t }); nextLight = t + (path.length - 1 + LIGHT_LEN) / LIGHT_SPEED + .4 + Math.random() * .8;
     }
