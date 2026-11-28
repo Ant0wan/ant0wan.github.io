@@ -8,14 +8,17 @@
   // ---- graph ----------------------------------------------------------
   var N = [
     { id: 'home', label: 'Home', href: 'index.html', r: 9 },
-    { id: 'dv', label: 'Diving', href: 'diving.html', r: 7, p: 'home' },
-    { id: 'mt', label: 'Mathematics', href: 'mathematics.html', r: 7, p: 'home' },
-    // { id: 'py', label: 'Physics', href: 'physics.html', r: 7, p: 'home' },   // hidden for now
-    { id: 'cm', label: 'Chemistry', href: 'chemistry.html', r: 7, p: 'home' },
-    { id: 'bi', label: 'Biology', href: 'biology.html', r: 7, p: 'home' },
-    { id: 'ge', label: 'Geology', href: 'geology.html', r: 7, p: 'home' },
-    { id: 'pa', label: 'Paleontology', href: 'paleontology.html', r: 7, p: 'home' },
-    { id: 'cs', label: 'Computer Science', href: 'computer-science.html', r: 7, p: 'home' },
+    { id: 'ex', label: 'Explore', href: 'explore.html', r: 7, p: 'home' },
+    { id: 'dv', label: 'Diving', href: 'diving.html', r: 7, p: 'ex' },
+    { id: 'cv', label: 'Caving', href: 'caving.html', r: 7, p: 'ex' },
+    { id: 'un', label: 'Understand', href: 'understand.html', r: 7, p: 'home' },
+    { id: 'mt', label: 'Mathematics', href: 'mathematics.html', r: 7, p: 'un' },
+    // { id: 'py', label: 'Physics', href: 'physics.html', r: 7, p: 'un' },   // hidden for now
+    { id: 'cm', label: 'Chemistry', href: 'chemistry.html', r: 7, p: 'un' },
+    { id: 'bi', label: 'Biology', href: 'biology.html', r: 7, p: 'un' },
+    { id: 'ge', label: 'Geology', href: 'geology.html', r: 7, p: 'un' },
+    { id: 'pa', label: 'Paleontology', href: 'paleontology.html', r: 7, p: 'un' },
+    { id: 'cs', label: 'Computer Science', href: 'computer-science.html', r: 7, p: 'un' },
     { id: 'ph', label: 'Physics of Diving', href: 'diving-physics.html', r: 7, p: 'dv' },
     { id: 'pp', label: 'pO₂ vs depth', href: 'ppo2.html', r: 6, p: 'ph' },
     { id: 'vo', label: 'Boyle volumes', href: 'volumes.html', r: 6, p: 'ph' },
@@ -30,14 +33,14 @@
     { id: 'sf', label: 'Significant figures', href: 'sigfigs.html', r: 7, p: 'mt' },
     { id: 'ms', label: 'Raup morphospace', href: 'morphospace.html', r: 7, p: 'pa' },
     { id: 'ch', label: 'Cheatsheets', href: 'cheatsheets.html', r: 6.5, p: 'cs' },
-    { id: 'lt', label: 'Literature', href: 'literature.html', r: 7, p: 'home' },
+    { id: 'lt', label: 'Literature', href: 'literature.html', r: 7, p: 'un' },
     { id: 'bk', label: 'Books', href: 'books.html', r: 6.5, p: 'lt' }
   ];
   var by = {}; N.forEach(function (n) { by[n.id] = n; });
   var pos = {
     home: [0, 0, 0],
     mt: [175, 115, -25],
-    dv: [75, 0, 130], py: [-40, -150, -120], cm: [150, -115, -45], bi: [100, 35, -150],
+    ex: [30, 40, 60], cv: [-60, 120, 150], un: [-20, -10, -70], dv: [75, 0, 130], py: [-40, -150, -120], cm: [150, -115, -45], bi: [100, 35, -150],
     ge: [-175, 95, 95], pa: [-80, 30, -150], cs: [-170, -20, 10],
     ph: [150, 40, 250], pp: [60, 130, 340], vo: [230, 120, 360], ox: [250, -30, 330],
     pd: [-20, -85, 240], gc: [-125, -125, 300], cc: [-95, -15, 345], sg: [60, -150, 300], pf: [20, -195, 320],

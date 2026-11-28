@@ -125,7 +125,7 @@ sub, sup { line-height: 0; }
 .toc li { display: flex; align-items: baseline; gap: .5rem; padding: .4rem 0; }
 .toc a { text-decoration-thickness: 1px; }
 .toc a:hover { text-decoration-thickness: 2px; }
-.toc .num { min-width: 2.2rem; color: var(--muted); font-style: normal; font-variant-numeric: lining-nums; }
+.toc .num { min-width: 2.2rem; flex-shrink: 0; color: var(--muted); font-style: normal; font-variant-numeric: lining-nums; }
 .toc .dots { flex: 1; border-bottom: 1px dotted var(--faint); transform: translateY(-4px); }
 .toc .desc { display: block; font-size: .9rem; color: var(--muted); }
 .toc .sub { margin-left: 2.2rem; }
@@ -211,6 +211,7 @@ figcaption b { font-weight: bold; font-variant-numeric: lining-nums; }
 /* 3D site map (home page) */
 .sitemap-wrap { position: relative; background: transparent; overflow: hidden; }
 .toc .sub2 { margin-left: 4.4rem; }
+.toc .sub3 { margin-left: 6.6rem; }
 .in-prep { color: var(--muted); }
 .abstract.centered { text-align: center; }
 

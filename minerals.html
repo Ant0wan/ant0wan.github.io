@@ -75,7 +75,7 @@
   <ul class="toc" id="toc"></ul>
 
   <section id="lattices">
-    <h2 class="section"><span class="no">5.1.1</span>Crystal Systems and Bravais Lattices</h2>
+    <h2 class="section"><span class="no">2.4.1.1</span>Crystal Systems and Bravais Lattices</h2>
     <p class="mn-intro">A crystal is a lattice of points, all with identical surroundings, with the same group of atoms (the motif) placed on every point. The lattice is built by repeating a parallelepiped, the unit cell, of edges <i>a</i>, <i>b</i>, <i>c</i> and angles α (between <i>b</i> and <i>c</i>), β (between <i>a</i> and <i>c</i>) and γ (between <i>a</i> and <i>b</i>). The symmetry of the cell sorts crystals into seven systems. Besides the primitive cell, with points only at its corners, some systems admit centred cells, with an extra point at the centre of the body (I), of every face (F) or of one pair of faces (C): Bravais showed in 1848 that there are exactly fourteen distinct lattices in three dimensions.</p>
     <div class="lat-viewer">
       <figure class="fig" style="margin:0">
@@ -88,7 +88,7 @@
         <div class="lat-read" id="latRead"></div>
       </div>
     </div>
-    <figcaption style="margin-top:.8rem"><b>Figure 5.1.</b> The conventional unit cell of the selected lattice. Corner points are filled; the points added by centring are drawn as rings. The cell parameters are representative of the system, not of a particular mineral. Each mineral below names its lattice: click it to show that lattice here.</figcaption>
+    <figcaption style="margin-top:.8rem"><b>Figure 2.4.1.</b> The conventional unit cell of the selected lattice. Corner points are filled; the points added by centring are drawn as rings. The cell parameters are representative of the system, not of a particular mineral. Each mineral below names its lattice: click it to show that lattice here.</figcaption>
   </section>
 
   <div class="mn-search"><input id="q" type="search" placeholder="Search a mineral, a formula, a system, a colour…" aria-label="Search the minerals"><span class="n" id="count"></span></div>
@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', function () {
     ['oxide and hydroxide', 'Oxides and Hydroxides', 'Metals bound to oxygen or to hydroxide: hard gems, the ores of iron, titanium, tin and uranium, and ice.']
   ];
   var toc = document.getElementById('toc');
-  toc.insertAdjacentHTML('beforeend', '<li><span class="num">5.1.1</span><span><a href="#lattices">Crystal Systems and Bravais Lattices</a><span class="desc">7 systems, 14 lattices</span></span></li>');
+  toc.insertAdjacentHTML('beforeend', '<li><span class="num">2.4.1.1</span><span><a href="#lattices">Crystal Systems and Bravais Lattices</a><span class="desc">7 systems, 14 lattices</span></span></li>');
   var host = document.getElementById('classes');
   function composition(f) {
     var n = CP.count(f), m = CP.molarMass(f), syms = Object.keys(n);
@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', function () {
     return d;
   }
   var blocks = CLASSES.map(function (c, i) {
-    var items = MN.list.filter(function (m) { return m.cls === c[0]; }), no = '5.1.' + (i + 2);
+    var items = MN.list.filter(function (m) { return m.cls === c[0]; }), no = '2.4.1.' + (i + 2);
     toc.insertAdjacentHTML('beforeend', '<li><span class="num">' + no + '</span><span><a href="#' + c[0].replace(/ /g, '-') + '">' + c[1] + '</a><span class="desc">' + items.length + ' mineral' + (items.length > 1 ? 's' : '') + '</span></span></li>');
     var sec = document.createElement('section'); sec.id = c[0].replace(/ /g, '-');
     sec.innerHTML = '<h2 class="section"><span class="no">' + no + '</span>' + c[1] + '</h2><p class="mn-intro">' + c[2] + '</p>';

@@ -91,35 +91,35 @@
 
   <h2 class="section">Contents</h2>
   <ul class="toc">
-    <li><span class="num">2.1.1</span><span><a href="#meaning">What the digits of a measurement say</a></span></li>
-    <li><span class="num">2.1.2</span><span><a href="#counting">Counting significant figures</a></span></li>
-    <li><span class="num">2.1.3</span><span><a href="#rounding">Rounding</a></span></li>
-    <li><span class="num">2.1.4</span><span><a href="#muldiv">Multiplication and division</a></span></li>
-    <li><span class="num">2.1.5</span><span><a href="#addsub">Addition and subtraction</a></span></li>
-    <li><span class="num">2.1.6</span><span><a href="#functions">Powers, roots, logarithms, exponentials and other functions</a></span></li>
-    <li><span class="num">2.1.7</span><span><a href="#exact">Exact numbers and constants</a></span></li>
-    <li><span class="num">2.1.8</span><span><a href="#chains">Calculations in several steps</a></span></li>
-    <li><span class="num">2.1.9</span><span><a href="#calculator">Calculators that show the rules</a></span></li>
-    <li><span class="num">2.1.10</span><span><a href="#examples">Worked examples, from simple to complicated</a></span></li>
-    <li><span class="num">2.1.11</span><span><a href="#uncertainty">Beyond the rules: uncertainties</a></span></li>
-    <li><span class="num">2.1.12</span><span><a href="#mistakes">Common mistakes</a></span></li>
+    <li><span class="num">2.1.1.1</span><span><a href="#meaning">What the digits of a measurement say</a></span></li>
+    <li><span class="num">2.1.1.2</span><span><a href="#counting">Counting significant figures</a></span></li>
+    <li><span class="num">2.1.1.3</span><span><a href="#rounding">Rounding</a></span></li>
+    <li><span class="num">2.1.1.4</span><span><a href="#muldiv">Multiplication and division</a></span></li>
+    <li><span class="num">2.1.1.5</span><span><a href="#addsub">Addition and subtraction</a></span></li>
+    <li><span class="num">2.1.1.6</span><span><a href="#functions">Powers, roots, logarithms, exponentials and other functions</a></span></li>
+    <li><span class="num">2.1.1.7</span><span><a href="#exact">Exact numbers and constants</a></span></li>
+    <li><span class="num">2.1.1.8</span><span><a href="#chains">Calculations in several steps</a></span></li>
+    <li><span class="num">2.1.1.9</span><span><a href="#calculator">Calculators that show the rules</a></span></li>
+    <li><span class="num">2.1.1.10</span><span><a href="#examples">Worked examples, from simple to complicated</a></span></li>
+    <li><span class="num">2.1.1.11</span><span><a href="#uncertainty">Beyond the rules: uncertainties</a></span></li>
+    <li><span class="num">2.1.1.12</span><span><a href="#mistakes">Common mistakes</a></span></li>
   </ul>
 
   <section id="meaning">
-    <h2 class="section"><span class="no">2.1.1</span>What the digits of a measurement say</h2>
+    <h2 class="section"><span class="no">2.1.1.1</span>What the digits of a measurement say</h2>
     <p>Every measurement is uncertain. A ruler graduated in millimetres lets you read 23.4&nbsp;mm, perhaps guess 23.45&nbsp;mm, but never 23.4512&nbsp;mm. The convention is to write all the digits you are sure of plus one more, the first uncertain one, and no others: those are the <i>significant figures</i>. Writing 23.4&nbsp;mm says “between about 23.35 and 23.45”; writing 23.40&nbsp;mm says “between about 23.395 and 23.405”, a measurement ten times more precise.</p>
-    <p>Significant figures concern <i>precision</i> (how finely a value is known), not <i>accuracy</i> (how close it is to the truth): a miscalibrated balance can give a precise but wrong 12.347&nbsp;g. They are also a shorthand: the honest way to state precision is an explicit uncertainty, 23.40 ± 0.05&nbsp;mm (§&nbsp;2.1.11). The rules exist so that a calculation keeps roughly the right number of digits without a full uncertainty analysis.</p>
+    <p>Significant figures concern <i>precision</i> (how finely a value is known), not <i>accuracy</i> (how close it is to the truth): a miscalibrated balance can give a precise but wrong 12.347&nbsp;g. They are also a shorthand: the honest way to state precision is an explicit uncertainty, 23.40 ± 0.05&nbsp;mm (§&nbsp;2.1.1.11). The rules exist so that a calculation keeps roughly the right number of digits without a full uncertainty analysis.</p>
   </section>
 
   <section id="counting">
-    <h2 class="section"><span class="no">2.1.2</span>Counting significant figures</h2>
+    <h2 class="section"><span class="no">2.1.1.2</span>Counting significant figures</h2>
     <div class="rule"><b class="n">Rule 1.</b> Every nonzero digit is significant. <i>4.52</i> has 3; <i>7</i> has 1.</div>
     <div class="rule"><b class="n">Rule 2.</b> Zeros between nonzero digits (captive zeros) are significant. <i>1005</i> has 4; <i>3.08</i> has 3.</div>
     <div class="rule"><b class="n">Rule 3.</b> Leading zeros, before the first nonzero digit, are never significant: they only place the decimal point. <i>0.0045</i> has 2, the same as 4.5 × 10<sup>−3</sup>.</div>
     <div class="rule"><b class="n">Rule 4.</b> Trailing zeros after a decimal point are significant: someone measured them. <i>2.500</i> has 4; <i>0.0200</i> has 3.</div>
     <div class="rule"><b class="n">Rule 5.</b> Trailing zeros in a whole number written without a decimal point are ambiguous. <i>1500</i> has 2, 3 or 4: the writer must say which. A final decimal point marks them all significant (<i>1500.</i> has 4), and scientific notation removes all doubt.</div>
     <div class="rule"><b class="n">Rule 6.</b> In scientific notation, count the digits of the mantissa only; the power of ten carries no precision. <i>1.50 × 10<sup>3</sup></i> has 3; <i>1.5 × 10<sup>3</sup></i> has 2.</div>
-    <div class="rule"><b class="n">Rule 7.</b> Exact numbers have infinitely many significant figures and never limit a result: counted objects (12 eggs), integers in formulas (the 2 in 2π<i>r</i>, the <span class="frac"><span>1</span><span>2</span></span> in <span class="frac"><span>1</span><span>2</span></span><i>mv</i><sup>2</sup>), defined conversions (1&nbsp;in = 2.54&nbsp;cm exactly), and the constants fixed by the SI since 2019 (§&nbsp;2.1.7).</div>
+    <div class="rule"><b class="n">Rule 7.</b> Exact numbers have infinitely many significant figures and never limit a result: counted objects (12 eggs), integers in formulas (the 2 in 2π<i>r</i>, the <span class="frac"><span>1</span><span>2</span></span> in <span class="frac"><span>1</span><span>2</span></span><i>mv</i><sup>2</sup>), defined conversions (1&nbsp;in = 2.54&nbsp;cm exactly), and the constants fixed by the SI since 2019 (§&nbsp;2.1.1.7).</div>
     <table class="sf-table">
       <thead><tr><th>Number</th><th class="n">Significant figures</th><th>Why</th></tr></thead>
       <tbody>
@@ -145,7 +145,7 @@
   </section>
 
   <section id="rounding">
-    <h2 class="section"><span class="no">2.1.3</span>Rounding</h2>
+    <h2 class="section"><span class="no">2.1.1.3</span>Rounding</h2>
     <p>Rounding is how a full calculator value becomes a result with the right number of figures. The procedure is always the same.</p>
     <ol class="steps" style="font-size:1rem">
       <li><b>Find the last digit to keep.</b> Count <i>n</i> significant figures from the first nonzero digit (to round to <i>n</i> figures), or go to the decimal place required (to round after a sum, rule 13).</li>
@@ -183,15 +183,15 @@
   </section>
 
   <section id="muldiv">
-    <h2 class="section"><span class="no">2.1.4</span>Multiplication and division</h2>
+    <h2 class="section"><span class="no">2.1.1.4</span>Multiplication and division</h2>
     <div class="rule"><b class="n">Rule 12.</b> The result has as many significant figures as the factor with the fewest. What matters is <i>relative</i> precision: a number known to 2 figures is uncertain by about 1 to 10&nbsp;%, and no product can do better.</div>
     <p class="eqn">4.56 × 1.4 = 6.384 → <b>6.4</b> <span style="color:var(--muted)">(2 figures, from 1.4)</span></p>
     <div class="eqn"><span class="frac"><span>0.0258</span><span>3.1416</span></span> = 0.008 212… → <b>0.008 21</b> <span style="color:var(--muted)">(3 figures, from 0.0258)</span></div>
-    <p>The rule is a rough one: a number starting with 9 (9.8, uncertain by 1&nbsp;%) is as precise as one starting with 1 and having one more digit (1.02, uncertain by 1&nbsp;%). Some books therefore keep one extra figure when the least precise factor begins with 8 or 9, or when the result begins with 1. When it matters, compute the uncertainty (§&nbsp;2.1.11).</p>
+    <p>The rule is a rough one: a number starting with 9 (9.8, uncertain by 1&nbsp;%) is as precise as one starting with 1 and having one more digit (1.02, uncertain by 1&nbsp;%). Some books therefore keep one extra figure when the least precise factor begins with 8 or 9, or when the result begins with 1. When it matters, compute the uncertainty (§&nbsp;2.1.1.11).</p>
   </section>
 
   <section id="addsub">
-    <h2 class="section"><span class="no">2.1.5</span>Addition and subtraction</h2>
+    <h2 class="section"><span class="no">2.1.1.5</span>Addition and subtraction</h2>
     <div class="rule"><b class="n">Rule 13.</b> The result is rounded at the decimal place of the least precise term: the leftmost of the terms’ last significant places. What matters here is <i>absolute</i> precision, so it is the position of the last digit that counts, not the number of figures.</div>
     <p class="eqn">12.11 + 18.0 + 1.013 = 31.123 → <b>31.1</b> <span style="color:var(--muted)">(tenths, from 18.0)</span></p>
     <p class="eqn">1.50 × 10<sup>3</sup> + 26.4 = 1526.4 → <b>1.53 × 10<sup>3</sup></b> <span style="color:var(--muted)">(tens, from 1.50 × 10<sup>3</sup>)</span></p>
@@ -199,7 +199,7 @@
   </section>
 
   <section id="functions">
-    <h2 class="section"><span class="no">2.1.6</span>Powers, roots, logarithms, exponentials and other functions</h2>
+    <h2 class="section"><span class="no">2.1.1.6</span>Powers, roots, logarithms, exponentials and other functions</h2>
     <div class="rule"><b class="n">Rule 14.</b> A power or a root keeps the significant figures of its base: (2.5)<sup>3</sup> = 15.625 → 16; <span class="rad"><svg class="rs" viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.5 12.5 L2.8 11.2 L5.2 19.5 L9.6 0.5" fill="none" stroke="currentColor" stroke-width="1.1" vector-effect="non-scaling-stroke"/></svg><span class="rc">30.0</span></span> = 5.477… → 5.48. (A square doubles the relative uncertainty and a square root halves it, but the rule of thumb ignores this.)</div>
     <div class="rule"><b class="n">Rule 15.</b> A logarithm has as many <i>decimal places</i> as its argument has significant figures. The digits before the decimal point only give the power of ten, so they are not counted: log<sub>10</sub>(2.5 × 10<sup>−4</sup>) = −3.602… → <b>−3.60</b>. That is why a pH of 3.60 corresponds to a concentration known to 2 figures. The same holds for ln.</div>
     <div class="rule"><b class="n">Rule 16.</b> Conversely, 10<sup><i>x</i></sup> (or e<sup><i>x</i></sup>) has as many significant figures as <i>x</i> has decimal places: 10<sup>−4.75</sup> = 1.778… × 10<sup>−5</sup> → <b>1.8 × 10<sup>−5</sup></b>.</div>
@@ -207,7 +207,7 @@
   </section>
 
   <section id="exact">
-    <h2 class="section"><span class="no">2.1.7</span>Exact numbers and constants</h2>
+    <h2 class="section"><span class="no">2.1.1.7</span>Exact numbers and constants</h2>
     <p>Exact numbers never limit the significant figures of a result (rule 7). Besides counts and the integers of formulas, many constants are exact by definition. Since the revision of the SI in 2019, seven constants have fixed values, from which the units are defined:</p>
     <table class="sf-table">
       <thead><tr><th>Constant</th><th class="n">Exact value</th></tr></thead>
@@ -226,14 +226,14 @@
   </section>
 
   <section id="chains">
-    <h2 class="section"><span class="no">2.1.8</span>Calculations in several steps</h2>
+    <h2 class="section"><span class="no">2.1.1.8</span>Calculations in several steps</h2>
     <div class="rule"><b class="n">Rule 18.</b> Do not round intermediate results. Keep every digit (in the calculator’s memory) or at least two guard digits beyond the significant ones, and round only the final answer. Rounding at every step adds a rounding error at every step: <span class="frac"><span>1</span><span>3</span></span> rounded to 0.33, then multiplied by 3, gives 0.99 instead of 1.</div>
     <div class="rule"><b class="n">Rule 19.</b> Still, follow the significant figures at every step, applying to each operation its own rule (12 or 13), to know how many the final answer may keep. Parentheses first: in (5.25 + 3.1) × 2.000, the sum 8.35 is known only to the tenth, 8.4, so 2 figures; the product is 16.70, rounded to 2 figures: <b>17</b>.</div>
     <p>When a calculation mixes sums and products, the figures are decided operation by operation, not by counting over the whole formula: this is why a short subtraction inside a long product can ruin its precision (examples 6 and 17).</p>
   </section>
 
   <section id="calculator">
-    <h2 class="section"><span class="no">2.1.9</span>Calculators that show the rules</h2>
+    <h2 class="section"><span class="no">2.1.1.9</span>Calculators that show the rules</h2>
     <p>The first evaluates a whole expression, operation by operation, the way you would by hand: every intermediate result is shown in full (it is kept unrounded for the next step, rule 18), with the number of significant figures it carries and the rule that decides it; only the final answer is rounded. Write a measured whole number with a decimal point (<i>25.</i>) or in scientific notation; whole numbers written without one, and powers of ten written 1e5, are taken as exact (counts, coefficients, exponents, unit conversions) while the box below is ticked. π and e are exact. Type / for a division: it is shown as a fraction.</p>
     <div class="tool" id="calc">
       <div class="row">
@@ -256,8 +256,8 @@
   </section>
 
   <section id="examples">
-    <h2 class="section"><span class="no">2.1.10</span>Worked examples, from simple to complicated</h2>
-    <p>Ordered from simple to complicated. Each shows the formula, then every intermediate result in full with the figures it carries and the rule that decides it; the answer is rounded once, at the end. Most can be replayed in the calculator of § 2.1.9.</p>
+    <h2 class="section"><span class="no">2.1.1.10</span>Worked examples, from simple to complicated</h2>
+    <p>Ordered from simple to complicated. Each shows the formula, then every intermediate result in full with the figures it carries and the rule that decides it; the answer is rounded once, at the end. Most can be replayed in the calculator of § 2.1.1.9.</p>
     <div class="ex"><h4>Example 1 · Area of a sheet <span class="lvl">simple · product</span></h4>
       <p class="given">A rectangle measures 12.5&nbsp;cm by 3.2&nbsp;cm. What is its area?</p>
       <div class="eqn"><i>A</i> = <i>a</i> × <i>b</i></div>
@@ -387,7 +387,7 @@
       <div class="eqn"><i>n</i> = <span class="frac"><span><i>pV</i></span><span><i>RT</i></span></span></div>
       <ol class="steps">
         <li><i>T</i> = 25 + 273.15 = 298.15&nbsp;K, rounded at the units of 25: 298&nbsp;K, 3 figures. 273.15 is exact, 25 is measured. <span class="c">rule 13</span></li>
-        <li>SI units: <i>p</i> = 1.013 × 10<sup>5</sup>&nbsp;Pa, <i>V</i> = 2.50 × 10<sup>−3</sup>&nbsp;m<sup>3</sup>; <i>R</i> = 8.314&nbsp;J·mol<sup>−1</sup>·K<sup>−1</sup>, more figures than the data. <span class="c">§ 2.1.7</span></li>
+        <li>SI units: <i>p</i> = 1.013 × 10<sup>5</sup>&nbsp;Pa, <i>V</i> = 2.50 × 10<sup>−3</sup>&nbsp;m<sup>3</sup>; <i>R</i> = 8.314&nbsp;J·mol<sup>−1</sup>·K<sup>−1</sup>, more figures than the data. <span class="c">§ 2.1.1.7</span></li>
         <li><i>n</i> = <span class="frac"><span>1.013 × 10<sup>5</sup> × 2.50 × 10<sup>−3</sup></span><span>8.314 × 298.15</span></span> = <span class="frac"><span>253.25</span><span>2478.8</span></span> = 0.102 17&nbsp;mol. <span class="c">rule 18</span></li>
         <li>Fewest figures: 3, from 2.50 and from the temperature. <span class="c">rule 12</span></li>
       </ol>
@@ -398,7 +398,7 @@
       <div class="eqn">ρ = <span class="frac"><span><i>pM</i></span><span><i>RT</i></span></span></div>
       <ol class="steps">
         <li><i>T</i> = 18.5 + 273.15 = 291.65, rounded at the tenths: 291.7&nbsp;K, 4 figures. <span class="c">rule 13</span></li>
-        <li><i>M</i> = 0.028 96&nbsp;kg·mol<sup>−1</sup>, 4 figures; <i>R</i> = 8.314 462 618&nbsp;J·mol<sup>−1</sup>·K<sup>−1</sup>, exact. <span class="c">§ 2.1.7</span></li>
+        <li><i>M</i> = 0.028 96&nbsp;kg·mol<sup>−1</sup>, 4 figures; <i>R</i> = 8.314 462 618&nbsp;J·mol<sup>−1</sup>·K<sup>−1</sup>, exact. <span class="c">§ 2.1.1.7</span></li>
         <li>ρ = <span class="frac"><span>98 600 × 0.028 96</span><span>8.314 462 618 × 291.65</span></span> = <span class="frac"><span>2855.5</span><span>2424.9</span></span> = 1.1775&nbsp;kg·m<sup>−3</sup>.</li>
         <li>Figures: 3 (pressure), 4, 4: the pressure decides. <span class="c">rule 12</span></li>
       </ol>
@@ -408,7 +408,7 @@
       <p class="given">A green laser emits at 532&nbsp;nm. Energy of one photon, in joules and in electronvolts?</p>
       <div class="eqn"><i>E</i> = <span class="frac"><span><i>hc</i></span><span>λ</span></span></div>
       <ol class="steps">
-        <li><i>h</i>, <i>c</i> and <i>e</i> are exact since 2019: only λ limits the result, to 3 figures. <span class="c">rule 7, § 2.1.7</span></li>
+        <li><i>h</i>, <i>c</i> and <i>e</i> are exact since 2019: only λ limits the result, to 3 figures. <span class="c">rule 7, § 2.1.1.7</span></li>
         <li><i>E</i> = <span class="frac"><span>6.626 070 15 × 10<sup>−34</sup> × 299 792 458</span><span>532 × 10<sup>−9</sup></span></span> = 3.7339 × 10<sup>−19</sup>&nbsp;J.</li>
         <li>In eV: <span class="frac"><span>3.7339 × 10<sup>−19</sup></span><span>1.602 176 634 × 10<sup>−19</sup></span></span> = 2.3305&nbsp;eV. <span class="c">rule 12</span></li>
       </ol>
@@ -454,10 +454,10 @@
       <p class="given">In example 5, <i>L</i> = 0.750 ± 0.002&nbsp;m and <i>T</i> = 1.74 ± 0.01&nbsp;s. How precise is <i>g</i> = 9.7796&nbsp;m·s<sup>−2</sup> really?</p>
       <div class="eqn"><span class="frac"><span><i>u</i>(<i>g</i>)</span><span><i>g</i></span></span> = <span class="rad"><svg class="rs" viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.5 12.5 L2.8 11.2 L5.2 19.5 L9.6 0.5" fill="none" stroke="currentColor" stroke-width="1.1" vector-effect="non-scaling-stroke"/></svg><span class="rc"><span class="bp">(</span><span class="frac"><span><i>u</i>(<i>L</i>)</span><span><i>L</i></span></span><span class="bp">)</span><sup>2</sup> + <span class="bp">(</span>2 <span class="frac"><span><i>u</i>(<i>T</i>)</span><span><i>T</i></span></span><span class="bp">)</span><sup>2</sup></span></span></div>
       <ol class="steps">
-        <li>For <i>g</i> ∝ <i>L</i><i>T</i><sup>−2</sup>, relative uncertainties combine in quadrature, each multiplied by its exponent. <span class="c">§ 2.1.11</span></li>
+        <li>For <i>g</i> ∝ <i>L</i><i>T</i><sup>−2</sup>, relative uncertainties combine in quadrature, each multiplied by its exponent. <span class="c">§ 2.1.1.11</span></li>
         <li><span class="frac"><span>0.002</span><span>0.750</span></span> = 0.002 67 ; &nbsp; 2 × <span class="frac"><span>0.01</span><span>1.74</span></span> = 0.011 49</li>
         <li><span class="frac"><span><i>u</i>(<i>g</i>)</span><span><i>g</i></span></span> = <span class="rad"><svg class="rs" viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.5 12.5 L2.8 11.2 L5.2 19.5 L9.6 0.5" fill="none" stroke="currentColor" stroke-width="1.1" vector-effect="non-scaling-stroke"/></svg><span class="rc">0.002 67<sup>2</sup> + 0.011 49<sup>2</sup></span></span> = 0.0118 ; &nbsp; <i>u</i>(<i>g</i>) = 9.7796 × 0.0118 = 0.115&nbsp;m·s<sup>−2</sup></li>
-        <li>Round the uncertainty to 2 figures, 0.12, and the value to the same decimal place. <span class="c">§ 2.1.11</span></li>
+        <li>Round the uncertainty to 2 figures, 0.12, and the value to the same decimal place. <span class="c">§ 2.1.1.11</span></li>
       </ol>
       <div class="ans"><b>Answer</b> <i>g</i> = 9.78 ± 0.12 m·s<sup>−2</sup>. The 3 figures of example 5 were right; the period, squared, dominates the uncertainty.</div>
     </div>
@@ -487,14 +487,14 @@
       <ol class="steps">
         <li>Sum: 49.05, to the hundredths; mean: <span class="frac"><span>49.05</span><span>5</span></span> = 9.810, the 5 being a count, exact. <span class="c">rules 7, 13</span></li>
         <li>Standard deviation <i>s</i> = 0.016&nbsp;m·s<sup>−2</sup>: the scatter of one measurement.</li>
-        <li>Standard error of the mean: <span class="frac"><span>0.016</span><span><span class="rad"><svg class="rs" viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.5 12.5 L2.8 11.2 L5.2 19.5 L9.6 0.5" fill="none" stroke="currentColor" stroke-width="1.1" vector-effect="non-scaling-stroke"/></svg><span class="rc">5</span></span></span></span> = 0.0071&nbsp;m·s<sup>−2</sup>: averaging <i>N</i> measurements shrinks the uncertainty by <span class="rad"><svg class="rs" viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.5 12.5 L2.8 11.2 L5.2 19.5 L9.6 0.5" fill="none" stroke="currentColor" stroke-width="1.1" vector-effect="non-scaling-stroke"/></svg><span class="rc"><i>N</i></span></span>, so the mean may keep a digit no single measurement has. <span class="c">§ 2.1.11</span></li>
+        <li>Standard error of the mean: <span class="frac"><span>0.016</span><span><span class="rad"><svg class="rs" viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.5 12.5 L2.8 11.2 L5.2 19.5 L9.6 0.5" fill="none" stroke="currentColor" stroke-width="1.1" vector-effect="non-scaling-stroke"/></svg><span class="rc">5</span></span></span></span> = 0.0071&nbsp;m·s<sup>−2</sup>: averaging <i>N</i> measurements shrinks the uncertainty by <span class="rad"><svg class="rs" viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.5 12.5 L2.8 11.2 L5.2 19.5 L9.6 0.5" fill="none" stroke="currentColor" stroke-width="1.1" vector-effect="non-scaling-stroke"/></svg><span class="rc"><i>N</i></span></span>, so the mean may keep a digit no single measurement has. <span class="c">§ 2.1.1.11</span></li>
       </ol>
       <div class="ans"><b>Answer</b> <i>g</i> = 9.810 ± 0.007 m·s<sup>−2</sup> <button type="button" class="try" data-expr="(9.81+9.79+9.83+9.80+9.82)/5">replay in the calculator</button></div>
     </div>
   </section>
 
   <section id="uncertainty">
-    <h2 class="section"><span class="no">2.1.11</span>Beyond the rules: uncertainties</h2>
+    <h2 class="section"><span class="no">2.1.1.11</span>Beyond the rules: uncertainties</h2>
     <p>The rules of significant figures approximate the propagation of uncertainties, the method of metrology (the <i>Guide to the Expression of Uncertainty in Measurement</i>, GUM). Each datum is given with a standard uncertainty <i>u</i>, and for independent data:</p>
     <div class="eqn"><i>u</i>(<i>a</i> ± <i>b</i>) = <span class="rad"><svg class="rs" viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.5 12.5 L2.8 11.2 L5.2 19.5 L9.6 0.5" fill="none" stroke="currentColor" stroke-width="1.1" vector-effect="non-scaling-stroke"/></svg><span class="rc"><i>u</i>(<i>a</i>)<sup>2</sup> + <i>u</i>(<i>b</i>)<sup>2</sup></span></span> <span class="why2">sums: absolute uncertainties combine (rule 13)</span></div>
     <div class="eqn"><span class="frac"><span><i>u</i>(<i>ab</i>)</span><span><i>ab</i></span></span> = <span class="frac"><span><i>u</i><span class="bp">(</span><span class="frac"><span><i>a</i></span><span><i>b</i></span></span><span class="bp">)</span></span><span><span class="frac"><span><i>a</i></span><span><i>b</i></span></span></span></span> = <span class="rad"><svg class="rs" viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.5 12.5 L2.8 11.2 L5.2 19.5 L9.6 0.5" fill="none" stroke="currentColor" stroke-width="1.1" vector-effect="non-scaling-stroke"/></svg><span class="rc"><span class="bp">(</span><span class="frac"><span><i>u</i>(<i>a</i>)</span><span><i>a</i></span></span><span class="bp">)</span><sup>2</sup> + <span class="bp">(</span><span class="frac"><span><i>u</i>(<i>b</i>)</span><span><i>b</i></span></span><span class="bp">)</span><sup>2</sup></span></span> <span class="why2">products and quotients: relative uncertainties combine (rule 12)</span></div>
@@ -503,7 +503,7 @@
   </section>
 
   <section id="mistakes">
-    <h2 class="section"><span class="no">2.1.12</span>Common mistakes</h2>
+    <h2 class="section"><span class="no">2.1.1.12</span>Common mistakes</h2>
     <ul class="mistakes">
       <li><b>Copying the calculator.</b> <span class="frac"><span>25.47</span><span>9.5</span></span> = 2.681 052 631 6 is not a density of ten figures; it is 2.7&nbsp;g·mL<sup>−1</sup>.</li>
       <li><b>Dropping significant zeros.</b> 0.250&nbsp;mol·L<sup>−1</sup> is not 0.25&nbsp;mol·L<sup>−1</sup>: the zero says the third figure was measured.</li>

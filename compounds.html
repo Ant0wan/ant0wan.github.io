@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function () {
     return d;
   }
   var blocks = SECTIONS.map(function (s, i) {
-    var items = CP.list.filter(function (c) { return c.cat === s[0]; }), no = '3.2.' + (i + 1);
+    var items = CP.list.filter(function (c) { return c.cat === s[0]; }), no = '2.2.2.' + (i + 1);
     toc.insertAdjacentHTML('beforeend', '<li><span class="num">' + no + '</span><span><a href="#' + s[0] + '">' + s[1] + '</a><span class="desc">' + items.length + ' species</span></span></li>');
     var sec = document.createElement('section'); sec.id = s[0];
     sec.innerHTML = '<h2 class="section"><span class="no">' + no + '</span>' + s[1] + '</h2><p class="cp-intro">' + s[2] + '</p>';
